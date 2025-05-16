@@ -16,6 +16,6 @@ public:
     bool bEnabled;
 
     // UParticleModuleRequired* RequiredModule;    
-    // TArray<UParticleModule*> Modules;
+    TArray<UParticleModule*> Modules;
     // UParticleModuleTypeDataBase* TypeDataModule;
 };

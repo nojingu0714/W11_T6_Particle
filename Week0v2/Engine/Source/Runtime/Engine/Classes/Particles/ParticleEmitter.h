@@ -12,4 +12,6 @@ public:
     ~UParticleEmitter() = default;
 
     TArray<UParticleLODLevel*> LODLevels;
+
+    void CacheEmitterModuleInfo();
 };

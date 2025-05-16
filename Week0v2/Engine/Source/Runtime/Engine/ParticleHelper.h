@@ -88,7 +88,7 @@ struct FMeshParticleInstanceVertex
     /** The relative time of the particle. */
     float RelativeTime;
 };
-struct FParticleDataContainer
+struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
 {
     int32 MemBlockSize;
     int32 ParticleDataNumBytes;
@@ -111,7 +111,7 @@ struct FParticleDataContainer
     void Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts);
     void Free();
 };
-struct FDynamicEmitterReplayDataBase
+struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
     /** The type of emitter. */
     EDynamicEmitterType eEmitterType;
@@ -126,7 +126,7 @@ struct FDynamicEmitterReplayDataBase
 
     int32 SortMode;
 };
-struct FDynamicSpriteEmitterReplayDataBase
+struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 {
     UMaterialInterface*             MaterialInterface;
     struct FParticleRequiredModule  *RequiredModule;
@@ -137,12 +137,12 @@ struct FDynamicEmitterDataBase
     
     virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
 };
-
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
     void SortSpriteParticles();
     virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const = 0;
 };
+
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
     virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type InFeatureLevel) const override
@@ -151,7 +151,7 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
     }
 };
 
-struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterData
+struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
     virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const override
     {
