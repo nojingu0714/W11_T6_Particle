@@ -1,8 +1,8 @@
-#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleModule.h"
 
-class UParticleModuleSizeBase : public UParticleSystem
+class UParticleModuleSizeBase : public UParticleModule
 {
-    DECLARE_CLASS(UParticleModuleSizeBase, UParticleSystem)
+    DECLARE_CLASS(UParticleModuleSizeBase, UParticleModule)
 public:
     UParticleModuleSizeBase() = default;
     ~UParticleModuleSizeBase() = default;
