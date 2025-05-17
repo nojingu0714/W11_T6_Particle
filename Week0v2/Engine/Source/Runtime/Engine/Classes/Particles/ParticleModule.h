@@ -6,6 +6,29 @@ struct FBaseParticle;
 struct FParticleEmitterInstance;
 class UParticleEmitter;
 
+enum EModuleType : int
+{
+    /** General - all emitter types can use it			*/
+    EPMT_General,
+    /** TypeData - TypeData modules						*/
+    EPMT_TypeData,
+    /** Beam - only applied to beam emitters			*/
+    EPMT_Beam ,
+    /** Trail 	*/
+    EPMT_Trail,
+    /** Spawn 	*/
+    EPMT_Spawn,
+    /** Requir	*/
+    EPMT_Requi,
+    /** Event 	*/
+    EPMT_Event,
+    /** Light	*/
+    EPMT_Light,
+    /** SubUV	*/
+    EPMT_SubUV,
+    EPMT_MAX,
+};
+
 class UParticleModule : public UObject
 {
     DECLARE_CLASS(UParticleModule, UObject)
@@ -60,6 +83,7 @@ private:    // 8비트 중 마지막 1비트만을 활용하여 bool 변수처�
     virtual uint32	RequiredBytesPerInstance();
     virtual uint32	PrepPerInstanceBlock(FParticleEmitterInstance* Owner, void* InstData);
     virtual void SetToSensibleDefaults(UParticleEmitter* Owner);
+    virtual EModuleType	GetModuleType() const { return EPMT_General; }
 };
 
 /*
