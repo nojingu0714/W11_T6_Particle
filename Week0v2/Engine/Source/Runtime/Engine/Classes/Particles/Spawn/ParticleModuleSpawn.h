@@ -7,4 +7,9 @@ class UParticleModuleSpawn : public UParticleModuleSpawnBase
 public:
     UParticleModuleSpawn()= default;
     ~UParticleModuleSpawn()= default;
+
+    float Rate = 1.0f;
+    float RateScale;
+    
+private:
 };

@@ -2,6 +2,8 @@
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
+class UParticleSystemComponent;
+struct FParticleEmitterInstances;
 class UParticleLODLevel;
 
 class UParticleEmitter : public UObject
@@ -13,5 +15,9 @@ public:
 
     TArray<UParticleLODLevel*> LODLevels;
 
+    int32 ParticleSize;
+    
+    FParticleEmitterInstances* CreateInstance(UParticleSystemComponent* InComponent);
+    
     void CacheEmitterModuleInfo();
 };
