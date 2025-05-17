@@ -25,6 +25,7 @@ public:
     FMatrix operator/(float Scalar) const;
     float* operator[](int row);
     const float* operator[](int row) const;
+    FMatrix Inverse() const;
 	
     // 유틸리티 함수
     static FMatrix Transpose(const FMatrix& Mat);
@@ -36,6 +37,7 @@ public:
     static FMatrix CreateTranslationMatrix(const FVector& position);
 
     FVector4 TransformFVector4(const FVector4& vector) const;
+    FVector4 TransformPositionFVector4(const FVector& vector) const;
     FVector TransformPosition(const FVector& vector) const;
     
     static FMatrix GetScaleMatrix(const FVector& InScale);
