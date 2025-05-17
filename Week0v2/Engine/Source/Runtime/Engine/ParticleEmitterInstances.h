@@ -6,7 +6,7 @@ class UParticleSystemComponent;
 class UParticleLODLevel;
 class UParticleEmitter;
 
-struct FParticleEmitterInstances
+struct FParticleEmitterInstance
 {
     UParticleEmitter* SpriteTemplate;
 
