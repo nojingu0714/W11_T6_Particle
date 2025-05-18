@@ -7,7 +7,10 @@
 enum class EDistributionType
 {
     Constant,
-    Unitform,
+    Uniform,
+    Linear,
+    EaseInOut,
+    SinWave,
 };
 
 struct FSimpleFloatDistribution 
@@ -19,22 +22,40 @@ struct FSimpleFloatDistribution
     FSimpleFloatDistribution(float InConstant = 0.0f)
         : DistributionType(EDistributionType::Constant), Constant(InConstant) { }
 
-    FSimpleFloatDistribution(float InMin, float InMax)
-        : DistributionType(EDistributionType::Unitform), Min(InMin), Max(InMax) { }
+    // Uniform, Linear, EaseInOut, SinWave 용 생성자
+    FSimpleFloatDistribution(float InMin, float InMax, EDistributionType DistType = EDistributionType::Uniform)
+        : DistributionType(DistType), Min(InMin), Max(InMax) {
+    }
 
-    float GetValue() const 
+    float GetValue(float t) const
     {
-        switch (DistributionType) 
+        switch (DistributionType)
         {
         case EDistributionType::Constant:
             return Constant;
-            break;
-        case EDistributionType::Unitform:
+
+        case EDistributionType::Uniform:
+            // 범위 내 랜덤
             return Min + (Max - Min) * Random01();
-            break;
+
+        case EDistributionType::Linear:
+            // 선형 보간
+            return Min + (Max - Min) * t;
+
+        case EDistributionType::EaseInOut:
+        {
+            // Hermite easing: 3t^2 - 2t^3
+            float s = t * t * (3.0f - 2.0f * t);
+            return Min + (Max - Min) * s;
+        }
+
+        case EDistributionType::SinWave:
+        {
+            float sine = std::sin(PI * t);
+            return Min + (Max - Min) * sine;
+        }
         default:
             return 0.0f;
-            break;
         }
     }
 
@@ -55,8 +76,8 @@ struct FSimpleVectorDistribution
                               const FSimpleFloatDistribution& InZ)
         : DistX(InX), DistY(InY), DistZ(InZ) { }
 
-    FVector GetValue() const 
+    FVector GetValue(float t) const 
     {
-        return FVector(DistX.GetValue(), DistY.GetValue(), DistZ.GetValue());
+        return FVector(DistX.GetValue(t), DistY.GetValue(t), DistZ.GetValue(t));
     }
 };
