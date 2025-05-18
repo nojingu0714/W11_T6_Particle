@@ -13,6 +13,28 @@ const FBaseParticle& Name = *((const FBaseParticle*) (Address));
 FBaseParticle* Name = (FBaseParticle*) (Address);
 
 struct FMatrix;
+#define BEGIN_UPDATE_LOOP																								\
+{																													\
+    check((Owner != NULL) && (Owner->Component != NULL));															\
+    int32&			ActiveParticles = Owner->ActiveParticles;														\
+    uint32			CurrentOffset	= Offset;																		\
+    const uint8*		ParticleData	= Owner->ParticleData;															\
+    const uint32		ParticleStride	= Owner->ParticleStride;														\
+    uint16*			ParticleIndices	= Owner->ParticleIndices;														\
+    for(int32 i=ActiveParticles-1; i>=0; i--)																			\
+    {																												\
+    const int32	CurrentIndex	= ParticleIndices[i];															\
+    const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;									\
+    FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);												\
+    if ((Particle.Flags & STATE_Particle_Freeze) == 0)															\
+{																											\
+
+#define END_UPDATE_LOOP																									\
+}																											\
+CurrentOffset				= Offset;																		\
+}																												\
+}
+
 class UMaterialInterface;
 
 enum EDynamicEmitterType
@@ -54,7 +76,7 @@ struct FParticleOrder
     {}
 };
 
-struct FBaseParticle
+struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD 구조체 
 {
     // 48 bytes
     FVector		OldLocation;			// Last frame's location, used for collision
@@ -87,8 +109,28 @@ struct FBaseParticle
     float			OneOverMaxLifetime;		// Reciprocal of lifetime
     float			Placeholder0;
     float			Placeholder1;
+
+    FBaseParticle()
+    : OldLocation(FVector::ZeroVector)
+    , Location(FVector::ZeroVector)
+    , BaseVelocity(FVector::ZeroVector)
+    , Rotation(0.0f)
+    , Velocity(FVector::ZeroVector)
+    , BaseRotationRate(0.0f)
+    , BaseSize(FVector(1.0f))           // 기본 크기를 (1,1,1)로
+    , RotationRate(0.0f)
+    , Size(BaseSize)
+    , Flags(0)
+    , Color(FLinearColor::White)
+    , BaseColor(FLinearColor::White)
+    , RelativeTime(0.0f)
+    , OneOverMaxLifetime(1.0f)          // 기본 수명 1초로 가정
+    , Placeholder0(0.0f)
+    , Placeholder1(0.0f)
+    {}
 };
-struct FParticleSpriteVertex
+
+struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용 정점 데이터 
 {
     /** The position of the particle. */
     FVector Position;
@@ -108,7 +150,7 @@ struct FParticleSpriteVertex
     /** The color of the particle. */
     FLinearColor Color;
 };
-struct FMeshParticleInstanceVertex
+struct FMeshParticleInstanceVertex // GPU로 전송되는 메시 인스텅신 파티클용 정점 데이터
 {
     /** The color of the particle. */
     FLinearColor Color;
@@ -128,13 +170,14 @@ struct FMeshParticleInstanceVertex
     /** The relative time of the particle. */
     float RelativeTime;
 };
+
 struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
 {
     int32 MemBlockSize;
     int32 ParticleDataNumBytes;
     int32 ParticleIndicesNumShorts;
-    uint8* ParticleData; // this is also the memory block we allocated
-    uint16* ParticleIndices; // not allocated, this is at the end of the memory block
+    uint8* ParticleData; // FBaseParticle를 배열 형태로 저장 
+    uint16* ParticleIndices; // 실제로 렌더링할 활성 파티클의 인덱스
 
     FParticleDataContainer()
         : MemBlockSize(0)
@@ -151,6 +194,8 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
     void Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts);
     void Free();
 };
+
+// Replay Data Base 
 struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
     /** The type of emitter. */
@@ -178,6 +223,7 @@ struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 �
     {
     }
 };
+
 struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 {
     UMaterialInterface*             MaterialInterface;
@@ -186,6 +232,8 @@ struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBas
     int32							MaxDrawCount;
     bool bUseLocalSpace;
 };
+
+// Emitter Data Base 
 
 /** Source data for Sprite emitters */
 struct FDynamicSpriteEmitterReplayData
@@ -217,6 +265,7 @@ struct FDynamicEmitterDataBase
     virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
 
 };
+
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
     void SortSpriteParticles();

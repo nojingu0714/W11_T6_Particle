@@ -1,12 +1,18 @@
 ﻿#pragma once
+#include "Container/Array.h"
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
 
+class UParticleModule;
+class UParticleModuleRequired;
+class UParticleModuleSpawn;
+struct FParticleEventInstancePayload;
+struct FBaseParticle;
 class UParticleSystemComponent;
 class UParticleLODLevel;
 class UParticleEmitter;
 
-struct FParticleEmitterInstances
+struct FParticleEmitterInstance
 {
     UParticleEmitter* SpriteTemplate;
 
@@ -16,6 +22,11 @@ struct FParticleEmitterInstances
     int32 CurrentLODLevelIndex;
     UParticleLODLevel* CurrentLODLevel;
 
+    TArray<FBaseParticle*> BaseParticles;
+    TArray<UParticleModuleSpawn*> SpawnModules;
+    TArray<UParticleModule*> UpdateModules;
+    TArray<FBaseParticle*> DeadParticles;
+    UParticleModuleRequired* RequiredModule;
     /** Pointer to the particle data array.                             */
     uint8* ParticleData;
     /** Pointer to the particle index array.                            */
@@ -40,20 +51,26 @@ struct FParticleEmitterInstances
     int32 MaxActiveParticles;
     /** The fraction of time left over from spawning.                   */
 
-    void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, struct FParticleEventInstancePayload* EventPayload )
-    {
-        // for (int32 i = 0; i < Count; i++)
-        // {
-        //     DECLARE_PARTICLE_PTR
-        //     PreSpawn(Particle, InitialLocation, InitialVelocity);
-        //
-        //     for (int32 ModuleIndex = 0; ModuleIndex < LODLevel->SpawnModules.Num(); ModuleIndex++)
-        //     {
-        //         ...
-        //     }
-        //
-        //     PostSpawn(Particle, Interp, SpawnTime);
-        // }
-    }
+    /** The previous location of the instance.							*/
+    FVector OldLocation;
+    // Emitter 시작 후 총 누적 시간 
+    float EmitterTime = 0.0f;
+    bool bEnabled= true;
+
+    FParticleEmitterInstance();
+    
+    void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
+    void Init();
+    void Tick(float DeltaTime);
+    void SetupEmitterDuration();
+    void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
+
+    void PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity);
+    void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
     void KillParticle(int32 Index);
+    void KillParticle(FBaseParticle* Particle);
+    void KilParticles();
 };
+
+
+
