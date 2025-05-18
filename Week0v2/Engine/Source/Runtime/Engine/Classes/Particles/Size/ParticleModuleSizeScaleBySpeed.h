@@ -1,7 +1,9 @@
-﻿#pragma once
+#pragma once
 #include "ParticleModuleSizeBase.h"
 #include "Particles/ParticleLODLevel.h"
 #include "UObject/Object.h"
+#include "UObject/ObjectMacros.h"
+#include "Core/Math/Vector.h"
 
 class UParticleModuleSizeScaleBySpeed : public UParticleModuleSizeBase
 {
@@ -9,4 +11,11 @@ class UParticleModuleSizeScaleBySpeed : public UParticleModuleSizeBase
 public:
     UParticleModuleSizeScaleBySpeed() = default;
     ~UParticleModuleSizeScaleBySpeed() = default;
+
+    FVector2D SpeedScale;
+    FVector2D MaxScale;
+
+
+    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime) override;
+    virtual void CompileModule(struct FParticleEmitterBuildInfo& EmitterInfo) override;
 };

@@ -94,4 +94,7 @@ UParticleModuleLocation: 파티클의 초기 위치를 결정합니다.
 UParticleModuleVelocity: 파티클의 초기 속도와 방향을 설정합니다.
 UParticleModuleColor: 파티클의 색상을 정의하며, 시간에 따른 색상 변화를 설정할 수 있습니다.
 UParticleModuleSize: 파티클의 크기를 설정합니다.
+
+코스 외에 추가한 Module
+UParticleModuleSizeScaleBySpeed
 */
