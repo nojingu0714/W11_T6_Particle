@@ -2,7 +2,11 @@
 #include "Container/Array.h"
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
+#include "UserInterface/Debug/DebugViewModeHelpers.h"
 
+class UMaterial;
+struct FDynamicEmitterDataBase;
+struct FDynamicEmitterReplayDataBase;
 class UParticleModule;
 class UParticleModuleRequired;
 class UParticleModuleSpawn;
@@ -15,7 +19,6 @@ class UParticleEmitter;
 struct FParticleEmitterInstance
 {
     UParticleEmitter* SpriteTemplate;
-
     // Owner
     UParticleSystemComponent* Component;
 
@@ -26,6 +29,7 @@ struct FParticleEmitterInstance
     TArray<UParticleModuleSpawn*> SpawnModules;
     TArray<UParticleModule*> UpdateModules;
     TArray<FBaseParticle*> DeadParticles;
+    
     UParticleModuleRequired* RequiredModule;
     /** Pointer to the particle data array.                             */
     uint8* ParticleData;
@@ -57,19 +61,31 @@ struct FParticleEmitterInstance
     float EmitterTime = 0.0f;
     bool bEnabled= true;
 
+    /** The sort mode to use for this emitter as specified by artist.	*/
+    int32 SortMode;
+    
     FParticleEmitterInstance();
     
     void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
     void Init();
-    void Tick(float DeltaTime);
+    virtual void Tick(float DeltaTime);
     void SetupEmitterDuration();
     void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
 
     void PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity);
     void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
     void KillParticle(int32 Index);
-    void KillParticle(FBaseParticle* Particle);
     void KilParticles();
+
+    virtual FDynamicEmitterReplayDataBase* GetReplayData();
+    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected, ERHIFeatureLevel::Type InFeatureLevel)
+    {
+        return NULL;
+    }
+    // Replyay Data를 채워주는 역할
+    virtual bool FillReplayData(FDynamicEmitterReplayDataBase& DynamicEmitterReplayDataBase);
+    virtual UMaterial* GetCurrentMaterial();
+
 };
 
 

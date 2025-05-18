@@ -14,7 +14,6 @@ public:
 
 
     void BeginPlay() override;
-    void UpdateDynamicData();
     void TickComponent(float DeltaTime) override;
     void InitParticles();
     void ResetSystem();
@@ -22,6 +21,7 @@ public:
     TArray<FParticleEmitterInstance*> EmitterInstances;
     UParticleSystem* Template;
 
+    void UpdateDynamicData();
     TArray<FDynamicEmitterDataBase*> EmitterRenderData;
 };
 

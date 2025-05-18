@@ -29,6 +29,46 @@ void UParticleSystemComponent::BeginPlay()
 
 void UParticleSystemComponent::UpdateDynamicData()
 {
+    // for (FDynamicEmitterDataBase* OldData : EmitterRenderData)
+    // {
+    //     delete OldData;
+    // }
+    // EmitterRenderData.Empty();
+    //
+    // // 2) 각 EmitterInstance에 대해 렌더 데이터 생성
+    // int32 EmitterIndex = 0;
+    // for (FParticleEmitterInstance* Instance : EmitterInstances)
+    // {
+    //     if (!Instance || !Instance->bEnabled || Instance->ActiveParticles == 0)
+    //     {
+    //         ++EmitterIndex;
+    //         continue;
+    //     }
+    //
+    //     // 2-1) ReplayDataBase를 얻어오거나 바로 BuildDynamicData 호출
+    //     FDynamicEmitterReplayDataBase& ReplayData = Instance->GetReplayData();
+    //
+    //     // 2-2) 타입에 따라 적절한 FDynamicEmitterDataBase 파생형 생성
+    //     FDynamicSpriteEmitterData* SpriteData = new FDynamicSpriteEmitterData();
+    //     SpriteData->EmitterIndex      = EmitterIndex;
+    //     SpriteData->MaterialInterface = Instance->RequiredModule->Material; // 예시
+    //     SpriteData->SortMode          = Instance->RequiredModule->ScreenAlignment;
+    //
+    //     // 2-3) 버텍스 버퍼 / 인덱스 버퍼에 FParticleSpriteVertex 채우기
+    //     // (앞서 설명한 대로 ParticleDataContainer를 순회해 VertexBufferRHI에 업로드)
+    //
+    //     // 2-4) 카운트·스트라이드·VF 설정
+    //     SpriteData->DynamicVertexStride = SpriteData->GetDynamicVertexStride(GMaxRHIFeatureLevel);
+    //     SpriteData->NumVertices   = Instance->ActiveParticles * 4;
+    //     SpriteData->NumPrimitives = Instance->ActiveParticles * 2;
+    //     SpriteData->VertexFactory = &GParticleSpriteVertexFactory;
+    //     SpriteData->IndexBufferRHI= GParticleIndexBuffer.IndexBufferRHI;
+    //
+    //     // 2-5) 배열에 추가
+    //     EmitterRenderData.Add(SpriteData);
+    //
+    //     ++EmitterIndex;
+    // }
 }
 
 void UParticleSystemComponent::InitParticles()

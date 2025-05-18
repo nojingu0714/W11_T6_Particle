@@ -1,3 +1,4 @@
+#include "Components/Material/Material.h"
 #include "Math/Color.h"
 #include "Math/Vector.h"
 #include "UserInterface/Debug/DebugViewModeHelpers.h"
@@ -157,6 +158,14 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
     void Free();
 };
 
+inline void FParticleDataContainer::Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts)
+{
+}
+
+inline void FParticleDataContainer::Free()
+{
+}
+
 // Replay Data Base 
 struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
@@ -176,10 +185,28 @@ struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 �
 
 struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 {
-    UMaterialInterface*             MaterialInterface;
-    struct FParticleRequiredModule  *RequiredModule;
+    //원레 머터리얼 인터페이스를 사용하나 UMaterial로 일단 퉁치기
+    //UMaterialInterface*             MaterialInterface;
+    UMaterial*                      Material;
+    UParticleModuleRequired*        RequiredModule;
 };
 
+struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
+{
+    /** Constructor */
+    FDynamicSpriteEmitterReplayData()
+    {
+    }
+    
+    /** Serialization */
+    virtual void Serialize( FArchive& Ar )
+    {
+        // // Call parent implementation
+        // FDynamicSpriteEmitterReplayDataBase::Serialize( Ar );
+        //
+        // // ...
+    }
+};
 // Emitter Data Base 
 struct FDynamicEmitterDataBase
 {
@@ -192,6 +219,9 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
     void SortSpriteParticles();
     virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const = 0;
+    const FDynamicEmitterReplayDataBase& GetSource() const
+    {
+    }
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
@@ -200,7 +230,13 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
     {
         return sizeof(FParticleSpriteVertex);
     }
+    const FDynamicEmitterReplayDataBase& GetSource() const
+    {
+        return Source;
+    }
+    FDynamicSpriteEmitterReplayData Source;
 };
+
 
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
