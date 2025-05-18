@@ -43,6 +43,11 @@ struct FParticleEmitterInstance
     int32 MaxActiveParticles;
     /** The fraction of time left over from spawning.                   */
 
+    // EmitterDuration으로 나눈 0~1의 값, 1이되면 0으로 바뀜
+    float EmitterTime;
+    float EmitterDuration;
+
+
     void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, struct FParticleEventInstancePayload* EventPayload )
     {
         // for (int32 i = 0; i < Count; i++)
