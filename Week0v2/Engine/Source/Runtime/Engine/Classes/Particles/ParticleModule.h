@@ -19,7 +19,7 @@ enum EModuleType : int
     /** Spawn 	*/
     EPMT_Spawn,
     /** Requir	*/
-    EPMT_Requi,
+    EPMT_Required,
     /** Event 	*/
     EPMT_Event,
     /** Light	*/
@@ -36,7 +36,7 @@ public:
     UParticleModule();
     ~UParticleModule();
 
-private:    // 8비트 중 마지막 1비트만을 활용하여 bool 변수처럼 활용
+public:    // 8비트 중 마지막 1비트만을 활용하여 bool 변수처럼 활용
     // 8비트짜리 변수라는 점에 대하여 유의 필요
     // 아래 변수를 통해 Module Pool 관리하여 최적화하는 것으로 보임
     

@@ -34,3 +34,11 @@ enum EParticleBurstMethod : int
     EPBM_Interpolated,
     EPBM_MAX,
 };
+
+enum EParticleSubUVInterpMethod : int
+{
+	PSUVIM_None,
+	PSUVIM_Linear,
+	PSUVIM_Random,
+	PSUVIM_MAX,
+};

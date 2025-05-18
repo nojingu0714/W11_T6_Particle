@@ -2,6 +2,8 @@
 #include "ParticleModuleSpawnBase.h"
 #include "Engine/Source/Runtime/Core/Container/Array.h"
 #include "Engine/Source/Runtime/Engine/Classes/Particles/ParticleEmitter.h"
+#include "Engine/Source/Runtime/Core/Math/Distribution.h"
+
 
 class UParticleModuleSpawn : public UParticleModuleSpawnBase
 {
@@ -10,10 +12,10 @@ public:
     UParticleModuleSpawn()= default;
     ~UParticleModuleSpawn()= default;
 
-    struct FSimpleFloatDistribution Rate;
-    struct FSimpleFloatDistribution RateScale;
+    FSimpleFloatDistribution Rate;
+    FSimpleFloatDistribution RateScale;
     TArray<FParticleBurst> BurstList;
-    struct FSimpleFloatDistribution BurstScale;
+    FSimpleFloatDistribution BurstScale;
     EParticleBurstMethod ParticleBurstMethod;
     uint32 bApplyGlobalSpawnRateScale : 1;
 
