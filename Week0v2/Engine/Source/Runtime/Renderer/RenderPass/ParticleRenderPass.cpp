@@ -3,9 +3,12 @@
 #include "Define.h"
 #include "LaunchEngineLoop.h"
 #include "D3D11RHI/CBStructDefine.h"
+#include "Engine/World.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "Renderer/Renderer.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
+
 
 FParticleRenderPass::~FParticleRenderPass()
 {
@@ -15,14 +18,14 @@ FParticleRenderPass::~FParticleRenderPass()
 
 void FParticleRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
-    for (UParticleSystemComponent* BillboardComponent : TObjectRange<UParticleSystemComponent>())
+    for (UParticleSystemComponent* ParticleSystemComponent : TObjectRange<UParticleSystemComponent>())
     {
-        if (((BillboardComponent->GetWorld()->WorldType != EWorldType::Editor && BillboardComponent->GetWorld()->WorldType != EWorldType::EditorPreview) && BillboardComponent->bOnlyForEditor == true) || BillboardComponent->GetWorld() != World)
+        if (((ParticleSystemComponent->GetWorld()->WorldType != EWorldType::Editor && ParticleSystemComponent->GetWorld()->WorldType != EWorldType::EditorPreview)) || ParticleSystemComponent->GetWorld() != World)
         {
             continue;
         }
         
-        ParticleSystemComponents.Add(BillboardComponent);
+        ParticleSystemComponents.Add(ParticleSystemComponent);
     }
 }
 

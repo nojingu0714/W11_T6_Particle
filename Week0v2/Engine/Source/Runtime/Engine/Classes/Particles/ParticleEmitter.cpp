@@ -5,6 +5,11 @@
 #include "ParticleLODLevel.h"
 #include "TypeData/ParticleModuleTypeDataBase.h"
 
+UParticleLODLevel* UParticleEmitter::GetCurrentLODLevel(FParticleEmitterInstance* Instance) const
+{
+    return Instance->CurrentLODLevel;
+}
+
 FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemComponent* InComponent)
 {
     FParticleEmitterInstance* Instance = 0;

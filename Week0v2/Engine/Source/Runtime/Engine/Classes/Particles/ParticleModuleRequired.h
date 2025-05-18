@@ -12,4 +12,10 @@ public:
     ~UParticleModuleRequired() = default;
     
     UMaterial* SpriteTexture;
+
+    
+    uint8 bUseMaxDrawCount = false;
+    int32 MaxDrawCount;
+    
+    uint8 bUseLocalSpace = true;
 };

@@ -12,6 +12,7 @@ const FBaseParticle& Name = *((const FBaseParticle*) (Address));
 #define DECLARE_PARTICLE_PTR(Name,Address)		\
 FBaseParticle* Name = (FBaseParticle*) (Address);
 
+struct FDynamicEmitterDataBase;
 struct FMatrix;
 #define BEGIN_UPDATE_LOOP																								\
 {																													\
@@ -195,6 +196,8 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
     void Free();
 };
 
+
+
 // Replay Data Base 
 struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
@@ -224,10 +227,11 @@ struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 �
     }
 };
 
+
 struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 {
-    UMaterialInterface*             MaterialInterface;
-    struct FParticleRequiredModule  *RequiredModule;
+    UMaterialInterface*             MaterialInterface;  
+    //struct FParticleRequiredModule  *RequiredModule;
     FVector2D				PivotOffset;
     int32							MaxDrawCount;
     bool bUseLocalSpace;
@@ -287,6 +291,11 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
     void SortSpriteParticles(int32 SortMode, bool bLocalSpace,
                              int32 ParticleCount, const uint8* ParticleData, int32 ParticleStride, const uint16* ParticleIndices,
                              const FMatrix* ViewProjection, const FMatrix& LocalToWorld, TArray<FParticleOrder>& ParticleOrder) const;
+    
+    void SortSpriteParticles(int32 SortMode, bool bLocalSpace,
+                             TArray<FBaseParticle>& ParticleData,
+                             const FMatrix* ViewProjection, const FMatrix& LocalToWorld, TArray<FParticleOrder>& ParticleOrder) const;
+
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
@@ -316,6 +325,10 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
  */
     bool GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder,
                                const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const;
+    
+    bool GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder, TArray<FBaseParticle>& ParticleData,
+                               const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const;
+    void Init(bool bInSelected);
 
 
     FDynamicSpriteEmitterReplayData Source;
@@ -327,6 +340,41 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
     {
         return sizeof(FMeshParticleInstanceVertex);
     }
+};
+
+/*-----------------------------------------------------------------------------
+ *	Particle dynamic data
+ *	This is a copy of the particle system data needed to render the system in
+ *	another thread.
+ ----------------------------------------------------------------------------*/
+class FParticleDynamicData
+{
+public:
+    FParticleDynamicData()
+        : DynamicEmitterDataArray()
+    {
+    }
+
+    ~FParticleDynamicData()
+    {
+        ClearEmitterDataArray();
+    }
+    
+    void ClearEmitterDataArray()
+    {
+        for (int32 Index = 0; Index < DynamicEmitterDataArray.Num(); Index++)
+        {
+            FDynamicEmitterDataBase* Data =	DynamicEmitterDataArray[Index];
+            delete Data;
+        }
+        DynamicEmitterDataArray.Empty();
+    }
+
+    /** The Current Emmitter we are rendering **/
+    uint32 EmitterIndex;
+
+    // Variables
+    TArray<FDynamicEmitterDataBase*>	DynamicEmitterDataArray;
 };
 
 

@@ -208,3 +208,137 @@ void FParticleEmitterInstance::KilParticles()
     }
     DeadParticles.Empty();
 }
+
+UMaterialInterface* FParticleEmitterInstance::GetCurrentMaterial()
+{
+    return CurrentMaterial;
+}
+
+bool FParticleEmitterInstance::IsDynamicDataRequired(UParticleLODLevel* InCurrentLODLevel)
+{
+    if ((ActiveParticles <= 0) || 
+    (SpriteTemplate && (SpriteTemplate->EmitterRenderMode == ERM_None)))
+    {
+        return false;
+    }
+
+    if ((InCurrentLODLevel == NULL) || (InCurrentLODLevel->bEnabled == false)
+        /*||
+        ((InCurrentLODLevel->RequiredModule->bUseMaxDrawCount == true) && (InCurrentLODLevel->RequiredModule->MaxDrawCount == 0))*/)
+    {
+        return false;
+    }
+
+    if (Component == NULL)
+    {
+        return false;
+    }
+    return true;
+}
+
+bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+    // Make sure there is a template present
+    if (!SpriteTemplate)
+    {
+        return false;
+    }
+    
+    // Allocate it for now, but we will want to change this to do some form
+    // of caching
+    if (ActiveParticles <= 0 || !bEnabled)
+    {
+        return false;
+    }
+
+    // If the template is disabled, don't return data.
+    UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
+    if ((LODLevel == NULL) || (LODLevel->bEnabled == false))
+    {
+        return false;
+    }
+
+    // Must be filled in by implementation in derived class
+    OutData.eEmitterType = DET_Unknown;
+
+    OutData.ActiveParticleCount = ActiveParticles;
+    OutData.ParticleStride = ParticleStride;
+    //OutData.SortMode = SortMode;
+
+    // Take scale into account
+    OutData.Scale = FVector::OneVector;
+    if (Component)
+    {
+        OutData.Scale = FVector(Component->GetWorldScale());
+    }
+
+    int32 ParticleMemSize = MaxActiveParticles * ParticleStride;
+
+    //언리얼에서도 모든 emitter가 스프라이트인 걸로 가정하고 한다.
+    FDynamicSpriteEmitterReplayDataBase* NewReplayData =
+    static_cast< FDynamicSpriteEmitterReplayDataBase* >( &OutData );
+
+    //NewReplayData->RequiredModule = LODLevel->RequiredModule->CreateRendererResource();
+    NewReplayData->MaterialInterface = NULL;	// 파생된 구현에서 설정해야 합니다.
+    
+    NewReplayData->MaxDrawCount =
+        (LODLevel->RequiredModule->bUseMaxDrawCount == true) ? LODLevel->RequiredModule->MaxDrawCount : -1;
+    
+    NewReplayData->PivotOffset =   (PivotOffset);
+    NewReplayData->bUseLocalSpace = LODLevel->RequiredModule->bUseLocalSpace;
+
+    return true;
+}
+
+FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSelected)
+{
+    
+    // It is valid for the LOD level to be NULL here!
+    UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
+
+    if (IsDynamicDataRequired(LODLevel) == false || !bEnabled)
+    {
+        return NULL;
+    }
+
+    
+    FDynamicSpriteEmitterData* NewEmitterData = new FDynamicSpriteEmitterData();
+    
+    // Now fill in the source data
+    if( !FillReplayData( NewEmitterData->Source ) )
+    {
+        delete NewEmitterData;
+        return NULL;
+    }
+
+    // Setup dynamic render data.  Only call this AFTER filling in source data for the emitter.
+    NewEmitterData->Init( bSelected );
+
+    return NewEmitterData;
+}
+
+bool FParticleSpriteEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
+{
+    
+    if (ActiveParticles <= 0)
+    {
+        return false;
+    }
+
+    // Call parent implementation first to fill in common particle source data
+    if( !FParticleEmitterInstance::FillReplayData( OutData ) )
+    {
+        return false;
+    }
+    
+    OutData.eEmitterType = DET_Sprite;
+
+    
+    FDynamicSpriteEmitterReplayData* NewReplayData =
+        static_cast< FDynamicSpriteEmitterReplayData* >( &OutData );
+
+    // // Get the material instance. If there is none, or the material isn't flagged for use with particle systems, use the DefaultMaterial.
+    NewReplayData->MaterialInterface = GetCurrentMaterial();
+    
+    return true;
+}

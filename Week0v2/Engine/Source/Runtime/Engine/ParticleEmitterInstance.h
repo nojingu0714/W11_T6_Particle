@@ -3,6 +3,9 @@
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
 
+class UMaterialInterface;
+struct FDynamicEmitterReplayDataBase;
+struct FDynamicEmitterDataBase;
 class UParticleModule;
 class UParticleModuleRequired;
 class UParticleModuleSpawn;
@@ -53,9 +56,14 @@ struct FParticleEmitterInstance
 
     /** The previous location of the instance.							*/
     FVector OldLocation;
+
+    /** The material to render this instance with.						*/
+    UMaterialInterface* CurrentMaterial;
+    
     // Emitter 시작 후 총 누적 시간 
     float EmitterTime = 0.0f;
     bool bEnabled= true;
+    FVector2D PivotOffset;
 
     FParticleEmitterInstance();
     
@@ -70,6 +78,57 @@ struct FParticleEmitterInstance
     void KillParticle(int32 Index);
     void KillParticle(FBaseParticle* Particle);
     void KilParticles();
+
+    /**
+    * Get the current material to render with.
+    */
+     UMaterialInterface* GetCurrentMaterial();
+    
+    /**
+    * GetDynamicData 유효성에 대한 몇 가지 일반적인 값을 확인합니다.
+    *
+    * GetDynamicData가 계속되어야 하는 경우 true를 반환하고, NULL을 반환해야 하는 경우 false를 반환합니다.
+    */
+    virtual bool IsDynamicDataRequired(UParticleLODLevel* InCurrentLODLevel);
+    /**
+    *	Retrieves the dynamic data for the emitter
+    */
+    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected)
+    {
+        return NULL;
+    }
+
+    /**
+    * Captures dynamic replay data for this particle system.
+    *
+    * @param	OutData		[Out] Data will be copied here
+    *
+    * @return Returns true if successful
+    */
+    virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData );
+
+};
+
+
+/*-----------------------------------------------------------------------------
+    ParticleSpriteEmitterInstance
+-----------------------------------------------------------------------------*/
+struct FParticleSpriteEmitterInstance : public FParticleEmitterInstance
+{
+    /** Constructor	*/
+    FParticleSpriteEmitterInstance();
+
+    /** Destructor	*/
+    virtual ~FParticleSpriteEmitterInstance();
+
+    /**
+     *	Retrieves the dynamic data for the emitter
+     */
+    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) override;
+
+    
+    virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData );
+    
 };
 
 

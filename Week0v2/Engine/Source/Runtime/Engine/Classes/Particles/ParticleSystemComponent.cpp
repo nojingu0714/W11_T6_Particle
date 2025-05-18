@@ -13,6 +13,8 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
     {
         Instance->Tick(DeltaTime);
     }
+    CreateDynamicData();
+    
 }
 
 UParticleSystemComponent::UParticleSystemComponent()
@@ -77,9 +79,85 @@ inline void UParticleSystemComponent::ResetSystem()
         delete instance;
     }
     EmitterInstances.Empty();
-    for (auto database : EmitterRenderData)
+    
+    ClearEmitterDataArray();
+}
+
+void UParticleSystemComponent::CreateDynamicData()
+{
+    // Only proceed if we have any live particles or if we're actively replaying/capturing
+    if (EmitterInstances.Num() > 0)
     {
-        delete database;
+        int32 LiveCount = 0;
+        for (int32 EmitterIndex = 0; EmitterIndex < EmitterInstances.Num(); EmitterIndex++)
+        {
+            FParticleEmitterInstance* EmitInst = EmitterInstances[EmitterIndex];
+            if (EmitInst)
+            {
+                if (EmitInst->ActiveParticles > 0)
+                {
+                    LiveCount++;
+                }
+            }
+        }
+
+        if (LiveCount == 0)
+        {
+            return ;
+        }
     }
-    EmitterRenderData.Empty();
+
+    
+    //FParticleDynamicData* ParticleDynamicData = new FParticleDynamicData();
+    //
+    //ParticleDynamicData->DynamicEmitterDataArray.Empty();
+    //ParticleDynamicData->DynamicEmitterDataArray.Reserve(EmitterInstances.Num());
+
+    
+    ClearEmitterDataArray();
+    EmitterRenderData.Reserve(EmitterInstances.Num());
+    
+    for (int32 EmitterIndex = 0; EmitterIndex < EmitterInstances.Num(); EmitterIndex++)
+    {
+        
+        FDynamicEmitterDataBase* NewDynamicEmitterData = NULL;
+        FParticleEmitterInstance* EmitterInst = EmitterInstances[EmitterIndex];
+        if (EmitterInst)
+        {
+            // Create a new dynamic data object for this emitter instance
+            NewDynamicEmitterData = EmitterInst->GetDynamicData(false);
+            
+            if( NewDynamicEmitterData != NULL )
+            {
+                //NewDynamicEmitterData->StatID = EmitterInst->SpriteTemplate->GetStatIDRT();
+                NewDynamicEmitterData->bValid = true;
+                NewDynamicEmitterData->EmitterIndex = EmitterIndex;
+                NewDynamicEmitterData->EmitterIndex = EmitterIndex;
+                EmitterRenderData.Add(NewDynamicEmitterData);
+
+                
+                // FDynamicEmitterReplayDataBase* NewEmitterReplayData = EmitterInst->GetReplayData();
+                // if (NewEmitterReplayData != NULL)
+                // {
+                //     NewDynamicEmitterData->ReplayData = NewEmitterReplayData;
+                // }
+                //
+            }
+            
+        }
+    }
+    //DynamicData = ParticleDynamicData;
+    //return ParticleDynamicData;
+
+    
+}
+
+void UParticleSystemComponent::ClearEmitterDataArray()
+{    
+    for (int32 Index = 0; Index < EmitterRenderData.Num(); Index++)
+    {
+        FDynamicEmitterDataBase* Data =	EmitterRenderData[Index];
+        delete Data;
+    }
+    EmitterRenderData.Empty();    
 }
