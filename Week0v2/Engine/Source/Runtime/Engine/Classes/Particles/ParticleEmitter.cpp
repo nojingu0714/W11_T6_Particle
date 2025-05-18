@@ -1,13 +1,13 @@
 ﻿#include "ParticleEmitter.h"
 
-#include "ParticleEmitterInstances.h"
+#include "ParticleEmitterInstance.h"
 #include "ParticleHelper.h"
 #include "ParticleLODLevel.h"
 #include "TypeData/ParticleModuleTypeDataBase.h"
 
-FParticleEmitterInstances* UParticleEmitter::CreateInstance(UParticleSystemComponent* InComponent)
+FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemComponent* InComponent)
 {
-    FParticleEmitterInstances* Instance = 0;
+    FParticleEmitterInstance* Instance = 0;
 
     UParticleLODLevel* LODLevel = LODLevels[0];
 
@@ -21,7 +21,7 @@ FParticleEmitterInstances* UParticleEmitter::CreateInstance(UParticleSystemCompo
     {
         if (!InComponent)
             return nullptr;
-        Instance = new FParticleEmitterInstances;
+        Instance = new FParticleEmitterInstance;
         if (!Instance)
             return nullptr;
         Instance->InitParameters(this, InComponent);

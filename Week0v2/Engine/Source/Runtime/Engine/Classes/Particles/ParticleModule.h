@@ -2,12 +2,18 @@
 #include "UObject/Object.h"
 #include "UObject/ObjectMacros.h"
 
+struct FBaseParticle;
+struct FParticleEmitterInstance;
+
 class UParticleModule : public UObject
 {
     DECLARE_CLASS(UParticleModule, UObject)
 public:
     UParticleModule();
     ~UParticleModule();
+
+    virtual void Update(FParticleEmitterInstance* Owner, FBaseParticle* Particle, float DeltaTime);
+    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime);
 };
 
 /*

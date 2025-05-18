@@ -72,6 +72,25 @@ struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD
     float			OneOverMaxLifetime;		// Reciprocal of lifetime
     float			Placeholder0;
     float			Placeholder1;
+
+    FBaseParticle()
+    : OldLocation(FVector::ZeroVector)
+    , Location(FVector::ZeroVector)
+    , BaseVelocity(FVector::ZeroVector)
+    , Rotation(0.0f)
+    , Velocity(FVector::ZeroVector)
+    , BaseRotationRate(0.0f)
+    , BaseSize(FVector(1.0f))           // 기본 크기를 (1,1,1)로
+    , RotationRate(0.0f)
+    , Size(BaseSize)
+    , Flags(0)
+    , Color(FLinearColor::White)
+    , BaseColor(FLinearColor::White)
+    , RelativeTime(0.0f)
+    , OneOverMaxLifetime(1.0f)          // 기본 수명 1초로 가정
+    , Placeholder0(0.0f)
+    , Placeholder1(0.0f)
+    {}
 };
 
 struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용 정점 데이터 

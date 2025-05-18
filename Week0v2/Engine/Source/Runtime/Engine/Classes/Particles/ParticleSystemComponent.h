@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "FXSystemComponent.h"
 
-struct FParticleEmitterInstances;
+struct FParticleEmitterInstance;
 struct FDynamicEmitterDataBase;
 class UParticleSystem;
 
@@ -19,7 +19,7 @@ public:
     void InitParticles();
     void ResetSystem();
     
-    TArray<FParticleEmitterInstances*> EmitterInstances;
+    TArray<FParticleEmitterInstance*> EmitterInstances;
     UParticleSystem* Template;
 
     TArray<FDynamicEmitterDataBase*> EmitterRenderData;

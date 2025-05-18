@@ -488,6 +488,7 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     {
                         SpawnedActor = World->SpawnActor<AParticleActor>();
                         SpawnedActor->SetActorLabel(TEXT("OBJ_PARTICLE"));
+                            SpawnedActor->SetTickInEditor(true);
                         // UParticleSubUVComp* Particle = SpawnedActor->AddComponent<UParticleSubUVComp>(EComponentOrigin::Editor);
                         // Particle->SetTexture(L"Assets/Texture/T_Explosion_SubUV.png");
                         // Particle->SetRowColumnCount(6, 6);

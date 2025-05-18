@@ -1,17 +1,23 @@
 ﻿#include "ParticleSystemComponent.h"
 
 #include "ParticleEmitter.h"
-#include "ParticleEmitterInstances.h"
+#include "ParticleEmitterInstance.h"
 #include "ParticleHelper.h"
 #include "ParticleSystem.h"
 
 void UParticleSystemComponent::TickComponent(float DeltaTime)
 {
     UFXSystemComponent::TickComponent(DeltaTime);
+
+    for (auto Instance : EmitterInstances)
+    {
+        Instance->Tick(DeltaTime);
+    }
 }
 
 UParticleSystemComponent::UParticleSystemComponent()
 {
+    
 }
 
 void UParticleSystemComponent::BeginPlay()
@@ -42,7 +48,7 @@ void UParticleSystemComponent::InitParticles()
             UParticleEmitter* Emitter = Template->Emitters[Idx];
             if (Emitter)
             {
-                FParticleEmitterInstances* Instance = NumInstances == 0 ? nullptr : EmitterInstances[Idx];
+                FParticleEmitterInstance* Instance = NumInstances == 0 ? nullptr : EmitterInstances[Idx];
 
                 if (Instance)
                 {

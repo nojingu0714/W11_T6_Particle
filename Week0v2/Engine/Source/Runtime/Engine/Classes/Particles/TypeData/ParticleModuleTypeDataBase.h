@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Particles/ParticleModule.h"
 
-struct FParticleEmitterInstances;
+struct FParticleEmitterInstance;
 class UParticleSystemComponent;
 class UParticleEmitter;
 
@@ -12,5 +12,5 @@ public:
     UParticleModuleTypeDataBase() = default;
     ~UParticleModuleTypeDataBase() = default;
 
-    FParticleEmitterInstances* CreateInstance(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
+    FParticleEmitterInstance* CreateInstance(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
 };

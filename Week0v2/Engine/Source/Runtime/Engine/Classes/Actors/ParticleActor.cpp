@@ -14,3 +14,8 @@ AParticleActor::AParticleActor()
 AParticleActor::~AParticleActor()
 {
 }
+
+void AParticleActor::Tick(float DeltaTime)
+{
+    AActor::Tick(DeltaTime);
+}

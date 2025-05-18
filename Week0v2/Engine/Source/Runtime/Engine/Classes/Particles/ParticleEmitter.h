@@ -3,7 +3,7 @@
 #include "UObject/ObjectMacros.h"
 
 class UParticleSystemComponent;
-struct FParticleEmitterInstances;
+struct FParticleEmitterInstance;
 class UParticleLODLevel;
 
 class UParticleEmitter : public UObject
@@ -17,7 +17,7 @@ public:
 
     int32 ParticleSize;
     
-    FParticleEmitterInstances* CreateInstance(UParticleSystemComponent* InComponent);
+    FParticleEmitterInstance* CreateInstance(UParticleSystemComponent* InComponent);
     
     void CacheEmitterModuleInfo();
 };

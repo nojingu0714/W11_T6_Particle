@@ -96,7 +96,7 @@ void UWorld::Tick(ELevelTick tickType, float deltaSeconds)
         FGameManager::Get().EditorTick(deltaSeconds);
     }
     // SpawnActor()에 의해 Actor가 생성된 경우, 여기서 BeginPlay 호출
-    if (tickType == LEVELTICK_All)
+    if (tickType == LEVELTICK_ViewportsOnly)
     {
         FLuaManager::Get().BeginPlay();
         TSet<AActor*> PendingActors = Level->PendingBeginPlayActors;

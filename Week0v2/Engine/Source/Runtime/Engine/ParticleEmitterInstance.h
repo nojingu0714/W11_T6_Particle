@@ -3,12 +3,16 @@
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
 
+class UParticleModule;
+class UParticleModuleRequired;
+class UParticleModuleSpawn;
+struct FParticleEventInstancePayload;
 struct FBaseParticle;
 class UParticleSystemComponent;
 class UParticleLODLevel;
 class UParticleEmitter;
 
-struct FParticleEmitterInstances
+struct FParticleEmitterInstance
 {
     UParticleEmitter* SpriteTemplate;
 
@@ -19,7 +23,10 @@ struct FParticleEmitterInstances
     UParticleLODLevel* CurrentLODLevel;
 
     TArray<FBaseParticle*> BaseParticles;
-    
+    TArray<UParticleModuleSpawn*> SpawnModules;
+    TArray<UParticleModule*> UpdateModules;
+    TArray<FBaseParticle*> DeadParticles;
+    UParticleModuleRequired* RequiredModule;
     /** Pointer to the particle data array.                             */
     uint8* ParticleData;
     /** Pointer to the particle index array.                            */
@@ -49,14 +56,21 @@ struct FParticleEmitterInstances
     // Emitter 시작 후 총 누적 시간 
     float EmitterTime = 0.0f;
     bool bEnabled= true;
+
+    FParticleEmitterInstance();
+    
     void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
     void Init();
     void Tick(float DeltaTime);
     void SetupEmitterDuration();
-    void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, struct FParticleEventInstancePayload* EventPayload );
-    void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity);
+    void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
 
+    void PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity);
+    void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
     void KillParticle(int32 Index);
+    void KillParticle(FBaseParticle* Particle);
+    void KilParticles();
 };
+
 
 

@@ -9,5 +9,6 @@ public:
     AParticleActor();
     ~AParticleActor();
 
+    void Tick(float DeltaTime) override;
     UParticleSystemComponent* ParticleSystemComponent;
 };

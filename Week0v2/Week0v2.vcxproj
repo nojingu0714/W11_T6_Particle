@@ -242,6 +242,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleEmitter.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleLODLevel.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleModule.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleModules_Collision.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleSystem.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleSystemComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSizeScaleBySpeed.cpp" />
@@ -250,7 +251,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Spawn\ParticleModuleSpawnBase.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\TypeData\ParticleModuleTypeDataBase.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Materials\MaterialInterface.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\ParticleEmitterInstances.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Skeletal\SkeletalDefine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\PlayerCameraManager.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\AssetManager.cpp" />
@@ -492,6 +493,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleEmitter.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleLODLevel.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleModule.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleModules_Collision.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleSystem.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleSystemComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSizeBase.h" />
@@ -501,7 +503,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Spawn\ParticleModuleSpawnBase.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\TypeData\ParticleModuleTypeDataBase.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Materials\MaterialInterface.h" />
-    <ClInclude Include="Engine\Source\Runtime\Engine\ParticleEmitterInstances.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleHelper.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Skeletal\SkeletalDefine.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\UserInterface\Debug\DebugViewModeHelpers.h" />
