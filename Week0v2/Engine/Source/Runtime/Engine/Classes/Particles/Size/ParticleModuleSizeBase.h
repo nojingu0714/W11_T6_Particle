@@ -6,4 +6,6 @@ class UParticleModuleSizeBase : public UParticleModule
 public:
     UParticleModuleSizeBase() = default;
     ~UParticleModuleSizeBase() = default;
+
+    // 언리얼 또한 UParticleModuleSizeBase가 비어있음
 };

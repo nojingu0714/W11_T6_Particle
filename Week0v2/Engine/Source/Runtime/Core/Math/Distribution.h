@@ -87,4 +87,34 @@ struct FSimpleVectorDistribution
     {
         return FVector(DistX.GetValue(t), DistY.GetValue(t), DistZ.GetValue(t));
     }
+
+    void GetOutRange(float& MinSize, float& MaxSize)
+    {
+        float min = DistX.Min;
+        if (min > DistX.Max) 
+            min = DistX.Max;
+        if (min > DistY.Min)
+            min = DistY.Min;
+        if (min > DistY.Max)
+            min = DistY.Max;
+        if (min > DistZ.Min)
+            min = DistZ.Min;
+        if (min > DistZ.Max)
+            min = DistZ.Max;
+
+        float max = DistX.Min;
+        if (max < DistX.Max)
+            max = DistX.Max;
+        if (max < DistY.Min)
+            max = DistY.Min;
+        if (max < DistY.Max)
+            max = DistY.Max;
+        if (max < DistZ.Min)
+            max = DistZ.Min;
+        if (max < DistZ.Max)
+            max = DistZ.Max;
+
+        MinSize = min;
+        MaxSize = max;
+    }
 };
