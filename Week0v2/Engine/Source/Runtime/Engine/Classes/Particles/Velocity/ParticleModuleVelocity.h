@@ -6,6 +6,10 @@
 class UParticleModuleVelocity : public UParticleModule 
 {
     DECLARE_CLASS(UParticleModuleVelocity, UParticleModule)
+    
+public:
+    UParticleModuleVelocity();
+    ~UParticleModuleVelocity();
 
     FSimpleVectorDistribution StartVelocity;
 

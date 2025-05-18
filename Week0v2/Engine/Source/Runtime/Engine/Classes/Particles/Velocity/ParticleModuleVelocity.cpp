@@ -3,6 +3,16 @@
 #include "Engine/Source/Runtime/Engine/ParticleHelper.h"
 #include "Engine/Classes/Particles/ParticleSystemComponent.h"
 
+UParticleModuleVelocity::UParticleModuleVelocity()
+{
+    bSpawnModule = true;
+}
+
+UParticleModuleVelocity::~UParticleModuleVelocity()
+{
+
+}
+
 void UParticleModuleVelocity::InitializeDefaults()
 {
     StartVelocity = FSimpleVectorDistribution(FSimpleFloatDistribution(0.0f),
