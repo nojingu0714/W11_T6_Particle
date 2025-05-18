@@ -509,6 +509,7 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\SubUVAnimation.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Math\Distribution.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Lifetime\ParticleModuleLifetime.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -761,6 +762,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\ParticleSpriteEmitter.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\SubUVAnimation.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Lifetime\ParticleModuleLifetime.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />
