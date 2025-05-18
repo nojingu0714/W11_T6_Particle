@@ -280,7 +280,7 @@ void UEditorEngine::RemoveWorld(UWorld* World)
     WorldContexts.Remove(World->GetUUID());
 }
 
-UWorld* UEditorEngine::CreatePreviewWindow(const FString& Name)
+UWorld* UEditorEngine::CreatePreviewWindow(const FString& Name, EWorldType::Type WorldType)
 {
     WCHAR EnginePreviewWindowClass[] = L"PreviewWindowClass";
 
@@ -290,7 +290,7 @@ UWorld* UEditorEngine::CreatePreviewWindow(const FString& Name)
     HINSTANCE hInstance = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(GEngineLoop.GetDefaultWindow(), GWLP_HINSTANCE));
     HWND AppWnd = GEngineLoop.CreateEngineWindow(hInstance, EnginePreviewWindowClass, EnginePreviewTitle);
         
-    UWorld* NewPreviewWorld = CreateWorld(EWorldType::EditorPreview, LEVELTICK_All);
+    UWorld* NewPreviewWorld = CreateWorld(WorldType, LEVELTICK_All);
     
     // 새 WorldContext 생성
     std::shared_ptr<FWorldContext> PreviewWorldContext = CreateNewWorldContext(NewPreviewWorld, EWorldType::EditorPreview, ELevelTick::LEVELTICK_All);

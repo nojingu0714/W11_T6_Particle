@@ -36,7 +36,7 @@ public:
     UWorld* CreateWorld(EWorldType::Type WorldType, ELevelTick LevelTick);
     void RemoveWorld(UWorld* World);
 
-    UWorld* CreatePreviewWindow(const FString& Name = TEXT("Preview"));
+    UWorld* CreatePreviewWindow(const FString& Name = TEXT("Preview"), EWorldType::Type WorldType = EWorldType::EditorPreview);
 
 public:
     static FCollisionManager CollisionManager;

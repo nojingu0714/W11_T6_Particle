@@ -218,15 +218,14 @@ struct FDynamicEmitterDataBase
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
     void SortSpriteParticles();
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const = 0;
-    const FDynamicEmitterReplayDataBase& GetSource() const
-    {
-    }
+    virtual int32 GetDynamicVertexStride() const = 0;
+    const FDynamicEmitterReplayDataBase& GetSource() const = 0; 
+
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type InFeatureLevel) const override
+    virtual int32 GetDynamicVertexStride() const override
     {
         return sizeof(FParticleSpriteVertex);
     }
@@ -240,7 +239,7 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const override
+    virtual int32 GetDynamicVertexStride() const override
     {
         return sizeof(FMeshParticleInstanceVertex);
     }

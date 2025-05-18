@@ -796,6 +796,7 @@ void PropertyEditorPanel::Render()
     {
         // TODO : Particle Comp
         UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PickedComponent);
+        DrawParticlePreviewButton();
         for (auto Emitter : ParticleComp->Template->Emitters)
         {
             if (!Emitter->LODLevels[0])
@@ -1841,7 +1842,7 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
             return;
         }
         
-        UWorld* World = EditorEngine->CreatePreviewWindow();
+        UWorld* World = EditorEngine->CreatePreviewWindow("Skeletal Preview");
 
         // @todo CreatePreviewWindow()에서 다른 액터들을 소환하는가? 아니라면 불필요해 보이는 검사
         const TArray<AActor*> CopiedActors = World->GetActors();
@@ -1878,6 +1879,43 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
         UAnimSingleNodeInstance* TestAnimInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(SkeletalMeshComponent);
         TestAnimInstance->GetCurrentSequence()->SetData(FilePath+"\\mixamo.com");
         SkeletalMeshComponent->SetAnimInstance(TestAnimInstance);
+    }
+}
+
+void PropertyEditorPanel::DrawParticlePreviewButton()
+{
+    if (ImGui::Button("Preview##Particle"))
+    {
+        UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
+        if (EditorEngine == nullptr)
+        {
+            return;
+        }
+
+        UWorld* World = EditorEngine->CreatePreviewWindow("ParticlePreview", EWorldType::GameParticlePreview);
+        
+        const TArray<AActor*> CopiedActors = World->GetActors();
+        for (AActor* Actor : CopiedActors)
+        {
+            if (Actor->IsA<UTransformGizmo>() || Actor->IsA<APlayerCameraManager>())
+            {
+                continue;
+            }
+
+            Actor->Destroy();
+        }
+        World->ClearSelectedActors();
+
+        // SkySphere 생성
+        AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
+        SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
+        UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
+        FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
+        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
+        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
+        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
+        MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
+        SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
     }
 }
 
