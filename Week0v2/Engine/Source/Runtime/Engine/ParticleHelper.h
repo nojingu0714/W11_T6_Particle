@@ -176,8 +176,7 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 		{																												\
 			const int32	CurrentIndex	= ParticleIndices[i];															\
 			const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;									\
-			FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);												\
-			if ((Particle.Flags & STATE_Particle_Freeze) == 0)															\
+			FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);													\
 			{																											\
 
 #define END_UPDATE_LOOP																									\
