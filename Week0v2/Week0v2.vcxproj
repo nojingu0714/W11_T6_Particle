@@ -187,6 +187,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.cpp" />
+    <ClCompile Include="Engine\Source\Editor\UnrealEd\ParticlePreviewUI.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\ParticleActor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Animation\AnimationRuntime.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Animation\AnimNodeBase.cpp" />
@@ -433,6 +434,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Animation\CustomAnimInstance\TestAnimInstance.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Source\Editor\UnrealEd\ParticlePreviewUI.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Delegates\FFunctor.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\UObject\Template\SubClassOf.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.h" />

@@ -9,6 +9,7 @@
 #include "LevelEditor/SLevelEditor.h"
 #include "PropertyEditor/ViewportTypePanel.h"
 #include "Renderer/Renderer.h"
+#include "UnrealEd/ParticlePreviewUI.h"
 #include "UnrealEd/SkeletalPreviewUI.h"
 #include "UnrealEd/UnrealEd.h"
 #include "UObject/Casts.h"
@@ -178,6 +179,10 @@ void FEngineLoop::Render() const
             else if (TargetWorld->WorldType == EWorldType::EditorPreview)
             {
                 EditorEngine->GetSkeletalPreviewUI()->Render();
+            }
+            else if (TargetWorld->WorldType == EWorldType::EditorParticlePreview)
+            {
+                EditorEngine->GetParticlePreviewUI()->Render();
             }
         }
         ImGuiManager::Get().EndFrame(AppWindow);

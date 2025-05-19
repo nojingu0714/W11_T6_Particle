@@ -1892,7 +1892,7 @@ void PropertyEditorPanel::DrawParticlePreviewButton()
             return;
         }
 
-        UWorld* World = EditorEngine->CreatePreviewWindow("ParticlePreview", EWorldType::GameParticlePreview);
+        UWorld* World = EditorEngine->CreatePreviewWindow("ParticlePreview", EWorldType::EditorParticlePreview);
         
         const TArray<AActor*> CopiedActors = World->GetActors();
         for (AActor* Actor : CopiedActors)

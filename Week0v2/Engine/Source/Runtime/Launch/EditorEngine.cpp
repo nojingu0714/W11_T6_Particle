@@ -21,6 +21,8 @@
 #include "UObject/Casts.h"
 #include "Engine/AssetManager.h"
 #include "GameFramework/PlayerController.h"
+#include "SlateCore/Layout/SlateRect.h"
+#include "UnrealEd/ParticlePreviewUI.h"
 #include "UnrealEd/SkeletalPreviewUI.h"
 
 class ULevel;
@@ -36,7 +38,8 @@ void UEditorEngine::Init()
     UnrealEditor = new UnrealEd();
     ContentsUI = new FContentsUI();
     SkeletalPreviewUI = new FSkeletalPreviewUI();
-
+    ParticlePreviewUI = new FParticlePreviewUI();
+    
     UWorld* EditorWorld = CreateWorld(EWorldType::Editor, LEVELTICK_ViewportsOnly);
     EditorWorldContext = CreateNewWorldContext(EditorWorld, EWorldType::Editor, LEVELTICK_ViewportsOnly);
     
@@ -45,6 +48,8 @@ void UEditorEngine::Init()
 
     UnrealEditor->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
     SkeletalPreviewUI->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
+    ParticlePreviewUI->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
+    
     ContentsUI->Initialize();
     CollisionManager.Initialize();  
     FLuaManager::Get().Initialize();    
@@ -302,7 +307,8 @@ UWorld* UEditorEngine::CreatePreviewWindow(const FString& Name, EWorldType::Type
     // 뷰포트 클라이언트 생성 및 설정
     std::shared_ptr<FEditorViewportClient> EditorViewportClient = GetLevelEditor()->AddViewportClient<FEditorViewportClient>(AppWnd, NewPreviewWorld);
     EditorViewportClient->SetViewMode(VMI_Unlit);
-
+    FRect newSize = FRect(0.0f,50.0f,500.0f,500.0f);
+    EditorViewportClient->ResizeViewport(newSize);
     return NewPreviewWorld;
 }
 
