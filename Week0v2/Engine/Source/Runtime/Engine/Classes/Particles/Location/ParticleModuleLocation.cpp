@@ -1,5 +1,5 @@
 #include "ParticleModuleLocation.h"
-#include "Engine/Source/Runtime/Engine/ParticleEmitterInstances.h"
+#include "Engine/Source/Runtime/Engine/ParticleEmitterInstance.h"
 #include "Engine/Source/Runtime/Engine/ParticleHelper.h"
 
 UParticleModuleLocation::UParticleModuleLocation()
