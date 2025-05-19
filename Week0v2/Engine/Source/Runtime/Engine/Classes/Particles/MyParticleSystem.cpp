@@ -4,6 +4,7 @@
 #include "ParticleModuleRequired.h"
 #include "Size/ParticleModuleSizeScaleBySpeed.h"
 #include "Spawn/ParticleModuleSpawn.h"
+#include "Lifetime/ParticleModuleLifetime.h"
 
 UMyParticleSystem::UMyParticleSystem()
 {
@@ -17,6 +18,9 @@ UMyParticleSystem::UMyParticleSystem()
     UParticleModuleSpawn* Spawn = FObjectFactory::ConstructObject<UParticleModuleSpawn>(this);
     Spawn->InitializeDefaults();
     LODLevel->Modules.Add(Spawn);
+    UParticleModuleLifetime* Lifetime = FObjectFactory::ConstructObject<UParticleModuleLifetime>(this);
+    Lifetime->InitializeDefaults();
+    LODLevel->Modules.Add(Lifetime);
     UParticleModuleSizeScaleBySpeed* SizeScale = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
     LODLevel->Modules.Add(SizeScale);
 }

@@ -12,6 +12,8 @@ class UParticleModuleLifetime : public UParticleModule
 
     FSimpleFloatDistribution Lifetime;
 
+    void InitializeDefaults();
+
     virtual void CompileModule(struct FParticleEmitterBuildInfo& EmitterInfo) override;
     virtual void Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase) override;
     virtual void SetToSensibleDefaults(UParticleEmitter* Owner) override;

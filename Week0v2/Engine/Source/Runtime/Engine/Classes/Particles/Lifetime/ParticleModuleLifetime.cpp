@@ -11,6 +11,11 @@ UParticleModuleLifetime::~UParticleModuleLifetime()
 {
 }
 
+void UParticleModuleLifetime::InitializeDefaults()
+{
+    Lifetime = FSimpleFloatDistribution(1.0f);
+}
+
 void UParticleModuleLifetime::CompileModule(FParticleEmitterBuildInfo& EmitterInfo)
 {
     EmitterInfo.MaxLifetime = Lifetime.Max;
@@ -21,6 +26,7 @@ void UParticleModuleLifetime::Spawn(FParticleEmitterInstance* Owner, int32 Offse
 {
     SPAWN_INIT;
 
+    // Lifetime 값이 실제로 있지는 않고 그의 역수 값인 OneOverMaxLifetime이 존재
     float MaxLifetime = Lifetime.GetValue(SpawnTime);
     if (Particle.OneOverMaxLifetime > 0.f)
     {
