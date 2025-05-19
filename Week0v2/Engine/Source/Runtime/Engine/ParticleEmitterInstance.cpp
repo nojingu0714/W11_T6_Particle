@@ -84,8 +84,9 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     for (UParticleModuleSpawn* SpawnModule : SpawnModules)
     {
         // SpawnRate 분포에서 실제 값 가져오기
-        float Rate = SpawnModule->Rate.GetValue(0.0f); // 만약 t 값을 활용해야 하는경우 수정 필요 
-        int32 Count = Rate;
+        float Rate;
+        int32 Count;
+        SpawnModule->GetSpawnAmount(this, 0, 0.0f, DeltaTime, Count, Rate); // Owner에 this를 주었기 때문에 EmitterTime 가져다 쓸거임
         if (Count > 0)
         {
             float Increment = DeltaTime / (float)Count;

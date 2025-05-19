@@ -1,14 +1,23 @@
 #include "ParticleModuleSpawn.h"
+#include "Engine/ParticleEmitterInstance.h"
 
 void UParticleModuleSpawn::InitializeDefaults()
 {
-    Rate = FSimpleFloatDistribution(20.0f);
-    RateScale = FSimpleFloatDistribution(1.0f);
+    Rate = FSimpleFloatDistribution(5.0f);          //  기본적인 초당 스폰 파티클 갯수
+    RateScale = FSimpleFloatDistribution(1.0f);     // Rate에 곱해져서 상대적인 비율을 반영
     BurstScale = FSimpleFloatDistribution(1.0f);
 }
 
-bool UParticleModuleSpawn::GetSpawnAmount(FParticleEmitterInstance* Owner, int32 Offset, float OldLeftover, float DeltaTime, int32& Number, float& Rate)
+bool UParticleModuleSpawn::GetSpawnAmount(FParticleEmitterInstance* Owner, int32 Offset, float OldLeftover, float DeltaTime, int32& Number, float& OutRate)
 {
+    // Rate와 RateScale으로 현재 Spawn해야하는 Particle 갯수 (float)
+    // 지난 프레임에 남아있던 Particle 조각에 합해서
+    // 이번에 Spawn해야 하는 Particle 갯수 (int)를 구하고 남은 부분은 따로 저장
+    float CurRateValue = DeltaTime * Rate.GetValue(Owner->EmitterTime) * RateScale.GetValue(Owner->EmitterTime);
+    float CurParticle = CurRateValue + LeftOverParticle;
+    Number = static_cast<int>(CurParticle);
+    LeftOverParticle = CurParticle - Number;
+
     return false;
 }
 

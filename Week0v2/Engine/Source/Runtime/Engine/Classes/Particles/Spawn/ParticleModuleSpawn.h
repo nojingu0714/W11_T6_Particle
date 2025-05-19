@@ -14,6 +14,8 @@ public:
 
     FSimpleFloatDistribution Rate;
     FSimpleFloatDistribution RateScale;
+    float LeftOverParticle = 0.0f;
+
     TArray<FParticleBurst> BurstList;
     FSimpleFloatDistribution BurstScale;
     EParticleBurstMethod ParticleBurstMethod;
@@ -27,7 +29,7 @@ public:
     virtual void	PostLoad() override;*/
 
     virtual bool GetSpawnAmount(FParticleEmitterInstance* Owner, int32 Offset, float OldLeftover,
-        float DeltaTime, int32& Number, float& Rate) override;
+        float DeltaTime, int32& Number, float& OutRate) override;
     virtual float GetMaximumSpawnRate() override;
     virtual float GetEstimatedSpawnRate() override;
     virtual int32 GetMaximumBurstCount() override;

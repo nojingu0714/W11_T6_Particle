@@ -437,6 +437,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Core\Delegates\FFunctor.h" />
     <ClInclude Include="Engine\Source\Runtime\CoreUObject\UObject\Template\SubClassOf.h" />
     <ClInclude Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Distribution.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Actors\ParticleActor.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Animation\AnimationRuntime.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Animation\AnimNodeBase.h" />
