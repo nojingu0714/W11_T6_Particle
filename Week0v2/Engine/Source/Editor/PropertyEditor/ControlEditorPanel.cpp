@@ -15,6 +15,7 @@
 
 #include "LaunchEngineLoop.h"
 #include "ShowFlags.h"
+#include "Actors/ParticleActor.h"
 #include "Engine/FBXLoader.h"
 #include "Actors/SkeletalMeshActor.h"
 #include "Camera/CameraComponent.h"
@@ -485,13 +486,14 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     // ✨ 효과
                     case OBJ_PARTICLE:
                     {
-                        SpawnedActor = World->SpawnActor<AActor>();
+                        SpawnedActor = World->SpawnActor<AParticleActor>();
                         SpawnedActor->SetActorLabel(TEXT("OBJ_PARTICLE"));
-                        UParticleSubUVComp* Particle = SpawnedActor->AddComponent<UParticleSubUVComp>(EComponentOrigin::Editor);
-                        Particle->SetTexture(L"Assets/Texture/T_Explosion_SubUV.png");
-                        Particle->SetRowColumnCount(6, 6);
-                        Particle->SetRelativeScale(FVector(10.0f, 10.0f, 10.0f));
-                        Particle->Activate();
+                            SpawnedActor->SetTickInEditor(true);
+                        // UParticleSubUVComp* Particle = SpawnedActor->AddComponent<UParticleSubUVComp>(EComponentOrigin::Editor);
+                        // Particle->SetTexture(L"Assets/Texture/T_Explosion_SubUV.png");
+                        // Particle->SetRowColumnCount(6, 6);
+                        // Particle->SetRelativeScale(FVector(10.0f, 10.0f, 10.0f));
+                        // Particle->Activate();
                         break;
                     }
                     case OBJ_TEXT:

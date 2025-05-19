@@ -70,6 +70,11 @@ const float* FMatrix::operator[](int row) const
     return M[row];
 }
 
+FMatrix FMatrix::Inverse() const
+{
+    return Inverse(*this);
+}
+
 // 전치 행렬
 FMatrix FMatrix::Transpose(const FMatrix& Mat) {
     FMatrix Result;
@@ -79,7 +84,7 @@ FMatrix FMatrix::Transpose(const FMatrix& Mat) {
     return Result;
 }
 
-FMatrix FMatrix::Inverse(const FMatrix& Mat)
+FMatrix FMatrix::Inverse(const FMatrix& Mat) 
 {
 	FMatrix Result;
 	FMatrix Tmp;
@@ -258,6 +263,11 @@ FVector4 FMatrix::TransformFVector4(const FVector4& vector) const
         M[0][2] * vector.X + M[1][2] * vector.Y + M[2][2] * vector.Z + M[3][2] * vector.W,
         M[0][3] * vector.X + M[1][3] * vector.Y + M[2][3] * vector.Z + M[3][3] * vector.W
     );
+}
+
+FVector4 FMatrix::TransformPositionFVector4(const FVector& vector) const
+{
+    return (TransformFVector4(FVector4(vector.X, vector.Y, vector.Z, 1.0f)));
 }
 
 FVector FMatrix::TransformPosition(const FVector& vector) const

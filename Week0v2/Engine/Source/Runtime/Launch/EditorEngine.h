@@ -2,6 +2,7 @@
 #include "Engine/Engine.h"
 #include "Coroutine/CoroutineManager.h"
 
+class FParticlePreviewUI;
 class FSkeletalPreviewUI;
 class FCollisionManager;
 class FRenderer;
@@ -36,7 +37,7 @@ public:
     UWorld* CreateWorld(EWorldType::Type WorldType, ELevelTick LevelTick);
     void RemoveWorld(UWorld* World);
 
-    UWorld* CreatePreviewWindow(const FString& Name = TEXT("Preview"));
+    UWorld* CreatePreviewWindow(const FString& Name = TEXT("Preview"), EWorldType::Type WorldType = EWorldType::EditorPreview);
 
 public:
     static FCollisionManager CollisionManager;
@@ -50,7 +51,7 @@ public:
     SLevelEditor* GetLevelEditor() const { return LevelEditor; }
     UnrealEd* GetUnrealEditor() const { return UnrealEditor; }
     FSkeletalPreviewUI* GetSkeletalPreviewUI() const { return SkeletalPreviewUI; }    
-
+    FParticlePreviewUI* GetParticlePreviewUI() const { return ParticlePreviewUI; }
 
     float testBlurStrength;
 
@@ -68,7 +69,7 @@ public:
 private:
     UnrealEd* UnrealEditor = nullptr;
     FSkeletalPreviewUI* SkeletalPreviewUI = nullptr;
-    
+    FParticlePreviewUI* ParticlePreviewUI = nullptr;
     SLevelEditor* LevelEditor = nullptr;
     UEditorPlayer* EditorPlayer = nullptr;
 };
