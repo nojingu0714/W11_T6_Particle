@@ -1,12 +1,12 @@
 #include "ParticleModuleColor.h"
-#include "Engine/Source/Runtime/Engine/ParticleEmitterInstances.h"
+#include "Engine/Source/Runtime/Engine/ParticleEmitterInstance.h"
 #include "Engine/Source/Runtime/Engine/ParticleHelper.h"
 #include "Engine/Classes/Particles/ParticleSystemComponent.h"
 
 UParticleModuleColor::UParticleModuleColor()
 {
     bSpawnModule = true;
-    bUpdateModule = false;
+    bUpdateModule = true;
     bCurvesAsColor = true;
 }
 
@@ -28,26 +28,25 @@ void UParticleModuleColor::Spawn(FParticleEmitterInstance* Owner, int32 Offset, 
     FVector ColorVec;
     float	fAlpha;
 
-    ColorVec = ColorScaleOverLife.GetValue(Owner->EmitterTime);
-    fAlpha = AlphaScaleOverLife.GetValue(Owner->EmitterTime);
+    ColorVec = ColorScaleOverLife.GetValue(Particle.RelativeTime);
+    fAlpha = AlphaScaleOverLife.GetValue(Particle.RelativeTime);
  
-    Particle.Color.R *= ColorVec.X;
-    Particle.Color.G *= ColorVec.Y;
-    Particle.Color.B *= ColorVec.Z;
-    Particle.Color.A *= fAlpha;
+    Particle.Color.R = ColorVec.X;
+    Particle.Color.G = ColorVec.Y;
+    Particle.Color.B = ColorVec.Z;
+    Particle.Color.A = fAlpha;
 }
 
-void UParticleModuleColor::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
+void UParticleModuleColor::Update(FParticleEmitterInstance* Owner, int32 Offset, FBaseParticle* ParticleBase, float DeltaTime)
 {
+    TEMP_UPDATE_LOOP;
     FVector ColorVec;
     float	fAlpha;
     
-    BEGIN_UPDATE_LOOP
-    ColorVec = ColorScaleOverLife.GetValue(Owner->EmitterTime);
-    fAlpha = AlphaScaleOverLife.GetValue(Owner->EmitterTime);
-    Particle.Color.R *= ColorVec.X;
-    Particle.Color.G *= ColorVec.Y;
-    Particle.Color.B *= ColorVec.Z;
-    Particle.Color.A *= fAlpha;
-    END_UPDATE_LOOP;
+    ColorVec = ColorScaleOverLife.GetValue(Particle.RelativeTime);
+    fAlpha = AlphaScaleOverLife.GetValue(Particle.RelativeTime);
+    Particle.Color.R = ColorVec.X;
+    Particle.Color.G = ColorVec.Y;
+    Particle.Color.B = ColorVec.Z;
+    Particle.Color.A = fAlpha;
 }

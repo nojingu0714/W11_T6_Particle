@@ -522,6 +522,7 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -789,6 +790,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSizeBase.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

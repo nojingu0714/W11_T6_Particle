@@ -7,6 +7,7 @@
 #include "Lifetime/ParticleModuleLifetime.h"
 #include "Location/ParticleModuleLocation.h"
 #include "Velocity/ParticleModuleVelocity.h"
+#include "Color/ParticleModuleColor.h"
 #include "Size/ParticleModuleSize.h"
 
 UMyParticleSystem::UMyParticleSystem()
@@ -35,6 +36,9 @@ UMyParticleSystem::UMyParticleSystem()
     UParticleModuleVelocity* Velocity = FObjectFactory::ConstructObject<UParticleModuleVelocity>(this);
     Velocity->InitializeDefaults();
     LODLevel->Modules.Add(Velocity);
+    UParticleModuleColor* Color = FObjectFactory::ConstructObject<UParticleModuleColor>(this);
+    Color->InitializeDefaults();
+    LODLevel->Modules.Add(Color);
 }
 
 UMyParticleSystem::~UMyParticleSystem()

@@ -52,6 +52,8 @@
 #include "Particles/Location/ParticleModuleLocation.h"
 #include "Particles/Velocity/ParticleModuleVelocity.h"
 #include "Particles/Size/ParticleModuleSize.h"
+#include "Particles/Color/ParticleModuleColor.h"
+#include "Particles/Size/ParticleModuleSizeScaleBySpeed.h"
 #include "UObject/UObjectIterator.h"
 
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
@@ -860,32 +862,61 @@ void PropertyEditorPanel::Render()
                 {
                     ImGui::Text("Particle Module Spawn");
                     RenderFSimpleFloatDistribution(Spawn->Rate, 0.0f, "Spawn Rate");
+                    ImGui::Separator();
                 }
                 else if (UParticleModuleSize* Size = Cast<UParticleModuleSize>(Module))
                 {
                     ImGui::Text("Particle Module Size");
                     RenderFSimpleVectorDistribution(Size->StartSize, 0.0f, "StartSize");
+                    ImGui::Separator();
+                }
+                else if (UParticleModuleSizeScaleBySpeed* ScaleBySpeed = Cast<UParticleModuleSizeScaleBySpeed>(Module))
+                {
+                    ImGui::Text("Particle Module ScaleBySpeed");
+                    ImGui::Text("SpeedScale");
+                    ImGui::PushItemWidth(50.0f);
+                    ImGui::InputFloat("X##SpeedScale", &ScaleBySpeed->SpeedScale.X);
+                    ImGui::SameLine();
+                    ImGui::InputFloat("Y##SpeedScale", &ScaleBySpeed->SpeedScale.Y);
+                    ImGui::Text("MaxScale");
+                    ImGui::InputFloat("X##MaxScale", &ScaleBySpeed->MaxScale.X);
+                    ImGui::SameLine();
+                    ImGui::InputFloat("Y##MaxScale", &ScaleBySpeed->MaxScale.Y);
+                    ImGui::PopItemWidth();
+                    ImGui::Separator();
                 }
                 else if (Cast<UParticleModuleSizeBase>(Module))
                 {
                     ImGui::Text("Particle Module Size");
+                    ImGui::Separator();
                 }
                 else if (UParticleModuleLifetime* Lifetime = Cast<UParticleModuleLifetime>(Module))
                 {
                     ImGui::Text("Particle Module Lifetime");
                     RenderFSimpleFloatDistribution(Lifetime->Lifetime, 0.0f, "Lifetime");
+                    ImGui::Separator();
                 }
                 else if (UParticleModuleLocation* Location = Cast<UParticleModuleLocation>(Module)) 
                 {
                     ImGui::Text("Particle Module Location");
                     RenderFSimpleVectorDistribution(Location->StartLocation, 0.0f, "Location");
+                    ImGui::Separator();
                 }
                 else if (UParticleModuleVelocity* Velocity = Cast<UParticleModuleVelocity>(Module)) 
                 {
                     ImGui::Text("Particle Module Velocity");
                     RenderFSimpleVectorDistribution(Velocity->StartVelocity, 0.0f, "StartVelocity");
                     RenderFSimpleVectorDistribution(Velocity->StartVelocityRadial, 0.0f, "StartVelocityRadial");
+                    ImGui::Separator();
                 }
+                else if (UParticleModuleColor* Color = Cast<UParticleModuleColor>(Module)) 
+                {
+                    ImGui::Text("Particle Module Color");
+                    RenderFSimpleVectorDistribution(Color->ColorScaleOverLife, 0.0f, "ColorOverLife");
+                    RenderFSimpleFloatDistribution(Color->AlphaScaleOverLife, 0.0f, "FloatOverLife");
+                    ImGui::Separator();
+                }
+                
                 
 
                 ImGui::Spacing();
@@ -1168,19 +1199,23 @@ void PropertyEditorPanel::RenderFSimpleFloatDistribution(FSimpleFloatDistributio
     switch (RenderDistribution.GetDistributionType()) 
     {
     case EDistributionType::Constant: {
+        ImGui::PushItemWidth(50.0f);
         float NewRate = RenderDistribution.GetValue(Tvalue);
         ImGui::InputFloat(*DistributionName, &NewRate);
         RenderDistribution.Constant = NewRate;
+        ImGui::PopItemWidth();
         return;
         break;
     }
 
     case EDistributionType::Uniform: {
+        ImGui::PushItemWidth(50.0f);
         float& MinValue = RenderDistribution.Min;
         float& MaxValue = RenderDistribution.Max;
         ImGui::InputFloat("Min", &MinValue);
         ImGui::SameLine();
         ImGui::InputFloat("Max", &MaxValue);
+        ImGui::PopItemWidth();
         return;
         break;
     }
@@ -1188,11 +1223,13 @@ void PropertyEditorPanel::RenderFSimpleFloatDistribution(FSimpleFloatDistributio
     case EDistributionType::Linear:
     case EDistributionType::EaseInOut:
     case EDistributionType::SinWave: {
+        ImGui::PushItemWidth(50.0f);
         float& StartValue = RenderDistribution.Min;
         float& EndValue = RenderDistribution.Max;
         ImGui::InputFloat("Start", &StartValue);
         ImGui::SameLine();
         ImGui::InputFloat("End", &EndValue);
+        ImGui::PopItemWidth();
         return;
         break;
     }

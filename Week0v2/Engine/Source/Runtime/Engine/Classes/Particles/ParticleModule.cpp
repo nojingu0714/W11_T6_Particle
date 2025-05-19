@@ -36,9 +36,9 @@ void UParticleModule::Update(FParticleEmitterInstance* Owner, int32 Offset, floa
 
 }
 
-void UParticleModule::Update(FParticleEmitterInstance* Owner, FBaseParticle* Particle, float DeltaTime)
+void UParticleModule::Update(FParticleEmitterInstance* Owner, int32 Offset, FBaseParticle* Particle, float DeltaTime)
 {
-
+    
 }
 
 void UParticleModule::FinalUpdate(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)

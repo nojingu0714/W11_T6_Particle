@@ -128,7 +128,7 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
 
         for (UParticleModule* UpdateModule : UpdateModules)
         {
-            UpdateModule->Update(this, Particle, DeltaTime);
+            UpdateModule->Update(this, 0, Particle, DeltaTime);
         }
 
         Particle->Location      += Particle->Velocity     * DeltaTime;

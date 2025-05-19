@@ -10,16 +10,16 @@
 //	Macro fun.
 
 // if 문의 오류를 막기 위해 do while 사용
-#define SPAWN_INIT																										\
-    do{   \
-        if ((Owner == NULL) || (Owner->Component == NULL))  \
-        {   \
-            UE_LOG(LogLevel::Error, "SPAWN_INIT NULL"); \
-        }   \
-    } while(0);  \
-    const int32		ActiveParticles = Owner->ActiveParticles;															\
-    const uint32		ParticleStride = Owner->ParticleStride;														\
-    uint32			CurrentOffset = Offset;																	\
+#define SPAWN_INIT													\
+    do{                                                             \
+        if ((Owner == NULL) || (Owner->Component == NULL))          \
+        {                                                           \
+            UE_LOG(LogLevel::Error, "SPAWN_INIT NULL");             \
+        }                                                           \
+    } while(0);                                                     \
+    const int32		ActiveParticles = Owner->ActiveParticles;	    \
+    const uint32		ParticleStride = Owner->ParticleStride;	    \
+    uint32			CurrentOffset = Offset;					        \
     FBaseParticle& Particle = *(ParticleBase);
 
 #define DECLARE_PARTICLE(Name,Address)		\
@@ -59,6 +59,20 @@ struct FMatrix;
 CurrentOffset				= Offset;																		\
 }																												\
 }
+
+// 현재 Owner->ActiveParticles 가 계속 빈 상태로 나오는 문제 있음
+// 어차피 현재는 Particle for문이 UpdateModule을 덮고 있으니 아래 방식으로 해야함
+#define TEMP_UPDATE_LOOP                                            \
+    do{                                                             \
+        if ((Owner == NULL) || (Owner->Component == NULL))          \
+        {                                                           \
+            UE_LOG(LogLevel::Error, "SPAWN_INIT NULL");             \
+        }                                                           \
+    } while(0);                                                     \
+    const int32		ActiveParticles = Owner->ActiveParticles;	    \
+    const uint32		ParticleStride = Owner->ParticleStride;	    \
+    uint32			CurrentOffset = Offset;					        \
+    FBaseParticle& Particle = *(ParticleBase);
 
 class UMaterialInterface;
 class UParticleModuleRequired;
