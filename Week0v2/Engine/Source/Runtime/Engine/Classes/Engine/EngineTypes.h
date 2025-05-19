@@ -35,6 +35,8 @@ namespace EWorldType
         /** A preview world for a game */
         GamePreview,
 
+        EditorParticlePreview,
+
         /** A minimal RPC world for a game */
         GameRPC,
 

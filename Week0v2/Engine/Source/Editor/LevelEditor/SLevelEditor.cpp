@@ -189,9 +189,16 @@ void SLevelEditor::ResizeViewports(const HWND AppWnd)
         }
     }
     else
-    {
-        WindowViewportData.ViewportClients[WindowViewportData.ActiveViewportIndex]->ResizeViewport(
-            FRect(0.0f, 0.0f, WindowViewportData.EditorWidth, WindowViewportData.EditorHeight));
+    {   if (WindowViewportData.ViewportClients[WindowViewportData.ActiveViewportIndex]->ViewportWorldType == VT_World)
+        {
+            WindowViewportData.ViewportClients[WindowViewportData.ActiveViewportIndex]->ResizeViewport(
+                FRect(0.0f, 0.0f, WindowViewportData.EditorWidth, WindowViewportData.EditorHeight));
+        }
+        else if (WindowViewportData.ViewportClients[WindowViewportData.ActiveViewportIndex]->ViewportWorldType == VT_Particle )
+        {
+            WindowViewportData.ViewportClients[WindowViewportData.ActiveViewportIndex]->ResizeViewport(
+    FRect(0.0f, 70.0f, WindowViewportData.EditorWidth * 0.3, WindowViewportData.EditorHeight * 0.5 -70));
+        }
     }
 }
 

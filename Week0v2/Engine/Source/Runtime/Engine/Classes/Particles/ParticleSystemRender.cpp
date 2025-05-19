@@ -256,7 +256,7 @@ void FDynamicSpriteEmitterData::Init(bool bInSelected)
 {
     bSelected = bInSelected;
 
-    UMaterialInterface const* MaterialInterface = const_cast<UMaterialInterface const*>(Source.MaterialInterface);
+    UMaterial const* Material = const_cast<UMaterial const*>(Source.Material);
     //MaterialResource = MaterialInterface->GetRenderProxy();
 
     // We won't need this on the render thread

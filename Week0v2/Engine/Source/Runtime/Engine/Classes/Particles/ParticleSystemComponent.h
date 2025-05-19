@@ -15,7 +15,6 @@ public:
 
 
     void BeginPlay() override;
-    void UpdateDynamicData();
     void TickComponent(float DeltaTime) override;
     void InitParticles();
     void ResetSystem();
@@ -35,8 +34,7 @@ public:
     TArray<FParticleEmitterInstance*> EmitterInstances;
     UParticleSystem* Template;
 
-    TArray<FDynamicEmitterDataBase*> EmitterRenderData; // 원래는 프록시가 들고 있는 것
-    
-    //FParticleDynamicData* DynamicData; 
+    void UpdateDynamicData();
+    TArray<FDynamicEmitterDataBase*> EmitterRenderData;
 };
 

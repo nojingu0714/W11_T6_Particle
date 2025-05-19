@@ -1,4 +1,4 @@
-﻿#include "MyParticleSystem.h"
+#include "MyParticleSystem.h"
 #include "ParticleEmitter.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleRequired.h"
@@ -15,6 +15,7 @@ UMyParticleSystem::UMyParticleSystem()
     LODLevel->Modules.Add(Required);
     LODLevel->RequiredModule = Required;
     UParticleModuleSpawn* Spawn = FObjectFactory::ConstructObject<UParticleModuleSpawn>(this);
+    Spawn->InitializeDefaults();
     LODLevel->Modules.Add(Spawn);
     UParticleModuleSizeScaleBySpeed* SizeScale = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
     LODLevel->Modules.Add(SizeScale);

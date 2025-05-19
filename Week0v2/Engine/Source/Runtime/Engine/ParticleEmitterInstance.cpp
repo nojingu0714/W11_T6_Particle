@@ -1,7 +1,8 @@
-﻿#include "ParticleEmitterInstance.h"
+#include "ParticleEmitterInstance.h"
 
 #include "Particles/ParticleEmitter.h"
 #include "ParticleHelper.h"
+#include "Engine/AssetManager.h"
 #include "Particles/ParticleLODLevel.h"
 #include "Particles/ParticleModuleRequired.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -83,8 +84,9 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     for (UParticleModuleSpawn* SpawnModule : SpawnModules)
     {
         // SpawnRate 분포에서 실제 값 가져오기
-        float Rate = SpawnModule->Rate;
-        int32 Count = Rate;
+        float Rate;
+        int32 Count;
+        SpawnModule->GetSpawnAmount(this, 0, 0.0f, DeltaTime, Count, Rate); // Owner에 this를 주었기 때문에 EmitterTime 가져다 쓸거임
         if (Count > 0)
         {
             float Increment = DeltaTime / (float)Count;
@@ -129,7 +131,8 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     }
     KilParticles();
 
-    UE_LOG(LogLevel::Warning, "Particles : %d", BaseParticles.Num());
+    //UE_LOG(LogLevel::Warning, "Particles : %d", BaseParticles.Num());
+
     SpawnModules.Empty();
     UpdateModules.Empty();
 }
@@ -186,7 +189,6 @@ void FParticleEmitterInstance::PreSpawn(FBaseParticle& Particle, const FVector& 
 
 void FParticleEmitterInstance::PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime)
 {
-
     // Offset caused by any velocity
     Particle->OldLocation = Particle->Location;
     Particle->Location   +=  FVector(Particle->Velocity) * SpawnTime;
@@ -196,9 +198,7 @@ void FParticleEmitterInstance::PostSpawn(FBaseParticle* Particle, float Interpol
 void FParticleEmitterInstance::KillParticle(int32 Index)
 {
 }
-void FParticleEmitterInstance::KillParticle(FBaseParticle* Particle)
-{
-}
+
 void FParticleEmitterInstance::KilParticles()
 {
     for (auto Dead : DeadParticles)
@@ -207,11 +207,6 @@ void FParticleEmitterInstance::KilParticles()
         delete Dead;
     }
     DeadParticles.Empty();
-}
-
-UMaterialInterface* FParticleEmitterInstance::GetCurrentMaterial()
-{
-    return CurrentMaterial;
 }
 
 bool FParticleEmitterInstance::IsDynamicDataRequired(UParticleLODLevel* InCurrentLODLevel)
@@ -279,7 +274,7 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
     static_cast< FDynamicSpriteEmitterReplayDataBase* >( &OutData );
 
     //NewReplayData->RequiredModule = LODLevel->RequiredModule->CreateRendererResource();
-    NewReplayData->MaterialInterface = NULL;	// 파생된 구현에서 설정해야 합니다.
+    NewReplayData->Material = NULL;	// 파생된 구현에서 설정해야 합니다.
     
     NewReplayData->MaxDrawCount =
         (LODLevel->RequiredModule->bUseMaxDrawCount == true) ? LODLevel->RequiredModule->MaxDrawCount : -1;
@@ -290,55 +285,7 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
     return true;
 }
 
-FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSelected)
+UMaterial* FParticleEmitterInstance::GetCurrentMaterial()
 {
-    
-    // It is valid for the LOD level to be NULL here!
-    UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
-
-    if (IsDynamicDataRequired(LODLevel) == false || !bEnabled)
-    {
-        return NULL;
-    }
-
-    
-    FDynamicSpriteEmitterData* NewEmitterData = new FDynamicSpriteEmitterData();
-    
-    // Now fill in the source data
-    if( !FillReplayData( NewEmitterData->Source ) )
-    {
-        delete NewEmitterData;
-        return NULL;
-    }
-
-    // Setup dynamic render data.  Only call this AFTER filling in source data for the emitter.
-    NewEmitterData->Init( bSelected );
-
-    return NewEmitterData;
-}
-
-bool FParticleSpriteEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)
-{
-    
-    if (ActiveParticles <= 0)
-    {
-        return false;
-    }
-
-    // Call parent implementation first to fill in common particle source data
-    if( !FParticleEmitterInstance::FillReplayData( OutData ) )
-    {
-        return false;
-    }
-    
-    OutData.eEmitterType = DET_Sprite;
-
-    
-    FDynamicSpriteEmitterReplayData* NewReplayData =
-        static_cast< FDynamicSpriteEmitterReplayData* >( &OutData );
-
-    // // Get the material instance. If there is none, or the material isn't flagged for use with particle systems, use the DefaultMaterial.
-    NewReplayData->MaterialInterface = GetCurrentMaterial();
-    
-    return true;
+    return RequiredModule->SpriteTexture;
 }

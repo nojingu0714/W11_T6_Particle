@@ -1,7 +1,26 @@
 #include "Container/Array.h"
+#include "Components/Material/Material.h"
 #include "Math/Color.h"
 #include "Math/Vector.h"
 #include "UserInterface/Debug/DebugViewModeHelpers.h"
+
+/*-----------------------------------------------------------------------------
+    Helper macros.
+-----------------------------------------------------------------------------*/
+//	Macro fun.
+
+// if 문의 오류를 막기 위해 do while 사용
+#define SPAWN_INIT																										\
+    do{   \
+        if ((Owner != NULL) && (Owner->Component != NULL))  \
+        {   \
+            UE_LOG(LogLevel::Error, "SPAWN_INIT NULL"); \
+        }   \
+    } while(0);  \
+    const int32		ActiveParticles = Owner->ActiveParticles;															\
+    const uint32		ParticleStride = Owner->ParticleStride;														\
+    uint32			CurrentOffset = Offset;																	\
+    FBaseParticle& Particle = *(ParticleBase);
 
 #define DECLARE_PARTICLE(Name,Address)		\
 FBaseParticle& Name = *((FBaseParticle*) (Address));
@@ -15,28 +34,34 @@ FBaseParticle* Name = (FBaseParticle*) (Address);
 struct FDynamicEmitterDataBase;
 struct FMatrix;
 #define BEGIN_UPDATE_LOOP																								\
-{																													\
-    check((Owner != NULL) && (Owner->Component != NULL));															\
-    int32&			ActiveParticles = Owner->ActiveParticles;														\
-    uint32			CurrentOffset	= Offset;																		\
-    const uint8*		ParticleData	= Owner->ParticleData;															\
-    const uint32		ParticleStride	= Owner->ParticleStride;														\
-    uint16*			ParticleIndices	= Owner->ParticleIndices;														\
-    for(int32 i=ActiveParticles-1; i>=0; i--)																			\
-    {																												\
-    const int32	CurrentIndex	= ParticleIndices[i];															\
-    const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;									\
-    FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);												\
-    if ((Particle.Flags & STATE_Particle_Freeze) == 0)															\
-{																											\
+{			\
+    do{   \
+        if ((Owner != NULL) && (Owner->Component != NULL))  \
+        {   \
+            UE_LOG(LogLevel::Error, "BEGINE_UPDATE_LOOP NULL"); \
+        }   \
+    } while(0); \
+    int32&			ActiveParticles = Owner->ActiveParticles;										\
+    uint32			CurrentOffset	= Offset;					    								\
+    const uint8*		ParticleData	= Owner->ParticleData;										\
+    const uint32		ParticleStride	= Owner->ParticleStride;									\
+    uint16*			ParticleIndices	= Owner->ParticleIndices;										\
+    for(int32 i=ActiveParticles-1; i>=0; i--)								    					\
+    {																								\
+    const int32	CurrentIndex	= ParticleIndices[i];				          						\
+    const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;						\
+    FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);								    \
+    if ((Particle.Flags & STATE_Particle_Freeze) == 0)	   							                \
+        {   																						\
 
 #define END_UPDATE_LOOP																									\
-}																											\
+       }																											\
 CurrentOffset				= Offset;																		\
 }																												\
 }
 
 class UMaterialInterface;
+class UParticleModuleRequired;
 
 enum EDynamicEmitterType
 {
@@ -47,6 +72,33 @@ enum EDynamicEmitterType
     DET_Ribbon,
     DET_AnimTrail,
     DET_Custom
+};
+
+/*-----------------------------------------------------------------------------
+    Particle State Flags
+-----------------------------------------------------------------------------*/
+enum EParticleStates
+{
+    /** Ignore updates to the particle						*/
+    STATE_Particle_JustSpawned = 0x02000000,
+    /** Ignore updates to the particle						*/
+    STATE_Particle_Freeze = 0x04000000,
+    /** Ignore collision updates to the particle			*/
+    STATE_Particle_IgnoreCollisions = 0x08000000,
+    /**	Stop translations of the particle					*/
+    STATE_Particle_FreezeTranslation = 0x10000000,
+    /**	Stop rotations of the particle						*/
+    STATE_Particle_FreezeRotation = 0x20000000,
+    /** Combination for a single check of 'ignore' flags	*/
+    STATE_Particle_CollisionIgnoreCheck = STATE_Particle_Freeze | STATE_Particle_IgnoreCollisions | STATE_Particle_FreezeTranslation | STATE_Particle_FreezeRotation,
+    /** Delay collision updates to the particle				*/
+    STATE_Particle_DelayCollisions = 0x40000000,
+    /** Flag indicating the particle has had at least one collision	*/
+    STATE_Particle_CollisionHasOccurred = 0x80000000,
+    /** State mask. */
+    STATE_Mask = 0xFE000000,
+    /** Counter mask. */
+    STATE_CounterMask = (~STATE_Mask)
 };
 
 struct FParticleOrder
@@ -196,8 +248,6 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
     void Free();
 };
 
-
-
 // Replay Data Base 
 struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
@@ -230,26 +280,32 @@ struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 �
 
 struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 {
-    UMaterialInterface*             MaterialInterface;  
-    //struct FParticleRequiredModule  *RequiredModule;
+    //원레 머터리얼 인터페이스를 사용하나 UMaterial로 일단 퉁치기
+    //UMaterialInterface*             MaterialInterface;
+    UMaterial*                      Material;
+    UParticleModuleRequired*        RequiredModule;
     FVector2D				PivotOffset;
     int32							MaxDrawCount;
     bool bUseLocalSpace;
 };
 
-// Emitter Data Base 
-
-/** Source data for Sprite emitters */
-struct FDynamicSpriteEmitterReplayData
-    : public FDynamicSpriteEmitterReplayDataBase
+struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
 {
     /** Constructor */
     FDynamicSpriteEmitterReplayData()
     {
     }
-
-
+    
+    /** Serialization */
+    virtual void Serialize( FArchive& Ar )
+    {
+        // // Call parent implementation
+        // FDynamicSpriteEmitterReplayDataBase::Serialize( Ar );
+        //
+        // // ...
+    }
 };
+// Emitter Data Base 
 
 struct FDynamicEmitterDataBase
 {
@@ -272,8 +328,9 @@ struct FDynamicEmitterDataBase
 
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
+    virtual int32 GetDynamicVertexStride() const = 0;
+
     void SortSpriteParticles();
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const = 0;
 
     /**
  *	Sort the given sprite particles
@@ -300,7 +357,7 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type InFeatureLevel) const override
+    virtual int32 GetDynamicVertexStride() const override
     {
         return sizeof(FParticleSpriteVertex);
     }
@@ -334,9 +391,10 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
     FDynamicSpriteEmitterReplayData Source;
 };
 
+
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const override
+    virtual int32 GetDynamicVertexStride() const override
     {
         return sizeof(FMeshParticleInstanceVertex);
     }

@@ -49,7 +49,7 @@ private:
     void RenderDelegate(ULevel* Level) const;
     
     void DrawSkeletalMeshPreviewButton(const FString& FilePath) const;
-    
+    void DrawParticlePreviewButton();
 private:
     float Width = 0, Height = 0;
     
