@@ -88,6 +88,48 @@ struct FSimpleVectorDistribution
         DistZ = FSimpleFloatDistribution(StartVector.Z, EndVector.Z, Type);
     }
 
+    EDistributionType GetDistributionType()
+    {
+        // 현재 로직 상 DistributionType이 바뀌지 않으므로
+        return DistX.DistributionType;
+    }
+
+    void GetDistributionVector(FVector& OutConstantVector) 
+    {
+        OutConstantVector.X = DistX.Constant;
+        OutConstantVector.Y = DistY.Constant;
+        OutConstantVector.Z = DistZ.Constant;
+    }
+
+    void GetDistributionVectors(FVector& OutStartVector, FVector& OutEndVector) 
+    {
+        OutStartVector.X = DistX.Min;
+        OutStartVector.Y = DistY.Min;
+        OutStartVector.Z = DistZ.Min;
+
+        OutEndVector.X = DistX.Max;
+        OutEndVector.Y = DistY.Max;
+        OutEndVector.Z = DistZ.Max;
+    }
+
+    void SetDistributionVector(FVector& InConstantVector) 
+    {
+        DistX.Constant = InConstantVector.X;
+        DistY.Constant = InConstantVector.Y;
+        DistZ.Constant = InConstantVector.Z;
+    }
+
+    void SetDistributionVectors(FVector& InStartVector, FVector& InEndVector) 
+    {
+        DistX.Min = InStartVector.X;
+        DistY.Min = InStartVector.Y;
+        DistZ.Min = InStartVector.Z;
+
+        DistX.Max = InEndVector.X;
+        DistY.Max = InEndVector.Y;
+        DistZ.Max = InEndVector.Z;
+    }
+
     FVector GetValue(float t) const 
     {
         return FVector(DistX.GetValue(t), DistY.GetValue(t), DistZ.GetValue(t));
