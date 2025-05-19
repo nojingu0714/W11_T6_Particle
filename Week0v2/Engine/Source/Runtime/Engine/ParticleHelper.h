@@ -52,8 +52,7 @@ struct FMatrix;
     const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;						\
     FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);								    \
     if ((Particle.Flags & STATE_Particle_Freeze) == 0)	   							                \
-        {   																						\
-
+        {
 #define END_UPDATE_LOOP																									\
        }																											\
 CurrentOffset				= Offset;																		\
@@ -90,7 +89,8 @@ enum EParticleStates
     /**	Stop rotations of the particle						*/
     STATE_Particle_FreezeRotation = 0x20000000,
     /** Combination for a single check of 'ignore' flags	*/
-    STATE_Particle_CollisionIgnoreCheck = STATE_Particle_Freeze | STATE_Particle_IgnoreCollisions | STATE_Particle_FreezeTranslation | STATE_Particle_FreezeRotation,
+    STATE_Particle_CollisionIgnoreCheck = STATE_Particle_Freeze | STATE_Particle_IgnoreCollisions | STATE_Particle_FreezeTranslation |
+    STATE_Particle_FreezeRotation,
     /** Delay collision updates to the particle				*/
     STATE_Particle_DelayCollisions = 0x40000000,
     /** Flag indicating the particle has had at least one collision	*/
@@ -112,75 +112,78 @@ struct FParticleOrder
     //    제공된 코드에서는 Z (float)만 사용되고 있습니다.
     union
     {
-        float Z;    // 주로 깊이 값 (더 큰 값이 더 멀리 있는 것을 의미하도록 사용될 수 있음)
-        uint32 C;   // 다른 정렬 기준을 위한 값 (예: 색상 값의 정수 표현)
+        float Z; // 주로 깊이 값 (더 큰 값이 더 멀리 있는 것을 의미하도록 사용될 수 있음)
+        uint32 C; // 다른 정렬 기준을 위한 값 (예: 색상 값의 정수 표현)
     };
 
     // 생성자 1: ParticleIndex와 float 타입의 Z값을 받아 초기화
-    FParticleOrder(int32 InParticleIndex, float InZ) :
-        ParticleIndex(InParticleIndex),
-        Z(InZ)
-    {}
+    FParticleOrder(int32 InParticleIndex, float InZ)
+        : ParticleIndex(InParticleIndex)
+        , Z(InZ)
+    {
+    }
 
     // 생성자 2: ParticleIndex와 uint32 타입의 C값을 받아 초기화
-    FParticleOrder(int32 InParticleIndex, uint32 InC) :
-        ParticleIndex(InParticleIndex),
-        C(InC)
-    {}
+    FParticleOrder(int32 InParticleIndex, uint32 InC)
+        : ParticleIndex(InParticleIndex)
+        , C(InC)
+    {
+    }
 };
 
 struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD 구조체 
 {
     // 48 bytes
-    FVector		OldLocation;			// Last frame's location, used for collision
-    FVector		Location;				// Current location
+    FVector OldLocation; // Last frame's location, used for collision
+    FVector Location; // Current location
 
     // 16 bytes
-    FVector		BaseVelocity;			// Velocity = BaseVelocity at the start of each frame.
-    float			Rotation;				// Rotation of particle (in Radians)
+    FVector BaseVelocity; // Velocity = BaseVelocity at the start of each frame.
+    float Rotation; // Rotation of particle (in Radians)
 
     // 16 bytes
-    FVector		Velocity;				// Current velocity, gets reset to BaseVelocity each frame to allow 
-    float			BaseRotationRate;		// Initial angular velocity of particle (in Radians per second)
+    FVector Velocity; // Current velocity, gets reset to BaseVelocity each frame to allow 
+    float BaseRotationRate; // Initial angular velocity of particle (in Radians per second)
 
     // 16 bytes
-    FVector		BaseSize;				// Size = BaseSize at the start of each frame
-    float			RotationRate;			// Current rotation rate, gets reset to BaseRotationRate each frame
+    FVector BaseSize; // Size = BaseSize at the start of each frame
+    float RotationRate; // Current rotation rate, gets reset to BaseRotationRate each frame
 
     // 16 bytes
-    FVector		Size;					// Current size, gets reset to BaseSize each frame
-    int32			Flags;					// Flags indicating various particle states
+    FVector Size; // Current size, gets reset to BaseSize each frame
+    int32 Flags; // Flags indicating various particle states
 
     // 16 bytes
-    FLinearColor	Color;					// Current color of particle.
+    FLinearColor Color; // Current color of particle.
 
     // 16 bytes
-    FLinearColor	BaseColor;				// Base color of the particle
+    FLinearColor BaseColor; // Base color of the particle
 
     // 16 bytes
-    float			RelativeTime;			// Relative time, range is 0 (==spawn) to 1 (==death)
-    float			OneOverMaxLifetime;		// Reciprocal of lifetime
-    float			Placeholder0;
-    float			Placeholder1;
+    float RelativeTime; // Relative time, range is 0 (==spawn) to 1 (==death)
+    float OneOverMaxLifetime; // Reciprocal of lifetime
+    float Placeholder0;
+    float Placeholder1;
 
     FBaseParticle()
-    : OldLocation(FVector::ZeroVector)
-    , Location(FVector::ZeroVector)
-    , BaseVelocity(FVector::ZeroVector)
-    , Rotation(0.0f)
-    , Velocity(FVector::ZeroVector)
-    , BaseRotationRate(0.0f)
-    , BaseSize(FVector(1.0f))           // 기본 크기를 (1,1,1)로
-    , RotationRate(0.0f)
-    , Size(BaseSize)
-    , Flags(0)
-    , Color(FLinearColor::White)
-    , BaseColor(FLinearColor::White)
-    , RelativeTime(0.0f)
-    , OneOverMaxLifetime(1.0f)          // 기본 수명 1초로 가정
-    , Placeholder0(0.0f)
-    , Placeholder1(0.0f)
-    {}
+        : OldLocation(FVector::ZeroVector)
+        , Location(FVector::ZeroVector)
+        , BaseVelocity(FVector::ZeroVector)
+        , Rotation(0.0f)
+        , Velocity(FVector::ZeroVector)
+        , BaseRotationRate(0.0f)
+        , BaseSize(FVector(1.0f)) // 기본 크기를 (1,1,1)로
+        , RotationRate(0.0f)
+        , Size(BaseSize)
+        , Flags(0)
+        , Color(FLinearColor::White)
+        , BaseColor(FLinearColor::White)
+        , RelativeTime(0.0f)
+        , OneOverMaxLifetime(1.0f) // 기본 수명 1초로 가정
+        , Placeholder0(0.0f)
+        , Placeholder1(0.0f)
+    {
+    }
 };
 
 struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용 정점 데이터 
@@ -190,7 +193,7 @@ struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용
     /** The relative time of the particle. */
     float RelativeTime;
     /** The previous position of the particle. */
-    FVector	OldPosition;
+    FVector OldPosition;
     /** Value that remains constant over the lifetime of a particle. */
     // 보통 난수의 시드값으로 사용
     float ParticleId;
@@ -203,6 +206,7 @@ struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용
     /** The color of the particle. */
     FLinearColor Color;
 };
+
 struct FMeshParticleInstanceVertex // GPU로 전송되는 메시 인스텅신 파티클용 정점 데이터
 {
     /** The color of the particle. */
@@ -240,10 +244,12 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
         , ParticleIndices(nullptr)
     {
     }
+
     ~FParticleDataContainer()
     {
         Free();
     }
+
     void Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts);
     void Free();
 };
@@ -265,10 +271,10 @@ struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 �
 
     /** Constructor */
     FDynamicEmitterReplayDataBase()
-        : eEmitterType( DET_Unknown ),
-          ActiveParticleCount( 0 ),
-          ParticleStride( 0 ),
-          Scale( FVector( 1.0f ) )
+        : eEmitterType(DET_Unknown)
+        , ActiveParticleCount(0)
+        , ParticleStride(0)
+        , Scale(FVector(1.0f))
     {
     }
 
@@ -282,10 +288,10 @@ struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBas
 {
     //원레 머터리얼 인터페이스를 사용하나 UMaterial로 일단 퉁치기
     //UMaterialInterface*             MaterialInterface;
-    UMaterial*                      Material;
-    UParticleModuleRequired*        RequiredModule;
-    FVector2D				PivotOffset;
-    int32							MaxDrawCount;
+    UMaterial* Material;
+    UParticleModuleRequired* RequiredModule;
+    FVector2D PivotOffset;
+    int32 MaxDrawCount;
     bool bUseLocalSpace;
 };
 
@@ -295,9 +301,9 @@ struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataB
     FDynamicSpriteEmitterReplayData()
     {
     }
-    
+
     /** Serialization */
-    virtual void Serialize( FArchive& Ar )
+    virtual void Serialize(FArchive& Ar)
     {
         // // Call parent implementation
         // FDynamicSpriteEmitterReplayDataBase::Serialize( Ar );
@@ -305,25 +311,25 @@ struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataB
         // // ...
     }
 };
+
 // Emitter Data Base 
 
 struct FDynamicEmitterDataBase
 {
     FDynamicEmitterDataBase() = default;
-	
+
     virtual ~FDynamicEmitterDataBase()
     {
     }
-    
+
     /** true if this emitter is currently selected */
-    uint32	bSelected:1;
+    uint32 bSelected : 1;
     /** true if this emitter has valid rendering data */
-    uint32	bValid:1;
+    uint32 bValid : 1;
 
-    int32  EmitterIndex;
-    
+    int32 EmitterIndex;
+
     virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
-
 };
 
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
@@ -348,11 +354,10 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
     void SortSpriteParticles(int32 SortMode, bool bLocalSpace,
                              int32 ParticleCount, const uint8* ParticleData, int32 ParticleStride, const uint16* ParticleIndices,
                              const FMatrix* ViewProjection, const FMatrix& LocalToWorld, TArray<FParticleOrder>& ParticleOrder) const;
-    
+
     void SortSpriteParticles(int32 SortMode, bool bLocalSpace,
                              TArray<FBaseParticle>& ParticleData,
                              const FMatrix* ViewProjection, const FMatrix& LocalToWorld, TArray<FParticleOrder>& ParticleOrder) const;
-
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
@@ -367,6 +372,7 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
     {
         return Source;
     }
+
     /**
  *	Retrieve the vertex and (optional) index required to render this emitter.
  *	Render-thread only
@@ -382,7 +388,7 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
  */
     bool GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder,
                                const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const;
-    
+
     bool GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder, TArray<FBaseParticle>& ParticleData,
                                const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const;
     void Init(bool bInSelected);
@@ -417,12 +423,12 @@ public:
     {
         ClearEmitterDataArray();
     }
-    
+
     void ClearEmitterDataArray()
     {
         for (int32 Index = 0; Index < DynamicEmitterDataArray.Num(); Index++)
         {
-            FDynamicEmitterDataBase* Data =	DynamicEmitterDataArray[Index];
+            FDynamicEmitterDataBase* Data = DynamicEmitterDataArray[Index];
             delete Data;
         }
         DynamicEmitterDataArray.Empty();
@@ -432,7 +438,7 @@ public:
     uint32 EmitterIndex;
 
     // Variables
-    TArray<FDynamicEmitterDataBase*>	DynamicEmitterDataArray;
+    TArray<FDynamicEmitterDataBase*> DynamicEmitterDataArray;
 };
 
 
@@ -442,4 +448,3 @@ FORCEINLINE FVector2D GetParticleSizeWithUVFlipInSign(const FBaseParticle& Parti
         Particle.BaseSize.X >= 0.0f ? ScaledSize.X : -ScaledSize.X,
         Particle.BaseSize.Y >= 0.0f ? ScaledSize.Y : -ScaledSize.Y);
 }
-

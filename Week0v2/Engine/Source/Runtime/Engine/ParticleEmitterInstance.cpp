@@ -135,6 +135,7 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
         }
     }
 
+    // 언리얼 식이 아닌 TArray<FBaseParticle>로 된 Particle 관리 방법 
     // for (auto Particle : BaseParticles)
     // {
     //     // 활성 파티클의 버퍼 오프셋 계산
@@ -275,22 +276,44 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
 
 void FParticleEmitterInstance::PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity)
 {
-    // 1) 위치 초기화
-    Particle.Location    = InitLocation;
-    Particle.OldLocation = InitLocation;
+    // 위치
+    Particle.Location        = InitLocation;
+    Particle.OldLocation     = InitLocation;
 
-    // 2) 속도 초기화
-    Particle.BaseVelocity = InitVelocity;
-    Particle.Velocity     = InitVelocity;
+    // 속도
+    Particle.BaseVelocity    = InitVelocity;
+    Particle.Velocity        = InitVelocity;
 
-    // 3) 수명 초기화 (RequiredModule이 정의한 Lifetime 분포 사용)
-    float Lifetime = 1.0f; //RequiredModule
-    //     ? RequiredModule->Lifetime.GetValue(SpawnTime, Component)
+    // 수명
+     float Lifetime    =  1.0f; //RequiredModule
+    //     ? RequiredModule->Lifetime.GetValue(EmitterTime, Component)
     //     : 1.0f;
-    Particle.OneOverMaxLifetime = (Lifetime > 0.0f) ? (1.0f / Lifetime) : 1.0f;
+    Particle.OneOverMaxLifetime = (Lifetime > 0.0f) 
+        ? (1.0f / Lifetime) 
+        : 1.0f;
+    Particle.RelativeTime    = 0.0f;
 
-    // 4) RelativeTime 시작 지점 (0)
-    Particle.RelativeTime = 0.0f;
+    // 회전
+
+    Particle.Rotation        = 0.0f;
+    Particle.BaseRotationRate = 0.0f;
+    
+    Particle.RotationRate    = Particle.BaseRotationRate;
+
+    // 크기
+    
+    Particle.BaseSize       = FVector(1.0f);
+    Particle.Size            = Particle.BaseSize;
+
+    // 색상
+    Particle.BaseColor      = FLinearColor::White;
+    
+    Particle.Color           = Particle.BaseColor;
+
+    // 기타 플래그 및 플레이스홀더
+    Particle.Flags           = 0;
+    Particle.Placeholder0    = 0.0f;
+    Particle.Placeholder1    = 0.0f;
 }
 
 void FParticleEmitterInstance::PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime)
