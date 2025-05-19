@@ -49,6 +49,7 @@
 #include "Particles/Spawn/ParticleModuleSpawn.h"
 #include "Particles/ParticleModuleRequired.h"
 #include "Particles/Lifetime/ParticleModuleLifetime.h"
+#include "Particles/Location/ParticleModuleLocation.h"
 #include "UObject/UObjectIterator.h"
 
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
@@ -867,6 +868,12 @@ void PropertyEditorPanel::Render()
                     ImGui::Text("Particle Module Lifetime");
                     RenderFSimpleFloatDistribution(Lifetime->Lifetime, 0.0f, "Lifetime");
                 }
+                else if (UParticleModuleLocation* Location = Cast<UParticleModuleLocation>(Module)) 
+                {
+                    ImGui::Text("Particle Module Location");
+                    RenderFSimpleVectorDistribution(Location->StartLocation, 0.0f, "Location");
+                }
+
                 ImGui::Spacing();
             }
         }   
@@ -1181,6 +1188,110 @@ void PropertyEditorPanel::RenderFSimpleFloatDistribution(FSimpleFloatDistributio
         return;
         break;
         }
+    }
+}
+
+void PropertyEditorPanel::RenderFSimpleVectorDistribution(FSimpleVectorDistribution& RenderDistribution, float Tvalue, FString DistributionName)
+{
+    switch (RenderDistribution.GetDistributionType())
+    {
+    case EDistributionType::Constant: {
+        FVector NewVector;
+        RenderDistribution.GetDistributionVector(NewVector);
+        
+        FString DistributionNameWithX = "X##" + DistributionName;
+        FString DistributionNameWithY = "Y##" + DistributionName;
+        FString DistributionNameWithZ = "Z##" + DistributionName;
+
+        ImGui::PushItemWidth(50.0f);
+        ImGui::InputFloat(*DistributionNameWithX, &NewVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithY, &NewVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZ, &NewVector.Z);
+        ImGui::PopItemWidth();
+
+        RenderDistribution.SetDistributionVector(NewVector);
+
+        return;
+        break;
+    }
+
+    case EDistributionType::Uniform: {
+        FVector StartVector;
+        FVector EndVector;
+        RenderDistribution.GetDistributionVectors(StartVector, EndVector);
+
+        ImGui::PushItemWidth(50.0f);
+        FString DistributionNameWithXMin = "X##" + DistributionName + "Min";
+        FString DistributionNameWithYMin = "Y##" + DistributionName + "Min";
+        FString DistributionNameWithZMin = "Z##" + DistributionName + "Min";
+        FString DistributionNameWithXMax = "X##" + DistributionName + "Max";
+        FString DistributionNameWithYMax = "Y##" + DistributionName + "Max";
+        FString DistributionNameWithZMax = "Z##" + DistributionName + "Max";
+
+        ImGui::Text("MinVector");
+        ImGui::InputFloat(*DistributionNameWithXMin, &StartVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYMin, &StartVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZMin, &StartVector.Z);
+
+        ImGui::Text("MaxVector");
+        ImGui::InputFloat(*DistributionNameWithXMax, &EndVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYMax, &EndVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZMax, &EndVector.Z);
+        ImGui::PopItemWidth();
+
+        RenderDistribution.SetDistributionVectors(StartVector, EndVector);
+
+        return;
+        break;
+    }
+
+    case EDistributionType::Linear:
+    case EDistributionType::EaseInOut:
+    case EDistributionType::SinWave: {
+        FVector StartVector;
+        FVector EndVector;
+        RenderDistribution.GetDistributionVectors(StartVector, EndVector);
+
+        FString DistributionNameWithXStart = "X##" + DistributionName + "Start";
+        FString DistributionNameWithYStart = "Y##" + DistributionName + "Start";
+        FString DistributionNameWithZStart = "Z##" + DistributionName + "Start";
+        FString DistributionNameWithXEnd = "X##" + DistributionName + "End";
+        FString DistributionNameWithYEnd = "Y##" + DistributionName + "End";
+        FString DistributionNameWithZEnd = "Z##" + DistributionName + "End";
+
+        ImGui::PushItemWidth(50.0f);
+        ImGui::Text("StartVector");
+        ImGui::InputFloat(*DistributionNameWithXStart, &StartVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYStart, &StartVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZStart, &StartVector.Z);
+
+        ImGui::Text("EndVector");
+        ImGui::InputFloat(*DistributionNameWithXEnd, &EndVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYEnd, &EndVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZEnd, &EndVector.Z);
+        ImGui::PopItemWidth();
+
+        RenderDistribution.SetDistributionVectors(StartVector, EndVector);
+
+        return;
+        break;
+    }
+
+    default: {
+        UE_LOG(LogLevel::Error, "EDistribution Error");
+        return;
+        break;
+    }
     }
 }
 

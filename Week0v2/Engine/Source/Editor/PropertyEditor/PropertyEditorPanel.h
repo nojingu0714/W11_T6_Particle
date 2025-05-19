@@ -9,6 +9,7 @@ class UStaticMeshComponent;
 class USceneComponent;
 class ULevel;
 struct FSimpleFloatDistribution;
+struct FSimpleVectorDistribution;
 
 struct FBoneRotation
 {
@@ -40,6 +41,7 @@ private:
     void OnBoneSelected(int BoneIndex);
 
     void RenderFSimpleFloatDistribution(FSimpleFloatDistribution& RenderDistribution, float Tvalue, FString DistributionName);
+    void RenderFSimpleVectorDistribution(FSimpleVectorDistribution& RenderDistribution, float Tvalue, FString DistributionName);
 
     /* Materials Settings */
     void RenderForMaterial(UStaticMeshComponent* StaticMeshComp);
