@@ -11,8 +11,7 @@ class UParticleSystemComponent;
 class FParticleRenderPass : public FBaseRenderPass
 {
 public:
-    explicit FParticleRenderPass(const FName& InShaderName)
-        : FBaseRenderPass(InShaderName) {}
+    explicit FParticleRenderPass(const FName& InShaderName);
     
     ~FParticleRenderPass() override;
     
@@ -26,5 +25,7 @@ public:
 
 private:
     TArray<UParticleSystemComponent*> ParticleSystemComponents;
+    
+    class ID3D11Buffer* PerFrameConstantBuffer = nullptr;
 };
 

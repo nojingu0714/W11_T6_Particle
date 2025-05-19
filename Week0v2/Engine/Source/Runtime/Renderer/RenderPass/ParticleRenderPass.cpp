@@ -12,6 +12,16 @@
 #include "UObject/UObjectIterator.h"
 
 
+FParticleRenderPass::FParticleRenderPass(const FName& InShaderName)
+    : FBaseRenderPass(InShaderName)
+{
+
+    FRenderer& Renderer = GEngineLoop.Renderer;
+    FRenderResourceManager* RenderResourceManager = Renderer.GetResourceManager();
+    
+    PerFrameConstantBuffer = RenderResourceManager->CreateConstantBuffer(sizeof(FPerFrameConstants));
+}
+
 FParticleRenderPass::~FParticleRenderPass()
 {
     
@@ -35,6 +45,7 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 {
     FBaseRenderPass::Prepare(InViewportClient);
     
+    
     const FRenderer& Renderer = GEngineLoop.Renderer;
     const FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
 
@@ -43,6 +54,8 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
     Graphics.DeviceContext->OMSetBlendState(Renderer.GetBlendState(EBlendState::AlphaBlend), nullptr, 0xffffffff); // 블렌딩 상태 설정, 기본 블렌딩 상태임
 
     FEngineLoop::GraphicDevice.DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    
+
     
     // RTVs 배열의 유효성을 확인합니다.
     const auto CurRTV = Graphics.GetCurrentRenderTargetView();
@@ -59,6 +72,9 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 
     ID3D11SamplerState* linearSampler = Renderer.GetSamplerState(ESamplerType::Linear);
     Graphics.DeviceContext->PSSetSamplers(static_cast<uint32>(ESamplerType::Linear), 1, &linearSampler);
+
+
+    Graphics.DeviceContext->PSSetConstantBuffers(0, 2, &PerFrameConstantBuffer);
 }
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
@@ -79,23 +95,27 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
         Proj = curEditorViewportClient->GetProjectionMatrix();
         ViewProj = curEditorViewportClient->GetViewProjectionMatrix();
     }
+
+    FPerFrameConstants PerFrameConstants;
     
-    FSceneConstant SceneConstants;
-    SceneConstants.ViewMatrix = View;
-    SceneConstants.ProjMatrix = Proj;
+    PerFrameConstants.ViewMatrix = View;
+    PerFrameConstants.ProjectionMatrix = Proj;
+    
     USceneComponent* overrideComp = curEditorViewportClient->GetOverrideComponent();
     if (overrideComp)
     {
-        SceneConstants.CameraPos = overrideComp->GetWorldLocation();
-        SceneConstants.CameraLookAt = curEditorViewportClient->ViewTransformPerspective.GetLookAt();
+        PerFrameConstants.CameraWorldPosition = overrideComp->GetWorldLocation();
     }
     else
     {
-        SceneConstants.CameraPos = curEditorViewportClient->ViewTransformPerspective.GetLocation();
-        SceneConstants.CameraLookAt = curEditorViewportClient->ViewTransformPerspective.GetLookAt();
+        PerFrameConstants.CameraWorldPosition = curEditorViewportClient->ViewTransformPerspective.GetLocation();
     }
+
     
-    renderResourceManager->UpdateConstantBuffer(TEXT("FSceneConstant"), &SceneConstants);
+    PerFrameConstants.CameraUpVector = curEditorViewportClient->ViewTransformPerspective.GetUpVector();
+    PerFrameConstants.CameraRightVector = curEditorViewportClient->ViewTransformPerspective.GetRightVector();
+    renderResourceManager->UpdateConstantBuffer(PerFrameConstantBuffer, &PerFrameConstants);
+        
 
     for (const UParticleSystemComponent* ParticleSystemComponent : ParticleSystemComponents)
     {

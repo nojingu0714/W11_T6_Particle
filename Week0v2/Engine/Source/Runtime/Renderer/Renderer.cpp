@@ -17,6 +17,7 @@
 #include "RenderPass/GizmoRenderPass.h"
 #include "RenderPass/LetterBoxRenderPass.h"
 #include "RenderPass/LineBatchRenderPass.h"
+#include "RenderPass/ParticleRenderPass.h"
 #include "RenderPass/SkeletalMeshRenderPass.h"
 #include "RenderPass/StaticMeshRenderPass.h"
 
@@ -109,6 +110,9 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
 
     CreateVertexPixelShader(TEXT("Blur"), nullptr);
     BlurRenderPass = std::make_shared<FBlurRenderPass>(TEXT("Blur"));
+    
+    CreateVertexPixelShader(TEXT("ParticleSprite"), nullptr);
+    ParticleRenderPass = std::make_shared<FParticleRenderPass>(TEXT("ParticleSprite"));
     
     CreateVertexPixelShader(TEXT("Final"), nullptr);
     FinalRenderPass = std::make_shared<FFinalRenderPass>(TEXT("Final"));
@@ -280,6 +284,12 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
             SkeletalRenderPass->Execute(ActiveViewportClient);
         }
     }
+    
+    // if (ActiveViewportClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Particles))
+    // {
+        ParticleRenderPass->Prepare(ActiveViewportClient);
+        ParticleRenderPass->Execute(ActiveViewportClient);
+    //}
 
     if (FogRenderPass->ShouldRender())
     {
@@ -340,6 +350,7 @@ void FRenderer::ClearRenderObjects() const
     LetterBoxRenderPass->ClearRenderObjects();
     FogRenderPass->ClearRenderObjects();
     BlurRenderPass->ClearRenderObjects();
+    ParticleRenderPass->ClearRenderObjects();
     FinalRenderPass->ClearRenderObjects();
 }
 
@@ -416,6 +427,7 @@ void FRenderer::AddRenderObjectsToRenderPass(UWorld* World) const
     LetterBoxRenderPass->AddRenderObjectsToRenderPass(World);
     FogRenderPass->AddRenderObjectsToRenderPass(World);
     BlurRenderPass->AddRenderObjectsToRenderPass(World);
+    ParticleRenderPass->AddRenderObjectsToRenderPass(World);
     FinalRenderPass->AddRenderObjectsToRenderPass(World);
 }
 
