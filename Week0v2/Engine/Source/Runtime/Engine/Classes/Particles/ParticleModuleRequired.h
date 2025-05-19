@@ -28,49 +28,49 @@ enum class EParticleUVFlipMode : uint8
 };
 
 /** Flips the sign of a particle's base size based on it's UV flip mode. */
-void AdjustParticleBaseSizeForUVFlipping(FVector& OutSize, EParticleUVFlipMode FlipMode)
-{
-    static const float HalfRandMax = 0.5f;
-
-    switch (FlipMode)
-    {
-    case EParticleUVFlipMode::None:
-        return;
-
-    case EParticleUVFlipMode::FlipUV:
-        OutSize = -OutSize;
-        return;
-
-    case EParticleUVFlipMode::FlipUOnly:
-        OutSize.X = -OutSize.X;
-        return;
-
-    case EParticleUVFlipMode::FlipVOnly:
-        OutSize.Y = -OutSize.Y;
-        return;
-
-    /*case EParticleUVFlipMode::RandomFlipUV:
-        OutSize = InRandomStream.FRand() > HalfRandMax ? -OutSize : OutSize;
-        return;
-
-    case EParticleUVFlipMode::RandomFlipUOnly:
-        OutSize.X = InRandomStream.FRand() > HalfRandMax ? -OutSize.X : OutSize.X;
-        return;
-
-    case EParticleUVFlipMode::RandomFlipVOnly:
-        OutSize.Y = InRandomStream.FRand() > HalfRandMax ? -OutSize.Y : OutSize.Y;
-        return;
-
-    case EParticleUVFlipMode::RandomFlipUVIndependent:
-        OutSize.X = InRandomStream.FRand() > HalfRandMax ? -OutSize.X : OutSize.X;
-        OutSize.Y = InRandomStream.FRand() > HalfRandMax ? -OutSize.Y : OutSize.Y;
-        return;*/
-
-    default:
-        /*checkNoEntry();*/
-        break;
-    }
-}
+//void AdjustParticleBaseSizeForUVFlipping(FVector& OutSize, EParticleUVFlipMode FlipMode)
+//{
+//    static const float HalfRandMax = 0.5f;
+//
+//    switch (FlipMode)
+//    {
+//    case EParticleUVFlipMode::None:
+//        return;
+//
+//    case EParticleUVFlipMode::FlipUV:
+//        OutSize = -OutSize;
+//        return;
+//
+//    case EParticleUVFlipMode::FlipUOnly:
+//        OutSize.X = -OutSize.X;
+//        return;
+//
+//    case EParticleUVFlipMode::FlipVOnly:
+//        OutSize.Y = -OutSize.Y;
+//        return;
+//
+//    /*case EParticleUVFlipMode::RandomFlipUV:
+//        OutSize = InRandomStream.FRand() > HalfRandMax ? -OutSize : OutSize;
+//        return;
+//
+//    case EParticleUVFlipMode::RandomFlipUOnly:
+//        OutSize.X = InRandomStream.FRand() > HalfRandMax ? -OutSize.X : OutSize.X;
+//        return;
+//
+//    case EParticleUVFlipMode::RandomFlipVOnly:
+//        OutSize.Y = InRandomStream.FRand() > HalfRandMax ? -OutSize.Y : OutSize.Y;
+//        return;
+//
+//    case EParticleUVFlipMode::RandomFlipUVIndependent:
+//        OutSize.X = InRandomStream.FRand() > HalfRandMax ? -OutSize.X : OutSize.X;
+//        OutSize.Y = InRandomStream.FRand() > HalfRandMax ? -OutSize.Y : OutSize.Y;
+//        return;*/
+//
+//    default:
+//        /*checkNoEntry();*/
+//        break;
+//    }
+//}
 
 
 
@@ -106,6 +106,9 @@ struct FParticleRequiredModule
     uint8 bCutoutTexureIsValid : 1;
     uint8 bUseVelocityForMotionBlur : 1;
 };
+
+class UMaterial;
+class UTexture;
 
 class UParticleModuleRequired : public UParticleModule
 {
@@ -157,6 +160,8 @@ public:
     int32 EmitterLoops;
 
     UTexture* CutoutTexture;
+    UMaterial* SpriteTexture;
+    
     int32 MaxDrawCount;
 
     FVector NormalsCylinderDirection;

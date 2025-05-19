@@ -1,6 +1,6 @@
 #include "ParticleModuleSizeScaleBySpeed.h"
 #include "Engine/Source/Runtime/Engine/ParticleHelper.h"
-#include "Engine/Source/Runtime/Engine/ParticleEmitterInstances.h"
+#include "Engine/Source/Runtime/Engine/ParticleEmitterInstance.h"
 
 void UParticleModuleSizeScaleBySpeed::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
 {

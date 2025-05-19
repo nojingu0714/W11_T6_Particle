@@ -1,5 +1,5 @@
 #include "ParticleModule.h"
-#include "Engine/ParticleEmitterInstances.h"
+#include "Engine/ParticleEmitterInstance.h"
 #include "Engine/ParticleHelper.h"
 #include "Engine/Classes/Particles/ParticleEmitter.h"
 
@@ -32,6 +32,11 @@ void UParticleModule::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float
 }
 
 void UParticleModule::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
+{
+
+}
+
+void UParticleModule::Update(FParticleEmitterInstance* Owner, FBaseParticle* Particle, float DeltaTime)
 {
 
 }

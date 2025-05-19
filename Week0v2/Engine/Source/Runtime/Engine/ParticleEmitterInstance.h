@@ -1,10 +1,19 @@
 #pragma once
+#include "Container/Array.h"
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
-#include "Engine/Source/Runtime/Core/Container/Array.h"
-#include "Engine/Source/Runtime/Core/Math/Distribution.h"
-#include "Engine/Source/Runtime/Core/Math/Transform.h"
+#include "Math/Transform.h"
+#include "Math/Distribution.h"
+#include "UserInterface/Debug/DebugViewModeHelpers.h"
 
+class UMaterial;
+struct FDynamicEmitterDataBase;
+struct FDynamicEmitterReplayDataBase;
+class UParticleModule;
+class UParticleModuleRequired;
+class UParticleModuleSpawn;
+struct FParticleEventInstancePayload;
+struct FBaseParticle;
 class UParticleSystemComponent;
 class UParticleLODLevel;
 class UParticleEmitter;
@@ -12,13 +21,18 @@ class UParticleEmitter;
 struct FParticleEmitterInstance
 {
     UParticleEmitter* SpriteTemplate;
-
     // Owner
     UParticleSystemComponent* Component;
 
     int32 CurrentLODLevelIndex;
     UParticleLODLevel* CurrentLODLevel;
 
+    TArray<FBaseParticle*> BaseParticles;
+    TArray<UParticleModuleSpawn*> SpawnModules;
+    TArray<UParticleModule*> UpdateModules;
+    TArray<FBaseParticle*> DeadParticles;
+    
+    UParticleModuleRequired* RequiredModule;
     /** Pointer to the particle data array.                             */
     uint8* ParticleData;
     /** Pointer to the particle index array.                            */
@@ -43,27 +57,37 @@ struct FParticleEmitterInstance
     int32 MaxActiveParticles;
     /** The fraction of time left over from spawning.                   */
 
-    // EmitterDuration으로 나눈 0~1의 값, 1이되면 0으로 바뀜
-    float EmitterTime;
-    float EmitterDuration;
+    /** The previous location of the instance.							*/
+    FVector OldLocation;
+    // Emitter 시작 후 총 누적 시간 
+    float EmitterTime = 0.0f;
+    bool bEnabled= true;
 
+    /** The sort mode to use for this emitter as specified by artist.	*/
+    int32 SortMode;
+    
+    FParticleEmitterInstance();
+    
+    void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
+    void Init();
+    virtual void Tick(float DeltaTime);
+    void SetupEmitterDuration();
+    void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
 
-    void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, struct FParticleEventInstancePayload* EventPayload )
-    {
-        // for (int32 i = 0; i < Count; i++)
-        // {
-        //     DECLARE_PARTICLE_PTR
-        //     PreSpawn(Particle, InitialLocation, InitialVelocity);
-        //
-        //     for (int32 ModuleIndex = 0; ModuleIndex < LODLevel->SpawnModules.Num(); ModuleIndex++)
-        //     {
-        //         ...
-        //     }
-        //
-        //     PostSpawn(Particle, Interp, SpawnTime);
-        // }
-    }
+    void PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity);
+    void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
     void KillParticle(int32 Index);
+    void KilParticles();
+
+    virtual FDynamicEmitterReplayDataBase* GetReplayData();
+    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected, ERHIFeatureLevel::Type InFeatureLevel)
+    {
+        return NULL;
+    }
+    // Replyay Data를 채워주는 역할
+    virtual bool FillReplayData(FDynamicEmitterReplayDataBase& DynamicEmitterReplayDataBase);
+    virtual UMaterial* GetCurrentMaterial();
+
 };
 
 

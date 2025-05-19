@@ -77,6 +77,7 @@ public:    // 8비트 중 마지막 1비트만을 활용하여 bool 변수처럼
     virtual void CompileModule(struct FParticleEmitterBuildInfo& EmitterInfo);
     virtual void Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase);
     virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime);
+    virtual void Update(FParticleEmitterInstance* Owner, FBaseParticle* Particle, float DeltaTime);
     virtual void FinalUpdate(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime);
     // TODO UParticleModuleTypeDataBase 구현하면 활성화
     //virtual uint32 RequiredBytes(UParticleModuleTypeDataBase* TypeData);

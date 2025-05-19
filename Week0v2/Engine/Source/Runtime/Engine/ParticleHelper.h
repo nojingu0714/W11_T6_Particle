@@ -1,8 +1,57 @@
+#include "Components/Material/Material.h"
 #include "Math/Color.h"
 #include "Math/Vector.h"
 #include "UserInterface/Debug/DebugViewModeHelpers.h"
 
+/*-----------------------------------------------------------------------------
+    Helper macros.
+-----------------------------------------------------------------------------*/
+//	Macro fun.
+
+// if 문의 오류를 막기 위해 do while 사용
+#define SPAWN_INIT																										\
+    do{   \
+        if ((Owner != NULL) && (Owner->Component != NULL))  \
+        {   \
+            UE_LOG(LogLevel::Error, "SPAWN_INIT NULL"); \
+        }   \
+    } while(0);  \
+    const int32		ActiveParticles = Owner->ActiveParticles;															\
+    const uint32		ParticleStride = Owner->ParticleStride;														\
+    uint32			CurrentOffset = Offset;																	\
+    FBaseParticle& Particle = *(ParticleBase);
+
+#define DECLARE_PARTICLE_PTR(Name,Address)		\
+    FBaseParticle* Name = (FBaseParticle*) (Address);
+#define BEGIN_UPDATE_LOOP																								\
+{			\
+    do{   \
+        if ((Owner != NULL) && (Owner->Component != NULL))  \
+        {   \
+            UE_LOG(LogLevel::Error, "BEGINE_UPDATE_LOOP NULL"); \
+        }   \
+    } while(0); \
+    int32&			ActiveParticles = Owner->ActiveParticles;										\
+    uint32			CurrentOffset	= Offset;					    								\
+    const uint8*		ParticleData	= Owner->ParticleData;										\
+    const uint32		ParticleStride	= Owner->ParticleStride;									\
+    uint16*			ParticleIndices	= Owner->ParticleIndices;										\
+    for(int32 i=ActiveParticles-1; i>=0; i--)								    					\
+    {																								\
+    const int32	CurrentIndex	= ParticleIndices[i];				          						\
+    const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;						\
+    FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);								    \
+    if ((Particle.Flags & STATE_Particle_Freeze) == 0)	   							                \
+        {   																						\
+
+#define END_UPDATE_LOOP																									\
+       }																											\
+CurrentOffset				= Offset;																		\
+}																												\
+}
+
 class UMaterialInterface;
+class UParticleModuleRequired;
 
 enum EDynamicEmitterType
 {
@@ -15,7 +64,34 @@ enum EDynamicEmitterType
     DET_Custom
 };
 
-struct FBaseParticle
+/*-----------------------------------------------------------------------------
+    Particle State Flags
+-----------------------------------------------------------------------------*/
+enum EParticleStates
+{
+    /** Ignore updates to the particle						*/
+    STATE_Particle_JustSpawned = 0x02000000,
+    /** Ignore updates to the particle						*/
+    STATE_Particle_Freeze = 0x04000000,
+    /** Ignore collision updates to the particle			*/
+    STATE_Particle_IgnoreCollisions = 0x08000000,
+    /**	Stop translations of the particle					*/
+    STATE_Particle_FreezeTranslation = 0x10000000,
+    /**	Stop rotations of the particle						*/
+    STATE_Particle_FreezeRotation = 0x20000000,
+    /** Combination for a single check of 'ignore' flags	*/
+    STATE_Particle_CollisionIgnoreCheck = STATE_Particle_Freeze | STATE_Particle_IgnoreCollisions | STATE_Particle_FreezeTranslation | STATE_Particle_FreezeRotation,
+    /** Delay collision updates to the particle				*/
+    STATE_Particle_DelayCollisions = 0x40000000,
+    /** Flag indicating the particle has had at least one collision	*/
+    STATE_Particle_CollisionHasOccurred = 0x80000000,
+    /** State mask. */
+    STATE_Mask = 0xFE000000,
+    /** Counter mask. */
+    STATE_CounterMask = (~STATE_Mask)
+};
+
+struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD 구조체 
 {
     // 48 bytes
     FVector		OldLocation;			// Last frame's location, used for collision
@@ -48,8 +124,28 @@ struct FBaseParticle
     float			OneOverMaxLifetime;		// Reciprocal of lifetime
     float			Placeholder0;
     float			Placeholder1;
+
+    FBaseParticle()
+    : OldLocation(FVector::ZeroVector)
+    , Location(FVector::ZeroVector)
+    , BaseVelocity(FVector::ZeroVector)
+    , Rotation(0.0f)
+    , Velocity(FVector::ZeroVector)
+    , BaseRotationRate(0.0f)
+    , BaseSize(FVector(1.0f))           // 기본 크기를 (1,1,1)로
+    , RotationRate(0.0f)
+    , Size(BaseSize)
+    , Flags(0)
+    , Color(FLinearColor::White)
+    , BaseColor(FLinearColor::White)
+    , RelativeTime(0.0f)
+    , OneOverMaxLifetime(1.0f)          // 기본 수명 1초로 가정
+    , Placeholder0(0.0f)
+    , Placeholder1(0.0f)
+    {}
 };
-struct FParticleSpriteVertex
+
+struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용 정점 데이터 
 {
     /** The position of the particle. */
     FVector Position;
@@ -68,7 +164,7 @@ struct FParticleSpriteVertex
     /** The color of the particle. */
     FLinearColor Color;
 };
-struct FMeshParticleInstanceVertex
+struct FMeshParticleInstanceVertex // GPU로 전송되는 메시 인스텅신 파티클용 정점 데이터
 {
     /** The color of the particle. */
     FLinearColor Color;
@@ -88,13 +184,14 @@ struct FMeshParticleInstanceVertex
     /** The relative time of the particle. */
     float RelativeTime;
 };
+
 struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
 {
     int32 MemBlockSize;
     int32 ParticleDataNumBytes;
     int32 ParticleIndicesNumShorts;
-    uint8* ParticleData; // this is also the memory block we allocated
-    uint16* ParticleIndices; // not allocated, this is at the end of the memory block
+    uint8* ParticleData; // FBaseParticle를 배열 형태로 저장 
+    uint16* ParticleIndices; // 실제로 렌더링할 활성 파티클의 인덱스
 
     FParticleDataContainer()
         : MemBlockSize(0)
@@ -111,6 +208,16 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
     void Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts);
     void Free();
 };
+
+inline void FParticleDataContainer::Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts)
+{
+}
+
+inline void FParticleDataContainer::Free()
+{
+}
+
+// Replay Data Base 
 struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
     /** The type of emitter. */
@@ -126,68 +233,65 @@ struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 �
 
     int32 SortMode;
 };
+
 struct FDynamicSpriteEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 {
-    UMaterialInterface*             MaterialInterface;
-    struct FParticleRequiredModule  *RequiredModule;
+    //원레 머터리얼 인터페이스를 사용하나 UMaterial로 일단 퉁치기
+    //UMaterialInterface*             MaterialInterface;
+    UMaterial*                      Material;
+    UParticleModuleRequired*        RequiredModule;
 };
+
+struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataBase
+{
+    /** Constructor */
+    FDynamicSpriteEmitterReplayData()
+    {
+    }
+    
+    /** Serialization */
+    virtual void Serialize( FArchive& Ar )
+    {
+        // // Call parent implementation
+        // FDynamicSpriteEmitterReplayDataBase::Serialize( Ar );
+        //
+        // // ...
+    }
+};
+// Emitter Data Base 
 struct FDynamicEmitterDataBase
 {
     int32 EmitterIndex;
     
     virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
 };
+
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
     void SortSpriteParticles();
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const = 0;
+    virtual int32 GetDynamicVertexStride() const = 0;
+    const FDynamicEmitterReplayDataBase& GetSource() const = 0; 
+
 };
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type InFeatureLevel) const override
+    virtual int32 GetDynamicVertexStride() const override
     {
         return sizeof(FParticleSpriteVertex);
     }
+    const FDynamicEmitterReplayDataBase& GetSource() const
+    {
+        return Source;
+    }
+    FDynamicSpriteEmitterReplayData Source;
 };
+
 
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
 {
-    virtual int32 GetDynamicVertexStride(ERHIFeatureLevel::Type /*InFeatureLevel*/) const override
+    virtual int32 GetDynamicVertexStride() const override
     {
         return sizeof(FMeshParticleInstanceVertex);
     }
 };
-
-
-/*-----------------------------------------------------------------------------
-    Helper macros.
------------------------------------------------------------------------------*/
-//	Macro fun.
-
-#define BEGIN_UPDATE_LOOP																								\
-	{																													\
-		int32&			ActiveParticles = Owner->ActiveParticles;														\
-		uint32			CurrentOffset	= Offset;																		\
-		const uint8*		ParticleData	= Owner->ParticleData;															\
-		const uint32		ParticleStride	= Owner->ParticleStride;														\
-		uint16*			ParticleIndices	= Owner->ParticleIndices;														\
-		for(int32 i=ActiveParticles-1; i>=0; i--)																			\
-		{																												\
-			const int32	CurrentIndex	= ParticleIndices[i];															\
-			const uint8* ParticleBase	= ParticleData + CurrentIndex * ParticleStride;									\
-			FBaseParticle& Particle		= *((FBaseParticle*) ParticleBase);													\
-			{																											\
-
-#define END_UPDATE_LOOP																									\
-			}																											\
-			CurrentOffset				= Offset;																		\
-		}																												\
-	}
-
-#define SPAWN_INIT																											\
-	const int32		ActiveParticles	= Owner->ActiveParticles;															\
-	const uint32		ParticleStride	= Owner->ParticleStride;															\
-	uint32			CurrentOffset	= Offset;																			\
-	FBaseParticle&	Particle		= *(ParticleBase);
-

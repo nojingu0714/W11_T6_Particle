@@ -32,4 +32,6 @@ public:
     virtual float GetEstimatedSpawnRate() override;
     virtual int32 GetMaximumBurstCount() override;
     float GetGlobalRateScale()const;
+
+    void Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle& Particle);
 };

@@ -61,3 +61,7 @@ float UParticleModuleSpawn::GetGlobalRateScale() const
 
     return 0.0f;
 }
+
+void UParticleModuleSpawn::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle& Particle)
+{
+}

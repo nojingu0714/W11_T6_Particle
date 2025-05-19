@@ -41,6 +41,15 @@
 #include <Animation/CustomAnimInstance/TestAnimInstance.h>
 #include <Animation/AnimSingleNodeInstance.h>
 
+#include "Particles/ParticleEmitter.h"
+#include "Particles/ParticleLODLevel.h"
+#include "Particles/ParticleSystem.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "Particles/Size/ParticleModuleSizeBase.h"
+#include "Particles/Spawn/ParticleModuleSpawn.h"
+#include "Particles/ParticleModuleRequired.h"
+#include "UObject/UObjectIterator.h"
+
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
 {
     Width = InWidth;
@@ -783,7 +792,83 @@ void PropertyEditorPanel::Render()
             ImGui::TreePop();
         }        
     }
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UParticleSystemComponent>())
+    {
+        // TODO : Particle Comp
+        UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PickedComponent);
+        DrawParticlePreviewButton();
+        for (auto Emitter : ParticleComp->Template->Emitters)
+        {
+            if (!Emitter->LODLevels[0])
+                continue;
+            for (auto Module : Emitter->LODLevels[0]->Modules)
+            {
+                if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(Module))
+                {
+                    // 1) 먼저 모든 머티리얼을 수집
+                    TArray<UMaterial*> MaterialList;
+                    TArray<FString> MaterialNames;
+                    bool bInitialized = false;
+                    if (!bInitialized)
+                    {
+                        for (UMaterial* Mat : TObjectRange<UMaterial>())
+                        {
+                            MaterialList.Add(Mat);
+                            // GetName() 반환값을 UTF-8 문자열로 변환
+                            MaterialNames.Add(Mat->GetMaterialInfo().MTLName);
+                        }
+                        bInitialized = true;
+                    }
 
+                    // 2) 선택 인덱스
+                    static int32 CurrentIndex = 0;
+                    CurrentIndex = FMath::Clamp(CurrentIndex, 0, MaterialList.Num() - 1);
+
+                    // 3) ImGui UI
+                    ImGui::Text("Particle Module Required");
+                    if (ImGui::BeginCombo("Select Material", GetData(MaterialNames[CurrentIndex])))
+                    {
+                        for (int32 i = 0; i < MaterialList.Num(); ++i)
+                        {
+                            bool bIsSelected = (CurrentIndex == i);
+                            if (ImGui::Selectable(GetData(MaterialNames[i]), bIsSelected))
+                            {
+                                CurrentIndex = i;
+                            }
+                            if (bIsSelected)
+                                ImGui::SetItemDefaultFocus();
+                        }
+                        ImGui::EndCombo();
+                    }
+
+                    // 4) 선택된 머티리얼을 할당
+                    UMaterial* SelectedMat = MaterialList.IsValidIndex(CurrentIndex) ? MaterialList[CurrentIndex] : nullptr;
+                    if (SelectedMat)
+                    {
+                        // UParticleModuleRequired::SpriteTexture 는 UTexture* 타입이므로,
+                        // 머티리얼을 텍스처로 사용하려면 머티리얼 인스턴스의 텍스처 파라미터를 꺼내거나
+                        // 필요한 UTexture2D* 를 직접 나열해야 합니다.
+                        // 예시로, 만약 머티리얼 이름 그대로 텍스처 에셋이 있다면:
+                        Required->SpriteTexture = SelectedMat;
+                    }
+                }
+                else if (UParticleModuleSpawn* Spawn =  Cast<UParticleModuleSpawn>(Module))
+                {
+                    ImGui::Text("Particle Module Spawn");
+                    float NewRate = Spawn->Rate.GetValue(0.0f);
+
+                    ImGui::InputFloat("Spawn Rate", &NewRate);
+                    Spawn->Rate = NewRate;
+                }
+                else if (Cast<UParticleModuleSizeBase>(Module))
+                {
+                    ImGui::Text("Particle Module Size");
+                }
+                ImGui::Spacing();
+            }
+        }   
+    }
+    
     RenderShapeProperty(PickedActor);
 
     ImGui::End();
@@ -1757,7 +1842,7 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
             return;
         }
         
-        UWorld* World = EditorEngine->CreatePreviewWindow();
+        UWorld* World = EditorEngine->CreatePreviewWindow("Skeletal Preview");
 
         // @todo CreatePreviewWindow()에서 다른 액터들을 소환하는가? 아니라면 불필요해 보이는 검사
         const TArray<AActor*> CopiedActors = World->GetActors();
@@ -1794,6 +1879,43 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
         UAnimSingleNodeInstance* TestAnimInstance = FObjectFactory::ConstructObject<UAnimSingleNodeInstance>(SkeletalMeshComponent);
         TestAnimInstance->GetCurrentSequence()->SetData(FilePath+"\\mixamo.com");
         SkeletalMeshComponent->SetAnimInstance(TestAnimInstance);
+    }
+}
+
+void PropertyEditorPanel::DrawParticlePreviewButton()
+{
+    if (ImGui::Button("Preview##Particle"))
+    {
+        UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
+        if (EditorEngine == nullptr)
+        {
+            return;
+        }
+
+        UWorld* World = EditorEngine->CreatePreviewWindow("ParticlePreview", EWorldType::GameParticlePreview);
+        
+        const TArray<AActor*> CopiedActors = World->GetActors();
+        for (AActor* Actor : CopiedActors)
+        {
+            if (Actor->IsA<UTransformGizmo>() || Actor->IsA<APlayerCameraManager>())
+            {
+                continue;
+            }
+
+            Actor->Destroy();
+        }
+        World->ClearSelectedActors();
+
+        // SkySphere 생성
+        AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
+        SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
+        UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
+        FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
+        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
+        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
+        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
+        MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
+        SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
     }
 }
 
