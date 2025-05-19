@@ -520,6 +520,8 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -784,6 +786,9 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSizeBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

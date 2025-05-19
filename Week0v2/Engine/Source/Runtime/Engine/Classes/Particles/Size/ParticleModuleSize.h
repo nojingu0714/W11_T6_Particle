@@ -14,6 +14,6 @@ public:
     FSimpleVectorDistribution StartSize;
 
     void InitializeDefaults();
-    virtual void CompileModule(struct FParticleEmitterBuildInfo& EmitterInfo) override;
+    virtual void CompileModule(struct FParticleEmitterBuildInfo& EmitterInfo);
     virtual void Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase) override;
 };

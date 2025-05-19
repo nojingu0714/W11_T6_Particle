@@ -1,5 +1,5 @@
 #include "ParticleModuleVelocity.h"
-#include "Engine/Source/Runtime/Engine/ParticleEmitterInstances.h"
+#include "Engine/Source/Runtime/Engine/ParticleEmitterInstance.h"
 #include "Engine/Source/Runtime/Engine/ParticleHelper.h"
 #include "Engine/Classes/Particles/ParticleSystemComponent.h"
 
@@ -17,7 +17,7 @@ void UParticleModuleVelocity::InitializeDefaults()
 {
     StartVelocity = FSimpleVectorDistribution(FSimpleFloatDistribution(0.0f),
                                               FSimpleFloatDistribution(0.0f),
-                                              FSimpleFloatDistribution(10.0f));
+                                              FSimpleFloatDistribution(1.0f));
 
     // 방사는 조심할것, 뷰어쪽에서 Owner의 Component 위치를 가져오는 것에 추가처리가 필요해보임
     StartVelocityRadial = FSimpleVectorDistribution(FSimpleFloatDistribution(0.0f),

@@ -83,9 +83,19 @@ struct FSimpleVectorDistribution
 
     FSimpleVectorDistribution(const FVector StartVector, const FVector EndVector, EDistributionType Type) 
     {
-        DistX = FSimpleFloatDistribution(StartVector.X, EndVector.X, Type);
-        DistY = FSimpleFloatDistribution(StartVector.Y, EndVector.Y, Type);
-        DistZ = FSimpleFloatDistribution(StartVector.Z, EndVector.Z, Type);
+        if (Type == EDistributionType::Constant) 
+        {
+            DistX = FSimpleFloatDistribution(StartVector.X);
+            DistY = FSimpleFloatDistribution(StartVector.Y);
+            DistZ = FSimpleFloatDistribution(StartVector.Z);
+        }
+        else 
+        {
+            DistX = FSimpleFloatDistribution(StartVector.X, EndVector.X, Type);
+            DistY = FSimpleFloatDistribution(StartVector.Y, EndVector.Y, Type);
+            DistZ = FSimpleFloatDistribution(StartVector.Z, EndVector.Z, Type);
+        }
+        
     }
 
     EDistributionType GetDistributionType()

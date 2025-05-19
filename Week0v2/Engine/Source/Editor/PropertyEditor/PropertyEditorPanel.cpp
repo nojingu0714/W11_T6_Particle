@@ -50,6 +50,8 @@
 #include "Particles/ParticleModuleRequired.h"
 #include "Particles/Lifetime/ParticleModuleLifetime.h"
 #include "Particles/Location/ParticleModuleLocation.h"
+#include "Particles/Velocity/ParticleModuleVelocity.h"
+#include "Particles/Size/ParticleModuleSize.h"
 #include "UObject/UObjectIterator.h"
 
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
@@ -859,6 +861,11 @@ void PropertyEditorPanel::Render()
                     ImGui::Text("Particle Module Spawn");
                     RenderFSimpleFloatDistribution(Spawn->Rate, 0.0f, "Spawn Rate");
                 }
+                else if (UParticleModuleSize* Size = Cast<UParticleModuleSize>(Module))
+                {
+                    ImGui::Text("Particle Module Size");
+                    RenderFSimpleVectorDistribution(Size->StartSize, 0.0f, "StartSize");
+                }
                 else if (Cast<UParticleModuleSizeBase>(Module))
                 {
                     ImGui::Text("Particle Module Size");
@@ -873,6 +880,13 @@ void PropertyEditorPanel::Render()
                     ImGui::Text("Particle Module Location");
                     RenderFSimpleVectorDistribution(Location->StartLocation, 0.0f, "Location");
                 }
+                else if (UParticleModuleVelocity* Velocity = Cast<UParticleModuleVelocity>(Module)) 
+                {
+                    ImGui::Text("Particle Module Velocity");
+                    RenderFSimpleVectorDistribution(Velocity->StartVelocity, 0.0f, "StartVelocity");
+                    RenderFSimpleVectorDistribution(Velocity->StartVelocityRadial, 0.0f, "StartVelocityRadial");
+                }
+                
 
                 ImGui::Spacing();
             }
@@ -1199,6 +1213,7 @@ void PropertyEditorPanel::RenderFSimpleVectorDistribution(FSimpleVectorDistribut
         FVector NewVector;
         RenderDistribution.GetDistributionVector(NewVector);
         
+        ImGui::Text(*DistributionName);
         FString DistributionNameWithX = "X##" + DistributionName;
         FString DistributionNameWithY = "Y##" + DistributionName;
         FString DistributionNameWithZ = "Z##" + DistributionName;
@@ -1222,7 +1237,7 @@ void PropertyEditorPanel::RenderFSimpleVectorDistribution(FSimpleVectorDistribut
         FVector EndVector;
         RenderDistribution.GetDistributionVectors(StartVector, EndVector);
 
-        ImGui::PushItemWidth(50.0f);
+        ImGui::Text(*DistributionName);
         FString DistributionNameWithXMin = "X##" + DistributionName + "Min";
         FString DistributionNameWithYMin = "Y##" + DistributionName + "Min";
         FString DistributionNameWithZMin = "Z##" + DistributionName + "Min";
@@ -1230,6 +1245,7 @@ void PropertyEditorPanel::RenderFSimpleVectorDistribution(FSimpleVectorDistribut
         FString DistributionNameWithYMax = "Y##" + DistributionName + "Max";
         FString DistributionNameWithZMax = "Z##" + DistributionName + "Max";
 
+        ImGui::PushItemWidth(50.0f);
         ImGui::Text("MinVector");
         ImGui::InputFloat(*DistributionNameWithXMin, &StartVector.X);
         ImGui::SameLine();
@@ -1257,6 +1273,7 @@ void PropertyEditorPanel::RenderFSimpleVectorDistribution(FSimpleVectorDistribut
         FVector StartVector;
         FVector EndVector;
         RenderDistribution.GetDistributionVectors(StartVector, EndVector);
+
 
         FString DistributionNameWithXStart = "X##" + DistributionName + "Start";
         FString DistributionNameWithYStart = "Y##" + DistributionName + "Start";
