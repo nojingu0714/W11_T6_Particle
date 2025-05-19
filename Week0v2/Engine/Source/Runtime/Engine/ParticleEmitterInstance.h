@@ -28,7 +28,8 @@ struct FParticleEmitterInstance
     UParticleLODLevel* CurrentLODLevel;
 
     TArray<FBaseParticle*> BaseParticles;
-    TArray<UParticleModuleSpawn*> SpawnModules;
+    class UParticleModuleSpawn* SpawnModule;    // 실제로 Spawn되는 숫자에 영향을 주는 모듈만
+    TArray<UParticleModule*> SpawnModules;      // Spawn된 Particle의 성질을 변경하는 모듈들
     TArray<UParticleModule*> UpdateModules;
     TArray<FBaseParticle*> DeadParticles;
     
@@ -59,17 +60,20 @@ struct FParticleEmitterInstance
 
     /** The previous location of the instance.							*/
     FVector OldLocation;
-    // Emitter 시작 후 총 누적 시간 
+    // 0 ~ 1 사이의 Emitter 진행 정도를 알려주는 값, Duration이 Emitter 한 바퀴 기간
     float EmitterTime = 0.0f;
+    float SecondsSinceCreation = 0.0f;
+    float EmitterDuration = 0.0f;
+
     bool bEnabled= true;
     FVector2D PivotOffset;
 
     FParticleEmitterInstance();
     
-    void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
+    void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent, float InEmitterDuration = 1.0f);
     void Init();
     virtual void Tick(float DeltaTime);
-    void SetupEmitterDuration();
+    void SetupEmitterDuration(float InEmitterDuration);
     void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
 
     virtual FDynamicEmitterReplayDataBase* GetReplayData() { return nullptr; }

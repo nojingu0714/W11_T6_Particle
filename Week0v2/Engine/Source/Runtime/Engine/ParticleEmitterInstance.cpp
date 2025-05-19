@@ -15,11 +15,11 @@ FParticleEmitterInstance::FParticleEmitterInstance()
 
 }
 
-void FParticleEmitterInstance::InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent)
+void FParticleEmitterInstance::InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent, float InEmitterDuration)
 {
     SpriteTemplate = InEmitter;
     Component = InComponent;
-    SetupEmitterDuration();
+    SetupEmitterDuration(InEmitterDuration); // 기본적으로 1 
 }
 
 void FParticleEmitterInstance::Init()
@@ -47,7 +47,13 @@ void FParticleEmitterInstance::Init()
 
 void FParticleEmitterInstance::Tick(float DeltaTime)
 {
-    EmitterTime += DeltaTime;
+    SecondsSinceCreation += DeltaTime;
+    if (SecondsSinceCreation > EmitterDuration) 
+    {
+        SecondsSinceCreation -= EmitterDuration;
+    }
+
+    EmitterTime = SecondsSinceCreation / EmitterDuration;
 
     FVector CurrentLocation = Component->GetWorldLocation();
     FVector InitialLocation = CurrentLocation;
@@ -67,21 +73,28 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     {
         if (UParticleModuleSpawn* Spawn = Cast<UParticleModuleSpawn>(Module))
         {
-            SpawnModules.Add(Spawn);
+            SpawnModule = Spawn;
         }
         else if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(Module))
         {
             RequiredModule = Required;
         }
-        else
+        
+        if (Module->bSpawnModule) 
+        {
+            SpawnModules.Add(Module);
+        }
+
+        if(Module->bUpdateModule)
         {
             UpdateModules.Add(Module);
         }
+        
     }
 
 
     //   4-2) 모듈별로 생성 개수 계산 후 SpawnParticles 호출
-    for (UParticleModuleSpawn* SpawnModule : SpawnModules)
+    if (SpawnModule != nullptr)
     {
         // SpawnRate 분포에서 실제 값 가져오기
         float Rate;
@@ -137,9 +150,9 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     UpdateModules.Empty();
 }
 
-void FParticleEmitterInstance::SetupEmitterDuration()
+void FParticleEmitterInstance::SetupEmitterDuration(float InEmitterDuration)
 {
-    
+    EmitterDuration = InEmitterDuration;
 }
 
 void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, float Increment, const FVector& InitialLocation,
@@ -168,7 +181,11 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
         // 2) SpawnTime 설정 (이 배치의 스폰 시점)
         const float SpawnTime = StartTime + Increment * i;
 
-        // 3) 각 Spawn 모듈 적용
+        // 3) 각 Spawn 모듈의 Spawn 호출
+        for (int32 ModuleIndex = 0; ModuleIndex < SpawnModules.Num(); ModuleIndex++) 
+        {
+            SpawnModules[ModuleIndex]->Spawn(this, 0.0f, EmitterTime, Particle);
+        }
 
         // 4) PostSpawn: 모듈간 보간, 이벤트 페이로드 적용 등 최종 처리
         const float Interp = ComputeInterp(i);

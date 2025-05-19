@@ -177,7 +177,7 @@ struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD
     , Color(FLinearColor::White)
     , BaseColor(FLinearColor::White)
     , RelativeTime(0.0f)
-    , OneOverMaxLifetime(1.0f)          // 기본 수명 1초로 가정
+    , OneOverMaxLifetime(0.0f)          // LifetimeModule에서 값을 설정하지 않으면 삭제되지 않음, 언리얼도 동일
     , Placeholder0(0.0f)
     , Placeholder1(0.0f)
     {}
