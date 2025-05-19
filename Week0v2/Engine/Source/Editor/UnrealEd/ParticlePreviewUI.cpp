@@ -2,8 +2,10 @@
 
 #include "PropertyEditor/OutlinerEditorPanel.h"
 #include "PropertyEditor/PreviewControlEditorPanel.h"
+#include "ViewerPanel/ParticleCurvePanel.h"
 #include "ViewerPanel/ViewerControlPanel.h"
 #include "ViewerPanel/ViewerMenuPanel.h"
+#include "ViewerPanel/ViewerParticleEmitters.h"
 
 void FParticlePreviewUI::Initialize(SLevelEditor* LevelEditor, float Width, float Height)
 {
@@ -12,6 +14,12 @@ void FParticlePreviewUI::Initialize(SLevelEditor* LevelEditor, float Width, floa
     
     auto MenuPanel = std::make_shared<ViewerMenuPanel>();
     Panels["ViewerMenuPanel"] = MenuPanel;
+
+    auto EmitterPanel  = std::make_shared<ViewerParticleEmitters>();
+    Panels["ViewerParticleEmitters"] = EmitterPanel;
+
+    auto CurvePanel = std::make_shared<ParticleCurvePanel>();
+    Panels["ParticleCurvePanel"] = CurvePanel;
 }
 
 void FParticlePreviewUI::Render() const

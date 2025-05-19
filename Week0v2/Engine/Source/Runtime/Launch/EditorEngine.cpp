@@ -307,7 +307,8 @@ UWorld* UEditorEngine::CreatePreviewWindow(const FString& Name, EWorldType::Type
     // 뷰포트 클라이언트 생성 및 설정
     std::shared_ptr<FEditorViewportClient> EditorViewportClient = GetLevelEditor()->AddViewportClient<FEditorViewportClient>(AppWnd, NewPreviewWorld);
     EditorViewportClient->SetViewMode(VMI_Unlit);
-    FRect newSize = FRect(0.0f,50.0f,500.0f,500.0f);
+    EditorViewportClient->ViewportWorldType = VT_Particle;
+    FRect newSize = FRect(0.0f,70.0f,420.0f,420.0f);
     EditorViewportClient->ResizeViewport(newSize);
     return NewPreviewWorld;
 }

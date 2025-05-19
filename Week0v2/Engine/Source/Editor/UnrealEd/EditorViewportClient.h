@@ -17,7 +17,11 @@
 class FRect;
 class AActor;
 class USceneComponent;
-
+enum EViewportWorldType
+{
+    VT_World,
+  VT_Particle,
+};
 struct FViewportCameraTransform
 {
 public:
@@ -157,6 +161,7 @@ public:
     FMatrix View;
     FMatrix Projection;
 
+    EViewportWorldType ViewportWorldType = VT_World;
     // Cascade Shadow Map
 private:
     float CascadeSplits[CASCADE_COUNT]; // 카스케이드 경계 저장
