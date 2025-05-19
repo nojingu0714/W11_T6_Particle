@@ -1,5 +1,6 @@
-#include "ParticleEmitterInstance.h"
+﻿#include "ParticleEmitterInstance.h"
 
+#include "LaunchEngineLoop.h"
 #include "Particles/ParticleEmitter.h"
 #include "ParticleHelper.h"
 #include "Engine/AssetManager.h"
@@ -7,6 +8,7 @@
 #include "Particles/ParticleModuleRequired.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Particles/Spawn/ParticleModuleSpawn.h"
+#include "Renderer/Renderer.h"
 #include "UObject/Casts.h"
 
 FParticleEmitterInstance::FParticleEmitterInstance()
@@ -41,8 +43,11 @@ void FParticleEmitterInstance::Init()
     {
         MaxActiveParticles	= 0;
         ActiveParticles		= 0;
+        return;
     }
 
+    FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
+    ParticleEmitterRenderData.VertexBuffer = renderResourceManager->CreateEmptyDynamicVertexBuffer(sizeof(FParticleSpriteVertex) * MaxActiveParticles);
 }
 
 void FParticleEmitterInstance::Tick(float DeltaTime)
@@ -252,9 +257,12 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
     {
         return false;
     }
-
     // Must be filled in by implementation in derived class
     OutData.eEmitterType = DET_Unknown;
+    
+    OutData.LocalToWorld = Component->GetWorldMatrix();
+
+    OutData.ParticleEmitterRenderData = ParticleEmitterRenderData;
 
     OutData.ActiveParticleCount = ActiveParticles;
     OutData.ParticleStride = ParticleStride;

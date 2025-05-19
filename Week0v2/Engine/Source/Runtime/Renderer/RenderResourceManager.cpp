@@ -159,6 +159,20 @@ void FRenderResourceManager::LoadStates()
     depthStencilDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;  // 깊이 비교를 항상 통과
     GraphicDevice->CreateDepthStencilState(
         &depthStencilDesc, &DepthStencilStates[static_cast<uint32>(EDepthStencilState::DepthNone)]);
+
+	{
+	    D3D11_DEPTH_STENCIL_DESC StencilDesc = {};
+	    StencilDesc.DepthEnable = TRUE;                     // 깊이 테스트 활성화
+	    StencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // 깊이 버퍼에 쓰기 비활성화
+	    StencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // 일반적인 깊이 테스트 함수 (또는 LESS)
+
+	    StencilDesc.StencilEnable = FALSE;                  // 스텐실 테스트는 보통 사용 안 함
+	    StencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	    StencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+
+	    GraphicDevice->CreateDepthStencilState(&StencilDesc, &DepthStencilStates[static_cast<uint32>(EDepthStencilState::TranslucentNoDepthWrite)]);
+	}
+    
 #pragma endregion
 }
 

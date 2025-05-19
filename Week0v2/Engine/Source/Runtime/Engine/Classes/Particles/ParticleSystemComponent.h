@@ -36,5 +36,7 @@ public:
 
     void UpdateDynamicData();
     TArray<FDynamicEmitterDataBase*> EmitterRenderData;
+
+    
 };
 

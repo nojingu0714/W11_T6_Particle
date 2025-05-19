@@ -1,7 +1,11 @@
 #pragma once
 #include "FBaseRenderPass.h"
 #include "Container/Array.h"
+#include "Math/Matrix.h"
+#include "Particles/ParticleSystem.h"
 
+struct FObjMaterialInfo;
+struct FParticleEmitterRenderData;
 class UParticleSystemComponent;
 
 class FParticleRenderPass : public FBaseRenderPass
@@ -16,6 +20,9 @@ public:
     void Prepare(std::shared_ptr<FViewportClient> InViewportClient) override;
     void Execute(std::shared_ptr<FViewportClient> InViewportClient) override;
     void ClearRenderObjects() override;
+
+    static void UpdateMaterialConstants(const FObjMaterialInfo& MaterialInfo);
+
 
 private:
     TArray<UParticleSystemComponent*> ParticleSystemComponents;

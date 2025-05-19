@@ -160,6 +160,7 @@ public:
 
     FMatrix View;
     FMatrix Projection;
+    FMatrix ViewProjection;
 
     EViewportWorldType ViewportWorldType = VT_World;
     // Cascade Shadow Map
@@ -190,6 +191,7 @@ public: //Camera Movement
 
     FMatrix& GetViewMatrix() { return  View; }
     FMatrix& GetProjectionMatrix() { return Projection; }
+    FMatrix& GetViewProjectionMatrix() { return ViewProjection; }
     void UpdateViewMatrix();
     void UpdateProjectionMatrix();
 

@@ -69,6 +69,7 @@ void FEditorViewportClient::Tick(const float DeltaTime)
     UpdateViewMatrix();
     UpdateProjectionMatrix();
     UpdateCascadeShadowArea();
+    ViewProjection = View * Projection;
 }
 
 void FEditorViewportClient::Release() const
@@ -423,6 +424,7 @@ void FEditorViewportClient::ResizeViewport(FRect Top, FRect Bottom, FRect Left, 
 
     UpdateProjectionMatrix();
     UpdateViewMatrix();
+    ViewProjection = View * Projection;
 }
 
 void FEditorViewportClient::ResizeViewport(FRect InRect)
@@ -442,6 +444,8 @@ void FEditorViewportClient::ResizeViewport(FRect InRect)
 
     UpdateProjectionMatrix();
     UpdateViewMatrix();
+    
+    ViewProjection = View * Projection;
 }
 
 bool FEditorViewportClient::IsSelected(const FVector2D Point) const
