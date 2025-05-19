@@ -205,6 +205,12 @@ void FRenderResourceManager::ReleaseResources()
         VB.Value->Release();
         VB.Value = nullptr;
     }
+
+    for ( auto VB : VertexBuffersSet)
+    {
+        VB->Release();
+        VB = nullptr;
+    }
 }
 
 ID3D11Buffer* FRenderResourceManager::CreateIndexBuffer(const uint32* indices, const uint32 indicesSize) const
@@ -429,6 +435,11 @@ void FRenderResourceManager::AddOrSetVertexBuffer(const FName InVBName, ID3D11Bu
     VertexBuffers.Add(InVBName, InBuffer);
 }
 
+void FRenderResourceManager::AddOrSetVertexBuffer(ID3D11Buffer* InBuffer)
+{
+    VertexBuffersSet.Add(InBuffer);
+}
+
 void FRenderResourceManager::AddOrSetIndexBuffer(const FName InPBName, ID3D11Buffer* InBuffer)
 {
     if (IndexBuffers.Contains(InPBName))
@@ -567,6 +578,16 @@ ID3D11Buffer* FRenderResourceManager::GetVertexBuffer(const FName InVBName)
     return nullptr;
 }
 
+bool FRenderResourceManager::IsVertexBufferExist(ID3D11Buffer* InBuffer)
+{
+    if (VertexBuffersSet.Contains(InBuffer))
+    {
+        return true;
+    }
+    return false;
+}
+
+
 ID3D11Buffer* FRenderResourceManager::GetIndexBuffer(const FName InIBName)
 {
     if (IndexBuffers.Contains(InIBName))
@@ -644,4 +665,34 @@ void FRenderResourceManager::HotReloadShaders()
             PixelShader.Value->UpdateShader();
         }
     }
+}
+
+ID3D11Buffer* FRenderResourceManager::CreateEmptyDynamicVertexBuffer(uint32 SizeInBytes) 
+{
+    if (SizeInBytes == 0)
+    {
+        UE_LOG(LogLevel::Warning, "Cannot create a dynamic vertex buffer with zero size.");
+        return nullptr;
+    }
+
+    D3D11_BUFFER_DESC vertexBufferDesc = {};
+    vertexBufferDesc.ByteWidth = SizeInBytes;
+    vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;       // CPU에서 업데이트 가능
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // 버텍스 버퍼로 바인딩
+    vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; // CPU 쓰기 접근 허용
+    vertexBufferDesc.MiscFlags = 0;
+    vertexBufferDesc.StructureByteStride = 0;
+
+    ID3D11Buffer* vertexBuffer = nullptr;
+
+    // 초기 데이터를 제공하지 않으므로 D3D11_SUBRESOURCE_DATA는 nullptr로 전달
+    const HRESULT hr = GraphicDevice->Device->CreateBuffer(&vertexBufferDesc, nullptr, &vertexBuffer);
+    if (FAILED(hr))
+    {
+        UE_LOG(LogLevel::Warning, "Empty Dynamic VertexBuffer Creation failed, HRESULT: 0x%X", hr);
+        return nullptr;
+    }
+    AddOrSetVertexBuffer(vertexBuffer);
+
+    return vertexBuffer;
 }
