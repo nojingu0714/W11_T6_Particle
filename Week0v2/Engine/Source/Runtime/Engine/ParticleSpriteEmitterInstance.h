@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "ParticleEmitterInstance.h"
 
 struct FParticleSpriteEmitterInstance : public FParticleEmitterInstance
@@ -7,7 +7,7 @@ struct FParticleSpriteEmitterInstance : public FParticleEmitterInstance
     virtual ~FParticleSpriteEmitterInstance();
 public:
     virtual FDynamicEmitterReplayDataBase* GetReplayData() override;
-    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected, ERHIFeatureLevel::Type InFeatureLevel) override;
+    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) override;
     virtual bool FillReplayData(FDynamicEmitterReplayDataBase& DynamicEmitterReplayDataBase) override;
 
 };

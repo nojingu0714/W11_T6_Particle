@@ -1,5 +1,5 @@
-﻿#include "ParticleSpriteEmitterInstance.h"
-
+#include "ParticleSpriteEmitterInstance.h"
+#include "Particles/ParticleEmitter.h"
 #include "ParticleHelper.h"
 
 FDynamicEmitterReplayDataBase* FParticleSpriteEmitterInstance::GetReplayData()
@@ -21,9 +21,30 @@ FDynamicEmitterReplayDataBase* FParticleSpriteEmitterInstance::GetReplayData()
     return NewEmitterReplayData;
 }
 
-FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSelected, ERHIFeatureLevel::Type InFeatureLevel)
+FDynamicEmitterDataBase* FParticleSpriteEmitterInstance::GetDynamicData(bool bSelected)
 {
-    return FParticleEmitterInstance::GetDynamicData(bSelected, InFeatureLevel);
+    // It is valid for the LOD level to be NULL here!
+    UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
+
+    if (IsDynamicDataRequired(LODLevel) == false || !bEnabled)
+    {
+        return NULL;
+    }
+
+
+    FDynamicSpriteEmitterData* NewEmitterData = new FDynamicSpriteEmitterData();
+
+    // Now fill in the source data
+    if (!FillReplayData(NewEmitterData->Source))
+    {
+        delete NewEmitterData;
+        return NULL;
+    }
+
+    // Setup dynamic render data.  Only call this AFTER filling in source data for the emitter.
+    NewEmitterData->Init(bSelected);
+
+    return NewEmitterData;
 }
 
 bool FParticleSpriteEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& OutData)

@@ -122,7 +122,6 @@ public:
     FVector EmitterOrigin;
     FRotator EmitterRotation;
     EParticleScreenAlignment ScreenAlignment;
-    uint8 bUseLocalSpace : 1;
     uint8 bKillOnDeactivate : 1;
     uint8 bKillOnCompleted : 1;
     EParticleSortMode SortMode;
@@ -150,7 +149,6 @@ public:
 
     EParticleBurstMethod ParticleBurstMethod;
 
-    uint8 bUseMaxDrawCount : 1;
     EEmitterNormalsMode EmitterNormalsMode;
     ESubUVBoundingVertexCount BoundingMode;
 
@@ -161,8 +159,9 @@ public:
 
     UTexture* CutoutTexture;
     UMaterial* SpriteTexture;
-    
+    uint8 bUseMaxDrawCount = false;
     int32 MaxDrawCount;
+    uint8 bUseLocalSpace = true;
 
     FVector NormalsCylinderDirection;
 

@@ -62,10 +62,8 @@ struct FParticleEmitterInstance
     // Emitter 시작 후 총 누적 시간 
     float EmitterTime = 0.0f;
     bool bEnabled= true;
+    FVector2D PivotOffset;
 
-    /** The sort mode to use for this emitter as specified by artist.	*/
-    int32 SortMode;
-    
     FParticleEmitterInstance();
     
     void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
@@ -74,21 +72,38 @@ struct FParticleEmitterInstance
     void SetupEmitterDuration();
     void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
 
+    virtual FDynamicEmitterReplayDataBase* GetReplayData() { return nullptr; }
+    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected) { return nullptr; }
     void PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity);
     void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
     void KillParticle(int32 Index);
     void KilParticles();
 
-    virtual FDynamicEmitterReplayDataBase* GetReplayData();
-    virtual FDynamicEmitterDataBase* GetDynamicData(bool bSelected, ERHIFeatureLevel::Type InFeatureLevel)
-    {
-        return NULL;
-    }
-    // Replyay Data를 채워주는 역할
-    virtual bool FillReplayData(FDynamicEmitterReplayDataBase& DynamicEmitterReplayDataBase);
-    virtual UMaterial* GetCurrentMaterial();
+    /**
+    * Get the current material to render with.
+    */
+     UMaterial* GetCurrentMaterial();
+    
+    /**
+    * GetDynamicData 유효성에 대한 몇 가지 일반적인 값을 확인합니다.
+    *
+    * GetDynamicData가 계속되어야 하는 경우 true를 반환하고, NULL을 반환해야 하는 경우 false를 반환합니다.
+    */
+    virtual bool IsDynamicDataRequired(UParticleLODLevel* InCurrentLODLevel);
+
+
+    /**
+    * Captures dynamic replay data for this particle system.
+    *
+    * @param	OutData		[Out] Data will be copied here
+    *
+    * @return Returns true if successful
+    */
+    virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData );
 
 };
+
+
 
 
 struct FParticleEmitterBuildInfo
