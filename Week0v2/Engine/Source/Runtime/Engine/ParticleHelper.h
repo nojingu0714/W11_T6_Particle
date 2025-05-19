@@ -362,6 +362,11 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 
 struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
 {
+    virtual ~FDynamicSpriteEmitterData()
+    {
+        if (VertexBuffer) { VertexBuffer->Release(); VertexBuffer = nullptr; }
+        if (IndexBuffer)  { IndexBuffer->Release();  IndexBuffer  = nullptr; }
+    }
     virtual int32 GetDynamicVertexStride() const override
     {
         return sizeof(FParticleSpriteVertex);
@@ -392,7 +397,11 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
     bool GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder, TArray<FBaseParticle>& ParticleData,
                                const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const;
     void Init(bool bInSelected);
-
+    
+    ID3D11Buffer* VertexBuffer   = nullptr;
+    ID3D11Buffer* IndexBuffer    = nullptr;
+    int32         VertexBufferSize = 0;
+    int32         IndexBufferSize  = 0;
 
     FDynamicSpriteEmitterReplayData Source;
 };

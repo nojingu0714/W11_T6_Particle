@@ -36,5 +36,10 @@ public:
 
     void UpdateDynamicData();
     TArray<FDynamicEmitterDataBase*> EmitterRenderData;
+    void MarkRenderDynamicDataDirty();
+
+protected:
+    /** Whether the render data needs to be rebuilt on the render thread */
+    bool bRenderDataDirty;
 };
 

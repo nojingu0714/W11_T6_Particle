@@ -7,9 +7,7 @@ class UParticleSystemComponent;
 class FParticleRenderPass : public FBaseRenderPass
 {
 public:
-    explicit FParticleRenderPass(const FName& InShaderName)
-        : FBaseRenderPass(InShaderName) {}
-    
+    explicit  FParticleRenderPass(const FName& InShaderName);
     ~FParticleRenderPass() override;
     
     void AddRenderObjectsToRenderPass(UWorld* World) override;

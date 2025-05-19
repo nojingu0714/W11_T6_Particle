@@ -185,6 +185,19 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* F
 			TempVert += VertexStride;
 		}
 	}
+    uint16* DestIndex = reinterpret_cast<uint16*>(FillIndexData);
+    for (int32 i = 0; i < ParticleCount; ++i)
+    {
+        uint16 BaseV = i * 4;
+        // 첫 삼각형
+        *DestIndex++ = BaseV + 0;
+        *DestIndex++ = BaseV + 1;
+        *DestIndex++ = BaseV + 2;
+        // 두 번째 삼각형
+        *DestIndex++ = BaseV + 2;
+        *DestIndex++ = BaseV + 3;
+        *DestIndex++ = BaseV + 0;
+    }
 
 	return true;
 }
