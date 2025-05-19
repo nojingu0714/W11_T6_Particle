@@ -260,6 +260,10 @@ void FEngineLoop::UpdateUI(HWND AppWnd) const
         {
             SkeletalPreviewUI->OnResize(AppWnd);
         }
+        if (const FParticlePreviewUI* ParticlePreviewUI = EditorEngine->GetParticlePreviewUI())
+        {
+            ParticlePreviewUI->OnResize(AppWnd);
+        }
 
         if (EditorEngine->ContentsUI)
         {

@@ -2,17 +2,16 @@
 
 #include "PropertyEditor/OutlinerEditorPanel.h"
 #include "PropertyEditor/PreviewControlEditorPanel.h"
+#include "ViewerPanel/ViewerControlPanel.h"
+#include "ViewerPanel/ViewerMenuPanel.h"
 
 void FParticlePreviewUI::Initialize(SLevelEditor* LevelEditor, float Width, float Height)
 {
-    auto ControlPanel = std::make_shared<PreviewControlEditorPanel>();
-    ControlPanel->Initialize(LevelEditor, Width, Height);
-    Panels["PreviewControlPanel"] = ControlPanel;
+    auto ControlPanel = std::make_shared<ViewerControlPanel>();
+    Panels["ViewerControlPanel"] = ControlPanel;
     
-    auto OutlinerPanel = std::make_shared<OutlinerEditorPanel>();
-    OutlinerPanel->Initialize(Width, Height);
-    Panels["OutlinerPanel"] = OutlinerPanel;
-    Panels["OutlinerPanel"]->bIsVisible = false;
+    auto MenuPanel = std::make_shared<ViewerMenuPanel>();
+    Panels["ViewerMenuPanel"] = MenuPanel;
 }
 
 void FParticlePreviewUI::Render() const
