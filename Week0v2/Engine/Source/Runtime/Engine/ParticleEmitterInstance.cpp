@@ -131,7 +131,6 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     }
     KilParticles();
 
-    UE_LOG(LogLevel::Warning, "Particles : %d", BaseParticles.Num());
     SpawnModules.Empty();
     UpdateModules.Empty();
 }
