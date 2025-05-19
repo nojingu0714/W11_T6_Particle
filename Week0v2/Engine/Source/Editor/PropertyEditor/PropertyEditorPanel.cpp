@@ -48,6 +48,7 @@
 #include "Particles/Size/ParticleModuleSizeBase.h"
 #include "Particles/Spawn/ParticleModuleSpawn.h"
 #include "Particles/ParticleModuleRequired.h"
+#include "Particles/Lifetime/ParticleModuleLifetime.h"
 #include "UObject/UObjectIterator.h"
 
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
@@ -855,14 +856,16 @@ void PropertyEditorPanel::Render()
                 else if (UParticleModuleSpawn* Spawn =  Cast<UParticleModuleSpawn>(Module))
                 {
                     ImGui::Text("Particle Module Spawn");
-                    float NewRate = Spawn->Rate.GetValue(0.0f);
-
-                    ImGui::InputFloat("Spawn Rate", &NewRate);
-                    Spawn->Rate = NewRate;
+                    RenderFSimpleFloatDistribution(Spawn->Rate, 0.0f, "Spawn Rate");
                 }
                 else if (Cast<UParticleModuleSizeBase>(Module))
                 {
                     ImGui::Text("Particle Module Size");
+                }
+                else if (UParticleModuleLifetime* Lifetime = Cast<UParticleModuleLifetime>(Module))
+                {
+                    ImGui::Text("Particle Module Lifetime");
+                    RenderFSimpleFloatDistribution(Lifetime->Lifetime, 0.0f, "Lifetime");
                 }
                 ImGui::Spacing();
             }
@@ -1137,6 +1140,48 @@ void PropertyEditorPanel::RenderBoneHierarchy(USkeletalMesh* SkeletalMesh, const
 void PropertyEditorPanel::OnBoneSelected(const int BoneIndex)
 {
     SelectedBoneIndex = BoneIndex;
+}
+
+void PropertyEditorPanel::RenderFSimpleFloatDistribution(FSimpleFloatDistribution& RenderDistribution, float Tvalue, FString DistributionName)
+{
+    switch (RenderDistribution.GetDistributionType()) 
+    {
+    case EDistributionType::Constant: {
+        float NewRate = RenderDistribution.GetValue(Tvalue);
+        ImGui::InputFloat(*DistributionName, &NewRate);
+        RenderDistribution.Constant = NewRate;
+        return;
+        break;
+    }
+
+    case EDistributionType::Uniform: {
+        float& MinValue = RenderDistribution.Min;
+        float& MaxValue = RenderDistribution.Max;
+        ImGui::InputFloat("Min", &MinValue);
+        ImGui::SameLine();
+        ImGui::InputFloat("Max", &MaxValue);
+        return;
+        break;
+    }
+
+    case EDistributionType::Linear:
+    case EDistributionType::EaseInOut:
+    case EDistributionType::SinWave: {
+        float& StartValue = RenderDistribution.Min;
+        float& EndValue = RenderDistribution.Max;
+        ImGui::InputFloat("Start", &StartValue);
+        ImGui::SameLine();
+        ImGui::InputFloat("End", &EndValue);
+        return;
+        break;
+    }
+
+    default: {
+        UE_LOG(LogLevel::Error, "EDistribution Error");
+        return;
+        break;
+        }
+    }
 }
 
 void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp)

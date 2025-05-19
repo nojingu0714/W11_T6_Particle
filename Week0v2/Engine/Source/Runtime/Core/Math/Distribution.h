@@ -27,6 +27,11 @@ struct FSimpleFloatDistribution
         : DistributionType(DistType), Min(InMin), Max(InMax) {
     }
 
+    EDistributionType GetDistributionType() 
+    {
+        return DistributionType;
+    }
+
     float GetValue(float t) const
     {
         switch (DistributionType)

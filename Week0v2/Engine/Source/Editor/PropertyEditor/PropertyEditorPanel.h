@@ -8,6 +8,7 @@ class UActorComponent;
 class UStaticMeshComponent;
 class USceneComponent;
 class ULevel;
+struct FSimpleFloatDistribution;
 
 struct FBoneRotation
 {
@@ -37,6 +38,8 @@ private:
     void RenderForSkeletalMesh(USkeletalMeshComponent* SkeletalMeshComponent) const;
     void RenderBoneHierarchy(USkeletalMesh* SkeletalMesh, int BoneIndex);
     void OnBoneSelected(int BoneIndex);
+
+    void RenderFSimpleFloatDistribution(FSimpleFloatDistribution& RenderDistribution, float Tvalue, FString DistributionName);
 
     /* Materials Settings */
     void RenderForMaterial(UStaticMeshComponent* StaticMeshComp);
