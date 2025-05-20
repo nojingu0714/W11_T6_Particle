@@ -339,8 +339,16 @@ void FDynamicSpriteEmitterData::ExecuteRender(const FMatrix& ViewProj) const
     const UINT Stride = sizeof(FParticleSpriteVertex);
     const UINT Offset = 0;
     FEngineLoop::GraphicDevice.DeviceContext->IASetVertexBuffers(0, 1, &VB, &Stride, &Offset);
-
-    
+    if (Source.Material)
+    {
+        auto texture = GEngineLoop.ResourceManager
+                           .GetTexture(Source
+                                           .Material
+                                           ->GetMaterialInfo()
+                                           .DiffuseTexturePath);
+        if (texture)
+             FEngineLoop::GraphicDevice.DeviceContext->PSSetShaderResources(0, 1, &texture->TextureSRV);
+    }
     FEngineLoop::GraphicDevice.DeviceContext->DrawInstanced(4, ParticleCount, 0, 0);
 }
 
