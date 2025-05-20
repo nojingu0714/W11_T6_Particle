@@ -1,4 +1,4 @@
-﻿#include "ParticleEmitter.h"
+#include "ParticleEmitter.h"
 
 #include "ParticleEmitterInstance.h"
 #include "ParticleHelper.h"
@@ -38,6 +38,7 @@ FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemCompon
         Instance->CurrentLODLevel = LODLevels[Instance->CurrentLODLevelIndex];
         Instance->Init();
     }
+    return Instance;
 }
 
 void UParticleEmitter::CacheEmitterModuleInfo()

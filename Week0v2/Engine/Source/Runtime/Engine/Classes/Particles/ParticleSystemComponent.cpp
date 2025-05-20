@@ -1,4 +1,4 @@
-﻿#include "ParticleSystemComponent.h"
+#include "ParticleSystemComponent.h"
 
 #include "ParticleEmitter.h"
 #include "ParticleEmitterInstance.h"
@@ -11,7 +11,7 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
 {
     UFXSystemComponent::TickComponent(DeltaTime);
 
-    for (auto Instance : EmitterInstances)
+    for (FParticleEmitterInstance* Instance : EmitterInstances)
     {
         Instance->Tick(DeltaTime);
     }

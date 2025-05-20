@@ -74,7 +74,6 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
     Graphics.DeviceContext->PSSetSamplers(static_cast<uint32>(ESamplerType::Linear), 1, &linearSampler);
 
 
-    Graphics.DeviceContext->PSSetConstantBuffers(0, 2, &PerFrameConstantBuffer);
 }
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
@@ -114,7 +113,7 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
     
     PerFrameConstants.CameraUpVector = curEditorViewportClient->ViewTransformPerspective.GetUpVector();
     PerFrameConstants.CameraRightVector = curEditorViewportClient->ViewTransformPerspective.GetRightVector();
-    renderResourceManager->UpdateConstantBuffer(PerFrameConstantBuffer, &PerFrameConstants);
+    renderResourceManager->UpdateConstantBuffer("FPerFrameConstants", &PerFrameConstants);
         
 
     for (const UParticleSystemComponent* ParticleSystemComponent : ParticleSystemComponents)

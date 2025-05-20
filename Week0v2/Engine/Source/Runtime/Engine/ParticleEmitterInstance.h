@@ -72,6 +72,7 @@ struct FParticleEmitterInstance
     FVector2D PivotOffset;
 
     FParticleEmitterInstance();
+    virtual ~FParticleEmitterInstance() {}
     
     void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
     void Init();
