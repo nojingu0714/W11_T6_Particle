@@ -91,7 +91,8 @@ VSOutput mainVS(ParticleVSInput input, uint vertexID : SV_VertexID) // SV_Vertex
     float2 baseUV = localUVs[offset];
 
     // 2. 파티클 크기 및 UV 뒤집기 적용
-    float2 particleSize = input.Size; 
+    //float2 particleSize = input.Size;
+    float2 particleSize = float2(1.f,1.f); // 임시 크기 (나중에 실제 크기로 대체)
     
     // UV 뒤집기 처리 (크기 부호 확인)
     if (particleSize.x < 0.0f)

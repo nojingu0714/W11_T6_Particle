@@ -186,19 +186,19 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* F
 			TempVert += VertexStride;
 		}
 	}
-    uint16* DestIndex = reinterpret_cast<uint16*>(FillIndexData);
-    for (int32 i = 0; i < ParticleCount; ++i)
-    {
-        uint16 BaseV = i * 4;
-        // 첫 삼각형
-        *DestIndex++ = BaseV + 0;
-        *DestIndex++ = BaseV + 1;
-        *DestIndex++ = BaseV + 2;
-        // 두 번째 삼각형
-        *DestIndex++ = BaseV + 2;
-        *DestIndex++ = BaseV + 3;
-        *DestIndex++ = BaseV + 0;
-    }
+    // uint16* DestIndex = reinterpret_cast<uint16*>(FillIndexData);
+    // for (int32 i = 0; i < ParticleCount; ++i)
+    // {
+    //     uint16 BaseV = i * 4;
+    //     // 첫 삼각형
+    //     *DestIndex++ = BaseV + 0;
+    //     *DestIndex++ = BaseV + 1;
+    //     *DestIndex++ = BaseV + 2;
+    //     // 두 번째 삼각형
+    //     *DestIndex++ = BaseV + 2;
+    //     *DestIndex++ = BaseV + 3;
+    //     *DestIndex++ = BaseV + 0;
+    // }
 
 	return true;
 }
@@ -338,8 +338,8 @@ void FDynamicSpriteEmitterData::ExecuteRender(const FMatrix& ViewProj) const
     FEngineLoop::GraphicDevice.DeviceContext->Unmap(VB, 0);
 
     const UINT Stride = sizeof(FParticleSpriteVertex);
-    
-    FEngineLoop::GraphicDevice.DeviceContext->IASetVertexBuffers(0, 1, &VB, &Stride, 0);
+    const UINT Offset = 0;
+    FEngineLoop::GraphicDevice.DeviceContext->IASetVertexBuffers(0, 1, &VB, &Stride, &Offset);
 
     
     FEngineLoop::GraphicDevice.DeviceContext->DrawInstanced(4, ParticleCount, 0, 0);

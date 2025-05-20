@@ -108,9 +108,6 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateVertexPixelShader(TEXT("LetterBox"), nullptr);
     LetterBoxRenderPass = std::make_shared<FLetterBoxRenderPass>(TEXT("LetterBox"));
 
-    CreateVertexPixelShader(TEXT("SpriteParticle"), nullptr);
-    ParticleRenderPass = std::make_shared<FParticleRenderPass>(TEXT("SpriteParticle"));
-    
     CreateVertexPixelShader(TEXT("Blur"), nullptr);
     BlurRenderPass = std::make_shared<FBlurRenderPass>(TEXT("Blur"));
     

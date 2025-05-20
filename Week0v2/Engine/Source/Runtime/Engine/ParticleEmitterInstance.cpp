@@ -42,7 +42,7 @@ void FParticleEmitterInstance::Init()
 
     
     // 3) 최대 파티클 수 설정
-    MaxActiveParticles = 3000;
+    MaxActiveParticles = 2048;
 
     // 3) 스트라이드 계산 (패딩 포함)
     ParticleStride     = ParticleSize;

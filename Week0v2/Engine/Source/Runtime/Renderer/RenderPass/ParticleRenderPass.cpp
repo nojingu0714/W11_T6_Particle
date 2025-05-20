@@ -79,7 +79,6 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 {
-    // 1) 뷰·프로젝션·카메라 상수 업데이트
     FMatrix View = FMatrix::Identity;
     FMatrix Proj = FMatrix::Identity;
     FMatrix ViewProj = FMatrix::Identity;
@@ -120,8 +119,7 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
 
     for (const UParticleSystemComponent* ParticleSystemComponent : ParticleSystemComponents)
     {
-        if (ParticleSystemComponent->IsActive())
-        {
+
             for (const FDynamicEmitterDataBase* EmitterDataBase : ParticleSystemComponent->EmitterRenderData)
             {
                 if (EmitterDataBase)
@@ -130,7 +128,7 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
                     
                 }
             }
-        }
+        
     }
 
     // for (const UBillboardComponent* item : BillboardComponents)
