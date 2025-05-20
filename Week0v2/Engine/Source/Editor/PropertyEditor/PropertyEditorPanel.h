@@ -8,6 +8,9 @@ class UActorComponent;
 class UStaticMeshComponent;
 class USceneComponent;
 class ULevel;
+struct FSimpleFloatDistribution;
+struct FSimpleVectorDistribution;
+class UParticleSystemComponent;
 
 struct FBoneRotation
 {
@@ -38,6 +41,9 @@ private:
     void RenderBoneHierarchy(USkeletalMesh* SkeletalMesh, int BoneIndex);
     void OnBoneSelected(int BoneIndex);
 
+    void RenderFSimpleFloatDistribution(FSimpleFloatDistribution& RenderDistribution, float Tvalue, FString DistributionName);
+    void RenderFSimpleVectorDistribution(FSimpleVectorDistribution& RenderDistribution, float Tvalue, FString DistributionName);
+
     /* Materials Settings */
     void RenderForMaterial(UStaticMeshComponent* StaticMeshComp);
     void RenderForMaterial(USkeletalMeshComponent* SkeletalMeshComp);
@@ -49,7 +55,7 @@ private:
     void RenderDelegate(ULevel* Level) const;
     
     void DrawSkeletalMeshPreviewButton(const FString& FilePath) const;
-    void DrawParticlePreviewButton();
+    void DrawParticlePreviewButton(UParticleSystemComponent* ParticleSystemComponent);
 private:
     float Width = 0, Height = 0;
     

@@ -10,6 +10,8 @@
 
 #include "Engine/World.h"
 
+class UParticleSystemComponent;
+
 class UEditorPanel
 {
 public:
@@ -17,6 +19,8 @@ public:
     virtual void Render() = 0;
     virtual void OnResize(HWND hWnd) = 0;
     void SetWorld(UWorld* InWorld) { World = InWorld; }
+
+    virtual void SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent);
 
     UWorld* World = nullptr;
 

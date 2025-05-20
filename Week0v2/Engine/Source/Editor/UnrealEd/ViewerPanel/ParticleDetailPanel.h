@@ -1,13 +1,17 @@
-﻿#pragma once
+#pragma once
 #include "Actors/ADodge.h"
+#include "Core/Math/Distribution.h"
 
 class UParticleModule;
 
 class ParticleDetailPanel
 {
 public:
-    void Render(UParticleModule* InSkeletalMesh);
+    void Render(UParticleModule* SelectedModule);
     void OnResize(HWND hWnd);
+
+    void RenderFSimpleFloatDistribution(FSimpleFloatDistribution& RenderDistribution, float Tvalue, FString DistributionName);
+    void RenderFSimpleVectorDistribution(FSimpleVectorDistribution& RenderDistribution, float Tvalue, FString DistributionName);
 
 private:
     float Width = 800, Height = 600;

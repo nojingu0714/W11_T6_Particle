@@ -9,13 +9,13 @@ class UParticleModuleSizeScaleBySpeed : public UParticleModuleSizeBase
 {
     DECLARE_CLASS(UParticleModuleSizeScaleBySpeed, UParticleModuleSizeBase)
 public:
-    UParticleModuleSizeScaleBySpeed() = default;
+    UParticleModuleSizeScaleBySpeed();
     ~UParticleModuleSizeScaleBySpeed() = default;
 
     FVector2D SpeedScale;
     FVector2D MaxScale;
 
 
-    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime) override;
+    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime);
     virtual void CompileModule(struct FParticleEmitterBuildInfo& EmitterInfo) override;
 };

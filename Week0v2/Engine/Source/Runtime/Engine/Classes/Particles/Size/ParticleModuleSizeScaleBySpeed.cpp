@@ -2,6 +2,11 @@
 #include "Engine/Source/Runtime/Engine/ParticleHelper.h"
 #include "Engine/Source/Runtime/Engine/ParticleEmitterInstance.h"
 
+UParticleModuleSizeScaleBySpeed::UParticleModuleSizeScaleBySpeed()
+{
+    bUpdateModule = true;
+}
+
 void UParticleModuleSizeScaleBySpeed::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
 {
     FVector Scale(SpeedScale.X, SpeedScale.Y, 1.0f);

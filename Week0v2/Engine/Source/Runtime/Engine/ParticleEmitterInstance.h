@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Container/Array.h"
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
@@ -18,6 +18,13 @@ class UParticleSystemComponent;
 class UParticleLODLevel;
 class UParticleEmitter;
 
+
+// 동적 버퍼는 인스턴스에서 계속 업데이트 하기 때문에 이미터가 아니라 인스턴스가 소유
+struct FParticleEmitterRenderData
+{
+    ID3D11Buffer* VertexBuffer = nullptr;
+};
+
 struct FParticleEmitterInstance
 {
     UParticleEmitter* SpriteTemplate;
@@ -28,12 +35,14 @@ struct FParticleEmitterInstance
     UParticleLODLevel* CurrentLODLevel;
 
     TArray<FBaseParticle*> BaseParticles;
-    TArray<UParticleModuleSpawn*> SpawnModules;
+    class UParticleModuleSpawn* SpawnModule;    // 실제로 Spawn되는 숫자에 영향을 주는 모듈만
+    TArray<UParticleModule*> SpawnModules;      // Spawn된 Particle의 성질을 변경하는 모듈들
     TArray<UParticleModule*> UpdateModules;
     TArray<FBaseParticle*> DeadParticles;
     
     UParticleModuleRequired* RequiredModule;
-    /** Pointer to the particle data array.                             */
+    
+    /** Pointer to the particle data array.                              */
     uint8* ParticleData;
     /** Pointer to the particle index array.                            */
     uint16* ParticleIndices;
@@ -54,22 +63,38 @@ struct FParticleEmitterInstance
     /** The maximum number of active particles that can be held in 
      *  the particle data array.
      */
-    int32 MaxActiveParticles;
+    int32 MaxActiveParticles = 1024;
     /** The fraction of time left over from spawning.                   */
 
+    /** The fraction of time left over from spawning.					*/
+    float SpawnFraction;
+    /** The location of the emitter instance							*/
+    FVector Location;
     /** The previous location of the instance.							*/
     FVector OldLocation;
-    // Emitter 시작 후 총 누적 시간 
+    /** The bounding box for the particles.								*/
+    // FBox ParticleBoundingBox;
+    /** Flag indicating if the render data is dirty.					*/
+    int32 IsRenderDataDirty;
+    
+    
+    // 0 ~ 1 사이의 Emitter 진행 정도를 알려주는 값, Duration이 Emitter 한 바퀴 기간
     float EmitterTime = 0.0f;
+    // 언리얼에서는 Emitter가 생성된 뒤 누적 시간이지만, 여기서는 Duration 값을 넘으면 0으로 초기화
+    float SecondsSinceCreation = 0.0f;
+    float EmitterDuration = 0.0f;
+
     bool bEnabled= true;
     FVector2D PivotOffset;
 
     FParticleEmitterInstance();
+    virtual ~FParticleEmitterInstance() {}
     
-    void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent);
+    void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent, float InEmitterDuration = 1.0f);
     void Init();
     virtual void Tick(float DeltaTime);
-    void SetupEmitterDuration();
+    void ClassifyModules();
+    void SetupEmitterDuration(float InEmitterDuration);
     void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
 
     virtual FDynamicEmitterReplayDataBase* GetReplayData() { return nullptr; }
@@ -101,6 +126,13 @@ struct FParticleEmitterInstance
     */
     virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData );
 
+    FParticleEmitterRenderData& GetRenderData()
+    {
+        return ParticleEmitterRenderData;
+    }
+    
+private:
+    FParticleEmitterRenderData ParticleEmitterRenderData;
 };
 
 

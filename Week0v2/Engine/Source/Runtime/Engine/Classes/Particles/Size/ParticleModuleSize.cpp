@@ -1,5 +1,5 @@
 #include "ParticleModuleSize.h"
-#include "Engine/Source/Runtime/Engine/ParticleEmitterInstances.h"
+#include "Engine/Source/Runtime/Engine/ParticleEmitterInstance.h"
 #include "Engine/Source/Runtime/Engine/ParticleHelper.h"
 #include "Engine/Classes/Particles/ParticleSystemComponent.h"
 
@@ -34,8 +34,8 @@ void UParticleModuleSize::Spawn(FParticleEmitterInstance* Owner, int32 Offset, f
 {
     SPAWN_INIT;
     FVector Size = StartSize.GetValue(Owner->EmitterTime);
-    Particle.Size += Size;
+    Particle.Size = Size;
 
     //AdjustParticleBaseSizeForUVFlipping(Size, Owner->CurrentLODLevel->RequiredModule->UVFlippingMode, *InRandomStream);
-    Particle.BaseSize += Size;
+    Particle.BaseSize = Size;
 }

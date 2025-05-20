@@ -1,5 +1,6 @@
-﻿#include "ParticleSystemComponent.h"
+#include "ParticleSystemComponent.h"
 
+#include "LaunchEngineLoop.h"
 #include "ParticleEmitter.h"
 #include "ParticleEmitterInstance.h"
 #include "ParticleHelper.h"
@@ -11,12 +12,12 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
 {
     UFXSystemComponent::TickComponent(DeltaTime);
 
-    for (auto Instance : EmitterInstances)
+    for (FParticleEmitterInstance* Instance : EmitterInstances)
     {
         Instance->Tick(DeltaTime);
     }
-    CreateDynamicData();
-    
+    // CreateDynamicData();
+    UpdateDynamicData();
 }
 
 UParticleSystemComponent::UParticleSystemComponent()
@@ -48,31 +49,59 @@ void UParticleSystemComponent::UpdateDynamicData()
             ++EmitterIndex;
             continue;
         }
-    
-        // 2-1) ReplayDataBase를 얻어오거나 바로 BuildDynamicData 호출
-        FDynamicEmitterReplayDataBase* ReplayData = Instance->GetReplayData();
-    
-        // 2-2) 타입에 따라 적절한 FDynamicEmitterDataBase 파생형 생성
+        
+        // 그냥 리플레이 데이터에 다 박으면 안되나????????????????"??????
         FDynamicSpriteEmitterData* SpriteData = new FDynamicSpriteEmitterData();
         SpriteData->EmitterIndex      = EmitterIndex;
-        SpriteData->Source.Material = Instance->RequiredModule->SpriteTexture; // 예시
-        SpriteData->Source.RequiredModule = Instance->RequiredModule;
-    
-        // 2-3) 버텍스 버퍼 / 인덱스 버퍼에 FParticleSpriteVertex 채우기
-        // (앞서 설명한 대로 ParticleDataContainer를 순회해 VertexBufferRHI에 업로드)
-    
-        // 2-4) 카운트·스트라이드·VF 설정
-        // SpriteData->DynamicVertexStride = SpriteData->GetDynamicVertexStride();
-        // SpriteData->NumVertices   = Instance->ActiveParticles * 4;
-        // SpriteData->NumPrimitives = Instance->ActiveParticles * 2;
-        // SpriteData->VertexFactory = &GParticleSpriteVertexFactory;
-        // SpriteData->IndexBufferRHI= GParticleIndexBuffer.IndexBufferRHI;
-        //
+        auto& Source = SpriteData->Source;
+
+        // — 기본 리플레이 필드
+        Source.eEmitterType        = DET_Sprite;
+        Source.ActiveParticleCount = Instance->ActiveParticles;
+        Source.ParticleStride      = Instance->ParticleStride;
+        Source.Scale               = Instance->Component->GetWorldScale();
+
+        // — 메모리 블록(ParticleData + ParticleIndices) 복사
+        int32 DataBytes   = Instance->MaxActiveParticles * Instance->ParticleStride;
+        int32 IndexCount  = Instance->MaxActiveParticles;
+        Source.DataContainer.Alloc(DataBytes, IndexCount);
+        std::memcpy(Source.DataContainer.ParticleData,
+                    Instance->ParticleData,
+                    DataBytes);
+        std::memcpy(Source.DataContainer.ParticleIndices,
+                    Instance->ParticleIndices,
+                    sizeof(uint16) * Instance->ActiveParticles);
+
+        // — 파티클 시스템 세팅
+        Source.Material         = Instance->RequiredModule->SpriteTexture;
+        Source.RequiredModule   = Instance->RequiredModule;
+        Source.PivotOffset      = Instance->PivotOffset;
+        Source.MaxDrawCount     = Instance->ActiveParticles;
+        //초기값을 멀로 줘야하지?????
+        Source.bUseLocalSpace   = false;
+
+        // 렌더용 데이터
+        Source.LocalToWorld = Instance->Component->GetWorldMatrix();
+        Source.ParticleEmitterRenderData = Instance->GetRenderData();
+
+        // 3) 렌더러가 사용할 추가 세팅
+        SpriteData->bSelected = false;
+        SpriteData->bValid    = true;
+        SpriteData->Init(SpriteData->bSelected);
+        
         // 2-5) 배열에 추가
         EmitterRenderData.Add(SpriteData);
     
         ++EmitterIndex;
     }
+
+    MarkRenderDynamicDataDirty();
+}
+
+void UParticleSystemComponent::MarkRenderDynamicDataDirty()
+{
+    // 1) 자체 플래그를 세팅
+    bRenderDataDirty = true;
 }
 
 void UParticleSystemComponent::InitParticles()

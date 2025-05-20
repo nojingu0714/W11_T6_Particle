@@ -49,7 +49,7 @@ void UEditorEngine::Init()
     UnrealEditor->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
     SkeletalPreviewUI->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
     ParticlePreviewUI->Initialize(LevelEditor, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenWidth, GEngineLoop.GraphicDevice.GetDefaultWindowData().ScreenHeight);
-    
+
     ContentsUI->Initialize();
     CollisionManager.Initialize();  
     FLuaManager::Get().Initialize();    
@@ -298,7 +298,7 @@ UWorld* UEditorEngine::CreatePreviewWindow(const FString& Name, EWorldType::Type
     UWorld* NewPreviewWorld = CreateWorld(WorldType, LEVELTICK_All);
     
     // 새 WorldContext 생성
-    std::shared_ptr<FWorldContext> PreviewWorldContext = CreateNewWorldContext(NewPreviewWorld, EWorldType::EditorPreview, ELevelTick::LEVELTICK_All);
+    std::shared_ptr<FWorldContext> PreviewWorldContext = CreateNewWorldContext(NewPreviewWorld, WorldType, ELevelTick::LEVELTICK_All);
     
     // PreviewWorldContexts에 추가 (임의의 고유 ID 사용)
     static int PreviewWorldCounter = 0;

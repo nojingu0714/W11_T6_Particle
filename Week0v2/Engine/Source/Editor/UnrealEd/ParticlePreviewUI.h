@@ -1,16 +1,19 @@
-﻿#pragma once
+#pragma once
 #include "Container/Map.h"
 #include "Container/String.h"
 #include "Engine/World.h"
 
 class SLevelEditor;
 class UEditorPanel;
+class UParticleSystemComponent;
+
 class FParticlePreviewUI
 {
 public:
     FParticlePreviewUI() = default;
     ~FParticlePreviewUI() = default;
     void Initialize(SLevelEditor* LevelEditor, float Width, float Height);
+    void SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent);
     
     void Render() const;
     void OnResize(HWND hWnd) const;

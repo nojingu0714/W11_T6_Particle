@@ -2,13 +2,26 @@
 
 #include "Define.h"
 #include "LaunchEngineLoop.h"
+#include "ParticleEmitterInstance.h"
+#include "ParticleHelper.h"
 #include "D3D11RHI/CBStructDefine.h"
 #include "Engine/World.h"
+#include "Particles/ParticleModuleRequired.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Renderer/Renderer.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
 
+
+FParticleRenderPass::FParticleRenderPass(const FName& InShaderName)
+    : FBaseRenderPass(InShaderName)
+{
+
+    FRenderer& Renderer = GEngineLoop.Renderer;
+    FRenderResourceManager* RenderResourceManager = Renderer.GetResourceManager();
+    
+    PerFrameConstantBuffer = RenderResourceManager->CreateConstantBuffer(sizeof(FPerFrameConstants));
+}
 
 FParticleRenderPass::~FParticleRenderPass()
 {
@@ -33,14 +46,18 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 {
     FBaseRenderPass::Prepare(InViewportClient);
     
+    
     const FRenderer& Renderer = GEngineLoop.Renderer;
     const FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
 
     Graphics.DeviceContext->OMSetDepthStencilState(Renderer.GetDepthStencilState(EDepthStencilState::DepthNone), 0);
-    Graphics.DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 정정 연결 방식 설정
-    Graphics.DeviceContext->RSSetState(Renderer.GetRasterizerState(ERasterizerState::SolidBack));
+    Graphics.DeviceContext->RSSetState(Renderer.GetRasterizerState(ERasterizerState::SolidNone));
     Graphics.DeviceContext->OMSetBlendState(Renderer.GetBlendState(EBlendState::AlphaBlend), nullptr, 0xffffffff); // 블렌딩 상태 설정, 기본 블렌딩 상태임
 
+    FEngineLoop::GraphicDevice.DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+    
+
+    
     // RTVs 배열의 유효성을 확인합니다.
     const auto CurRTV = Graphics.GetCurrentRenderTargetView();
     if (CurRTV != nullptr)
@@ -56,12 +73,17 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 
     ID3D11SamplerState* linearSampler = Renderer.GetSamplerState(ESamplerType::Linear);
     Graphics.DeviceContext->PSSetSamplers(static_cast<uint32>(ESamplerType::Linear), 1, &linearSampler);
+
+
 }
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 {
     FMatrix View = FMatrix::Identity;
     FMatrix Proj = FMatrix::Identity;
+    FMatrix ViewProj = FMatrix::Identity;
+
+    
 
     FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
     FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
@@ -71,24 +93,41 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
     {
         View = curEditorViewportClient->GetViewMatrix();
         Proj = curEditorViewportClient->GetProjectionMatrix();
+        ViewProj = curEditorViewportClient->GetViewProjectionMatrix();
     }
+
+    FPerFrameConstants PerFrameConstants;
     
-    FSceneConstant SceneConstants;
-    SceneConstants.ViewMatrix = View;
-    SceneConstants.ProjMatrix = Proj;
+    PerFrameConstants.ViewMatrix = View;
+    PerFrameConstants.ProjectionMatrix = Proj;
+    
     USceneComponent* overrideComp = curEditorViewportClient->GetOverrideComponent();
     if (overrideComp)
     {
-        SceneConstants.CameraPos = overrideComp->GetWorldLocation();
-        SceneConstants.CameraLookAt = curEditorViewportClient->ViewTransformPerspective.GetLookAt();
+        PerFrameConstants.CameraWorldPosition = overrideComp->GetWorldLocation();
     }
     else
     {
-        SceneConstants.CameraPos = curEditorViewportClient->ViewTransformPerspective.GetLocation();
-        SceneConstants.CameraLookAt = curEditorViewportClient->ViewTransformPerspective.GetLookAt();
+        PerFrameConstants.CameraWorldPosition = curEditorViewportClient->ViewTransformPerspective.GetLocation();
     }
+
     
-    renderResourceManager->UpdateConstantBuffer(TEXT("FSceneConstant"), &SceneConstants);
+    PerFrameConstants.CameraUpVector = curEditorViewportClient->ViewTransformPerspective.GetUpVector();
+    PerFrameConstants.CameraRightVector = curEditorViewportClient->ViewTransformPerspective.GetRightVector();
+    renderResourceManager->UpdateConstantBuffer("FPerFrameConstants", &PerFrameConstants);
+        
+
+    for (const UParticleSystemComponent* ParticleSystemComponent : ParticleSystemComponents)
+    {
+
+            for (const FDynamicEmitterDataBase* EmitterDataBase : ParticleSystemComponent->EmitterRenderData)
+            {
+                if (EmitterDataBase)
+                {
+                    EmitterDataBase->ExecuteRender(ViewProj);
+                }
+            }
+    }
 
     // for (const UBillboardComponent* item : BillboardComponents)
     // {
@@ -112,3 +151,46 @@ void FParticleRenderPass::ClearRenderObjects()
     
     ParticleSystemComponents.Empty();
 }
+
+void FParticleRenderPass::UpdateMaterialConstants(const FObjMaterialInfo& MaterialInfo)
+{
+        FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
+        FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
+    
+        FMaterialConstants MaterialConstants;
+        MaterialConstants.DiffuseColor = MaterialInfo.Diffuse;
+        MaterialConstants.TransparencyScalar = MaterialInfo.TransparencyScalar;
+        MaterialConstants.MatAmbientColor = MaterialInfo.Ambient;
+        MaterialConstants.DensityScalar = MaterialInfo.DensityScalar;
+        MaterialConstants.SpecularColor = MaterialInfo.Specular;
+        MaterialConstants.SpecularScalar = MaterialInfo.SpecularScalar;
+        MaterialConstants.EmissiveColor = MaterialInfo.Emissive;
+        //normalScale값 있는데 parse만 하고 constant로 넘기고 있진 않음
+        MaterialConstants.bHasNormalTexture = false;
+    
+        if (MaterialInfo.bHasTexture == true)
+        {
+            const std::shared_ptr<FTexture> texture = GEngineLoop.ResourceManager.GetTexture(MaterialInfo.DiffuseTexturePath);
+            const std::shared_ptr<FTexture> NormalTexture = GEngineLoop.ResourceManager.GetTexture(MaterialInfo.NormalTexturePath);
+            if (texture)
+            {
+                Graphics.DeviceContext->PSSetShaderResources(0, 1, &texture->TextureSRV);
+            }
+            if (NormalTexture)
+            {
+                Graphics.DeviceContext->PSSetShaderResources(1, 1, &NormalTexture->TextureSRV);
+                MaterialConstants.bHasNormalTexture = true;
+            }
+        
+            ID3D11SamplerState* linearSampler = renderResourceManager->GetSamplerState(ESamplerType::Linear);
+            Graphics.DeviceContext->PSSetSamplers(static_cast<uint32>(ESamplerType::Linear), 1, &linearSampler);
+        }
+        else
+        {
+            ID3D11ShaderResourceView* nullSRV[1] = {nullptr};
+            Graphics.DeviceContext->PSSetShaderResources(0, 1, nullSRV);
+        }
+        renderResourceManager->UpdateConstantBuffer(renderResourceManager->GetConstantBuffer(TEXT("FMaterialConstants")), &MaterialConstants);
+    
+}
+

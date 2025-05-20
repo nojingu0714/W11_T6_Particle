@@ -41,6 +41,7 @@
 #include <Animation/CustomAnimInstance/TestAnimInstance.h>
 #include <Animation/AnimSingleNodeInstance.h>
 
+#include "Actors/ParticleActor.h"
 #include "Particles/ParticleEmitter.h"
 #include "Particles/ParticleLODLevel.h"
 #include "Particles/ParticleSystem.h"
@@ -48,6 +49,13 @@
 #include "Particles/Size/ParticleModuleSizeBase.h"
 #include "Particles/Spawn/ParticleModuleSpawn.h"
 #include "Particles/ParticleModuleRequired.h"
+#include "Particles/Lifetime/ParticleModuleLifetime.h"
+#include "Particles/Location/ParticleModuleLocation.h"
+#include "Particles/Velocity/ParticleModuleVelocity.h"
+#include "Particles/Size/ParticleModuleSize.h"
+#include "Particles/Color/ParticleModuleColor.h"
+#include "Particles/Size/ParticleModuleSizeScaleBySpeed.h"
+#include "Engine/Source/Editor/UnrealEd/ParticlePreviewUI.h"
 #include "UObject/UObjectIterator.h"
 
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
@@ -796,7 +804,7 @@ void PropertyEditorPanel::Render()
     {
         // TODO : Particle Comp
         UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PickedComponent);
-        DrawParticlePreviewButton();
+        DrawParticlePreviewButton(ParticleComp);
         for (auto Emitter : ParticleComp->Template->Emitters)
         {
             if (!Emitter->LODLevels[0])
@@ -855,15 +863,64 @@ void PropertyEditorPanel::Render()
                 else if (UParticleModuleSpawn* Spawn =  Cast<UParticleModuleSpawn>(Module))
                 {
                     ImGui::Text("Particle Module Spawn");
-                    float NewRate = Spawn->Rate.GetValue(0.0f);
-
-                    ImGui::InputFloat("Spawn Rate", &NewRate);
-                    Spawn->Rate = NewRate;
+                    RenderFSimpleFloatDistribution(Spawn->Rate, 0.0f, "Spawn Rate");
+                    ImGui::Separator();
+                }
+                else if (UParticleModuleSize* Size = Cast<UParticleModuleSize>(Module))
+                {
+                    ImGui::Text("Particle Module Size");
+                    RenderFSimpleVectorDistribution(Size->StartSize, 0.0f, "StartSize");
+                    ImGui::Separator();
+                }
+                else if (UParticleModuleSizeScaleBySpeed* ScaleBySpeed = Cast<UParticleModuleSizeScaleBySpeed>(Module))
+                {
+                    ImGui::Text("Particle Module ScaleBySpeed");
+                    ImGui::Text("SpeedScale");
+                    ImGui::PushItemWidth(50.0f);
+                    ImGui::InputFloat("X##SpeedScale", &ScaleBySpeed->SpeedScale.X);
+                    ImGui::SameLine();
+                    ImGui::InputFloat("Y##SpeedScale", &ScaleBySpeed->SpeedScale.Y);
+                    ImGui::Text("MaxScale");
+                    ImGui::InputFloat("X##MaxScale", &ScaleBySpeed->MaxScale.X);
+                    ImGui::SameLine();
+                    ImGui::InputFloat("Y##MaxScale", &ScaleBySpeed->MaxScale.Y);
+                    ImGui::PopItemWidth();
+                    ImGui::Separator();
                 }
                 else if (Cast<UParticleModuleSizeBase>(Module))
                 {
                     ImGui::Text("Particle Module Size");
+                    ImGui::Separator();
                 }
+                else if (UParticleModuleLifetime* Lifetime = Cast<UParticleModuleLifetime>(Module))
+                {
+                    ImGui::Text("Particle Module Lifetime");
+                    RenderFSimpleFloatDistribution(Lifetime->Lifetime, 0.0f, "Lifetime");
+                    ImGui::Separator();
+                }
+                else if (UParticleModuleLocation* Location = Cast<UParticleModuleLocation>(Module)) 
+                {
+                    ImGui::Text("Particle Module Location");
+                    RenderFSimpleVectorDistribution(Location->StartLocation, 0.0f, "Location");
+                    ImGui::Separator();
+                }
+                else if (UParticleModuleVelocity* Velocity = Cast<UParticleModuleVelocity>(Module)) 
+                {
+                    ImGui::Text("Particle Module Velocity");
+                    RenderFSimpleVectorDistribution(Velocity->StartVelocity, 0.0f, "StartVelocity");
+                    RenderFSimpleVectorDistribution(Velocity->StartVelocityRadial, 0.0f, "StartVelocityRadial");
+                    ImGui::Separator();
+                }
+                else if (UParticleModuleColor* Color = Cast<UParticleModuleColor>(Module)) 
+                {
+                    ImGui::Text("Particle Module Color");
+                    RenderFSimpleVectorDistribution(Color->ColorScaleOverLife, 0.0f, "ColorOverLife");
+                    RenderFSimpleFloatDistribution(Color->AlphaScaleOverLife, 0.0f, "FloatOverLife");
+                    ImGui::Separator();
+                }
+                
+                
+
                 ImGui::Spacing();
             }
         }   
@@ -1137,6 +1194,161 @@ void PropertyEditorPanel::RenderBoneHierarchy(USkeletalMesh* SkeletalMesh, const
 void PropertyEditorPanel::OnBoneSelected(const int BoneIndex)
 {
     SelectedBoneIndex = BoneIndex;
+}
+
+void PropertyEditorPanel::RenderFSimpleFloatDistribution(FSimpleFloatDistribution& RenderDistribution, float Tvalue, FString DistributionName)
+{
+    switch (RenderDistribution.GetDistributionType()) 
+    {
+    case EDistributionType::Constant: {
+        ImGui::PushItemWidth(50.0f);
+        float NewRate = RenderDistribution.GetValue(Tvalue);
+        ImGui::InputFloat(*DistributionName, &NewRate);
+        RenderDistribution.Constant = NewRate;
+        ImGui::PopItemWidth();
+        return;
+        break;
+    }
+
+    case EDistributionType::Uniform: {
+        ImGui::PushItemWidth(50.0f);
+        float& MinValue = RenderDistribution.Min;
+        float& MaxValue = RenderDistribution.Max;
+        ImGui::InputFloat("Min", &MinValue);
+        ImGui::SameLine();
+        ImGui::InputFloat("Max", &MaxValue);
+        ImGui::PopItemWidth();
+        return;
+        break;
+    }
+
+    case EDistributionType::Linear:
+    case EDistributionType::EaseInOut:
+    case EDistributionType::SinWave: {
+        ImGui::PushItemWidth(50.0f);
+        float& StartValue = RenderDistribution.Min;
+        float& EndValue = RenderDistribution.Max;
+        ImGui::InputFloat("Start", &StartValue);
+        ImGui::SameLine();
+        ImGui::InputFloat("End", &EndValue);
+        ImGui::PopItemWidth();
+        return;
+        break;
+    }
+
+    default: {
+        UE_LOG(LogLevel::Error, "EDistribution Error");
+        return;
+        break;
+        }
+    }
+}
+
+void PropertyEditorPanel::RenderFSimpleVectorDistribution(FSimpleVectorDistribution& RenderDistribution, float Tvalue, FString DistributionName)
+{
+    switch (RenderDistribution.GetDistributionType())
+    {
+    case EDistributionType::Constant: {
+        FVector NewVector;
+        RenderDistribution.GetDistributionVector(NewVector);
+        
+        ImGui::Text(*DistributionName);
+        FString DistributionNameWithX = "X##" + DistributionName;
+        FString DistributionNameWithY = "Y##" + DistributionName;
+        FString DistributionNameWithZ = "Z##" + DistributionName;
+
+        ImGui::PushItemWidth(50.0f);
+        ImGui::InputFloat(*DistributionNameWithX, &NewVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithY, &NewVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZ, &NewVector.Z);
+        ImGui::PopItemWidth();
+
+        RenderDistribution.SetDistributionVector(NewVector);
+
+        return;
+        break;
+    }
+
+    case EDistributionType::Uniform: {
+        FVector StartVector;
+        FVector EndVector;
+        RenderDistribution.GetDistributionVectors(StartVector, EndVector);
+
+        ImGui::Text(*DistributionName);
+        FString DistributionNameWithXMin = "X##" + DistributionName + "Min";
+        FString DistributionNameWithYMin = "Y##" + DistributionName + "Min";
+        FString DistributionNameWithZMin = "Z##" + DistributionName + "Min";
+        FString DistributionNameWithXMax = "X##" + DistributionName + "Max";
+        FString DistributionNameWithYMax = "Y##" + DistributionName + "Max";
+        FString DistributionNameWithZMax = "Z##" + DistributionName + "Max";
+
+        ImGui::PushItemWidth(50.0f);
+        ImGui::Text("MinVector");
+        ImGui::InputFloat(*DistributionNameWithXMin, &StartVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYMin, &StartVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZMin, &StartVector.Z);
+
+        ImGui::Text("MaxVector");
+        ImGui::InputFloat(*DistributionNameWithXMax, &EndVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYMax, &EndVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZMax, &EndVector.Z);
+        ImGui::PopItemWidth();
+
+        RenderDistribution.SetDistributionVectors(StartVector, EndVector);
+
+        return;
+        break;
+    }
+
+    case EDistributionType::Linear:
+    case EDistributionType::EaseInOut:
+    case EDistributionType::SinWave: {
+        FVector StartVector;
+        FVector EndVector;
+        RenderDistribution.GetDistributionVectors(StartVector, EndVector);
+
+
+        FString DistributionNameWithXStart = "X##" + DistributionName + "Start";
+        FString DistributionNameWithYStart = "Y##" + DistributionName + "Start";
+        FString DistributionNameWithZStart = "Z##" + DistributionName + "Start";
+        FString DistributionNameWithXEnd = "X##" + DistributionName + "End";
+        FString DistributionNameWithYEnd = "Y##" + DistributionName + "End";
+        FString DistributionNameWithZEnd = "Z##" + DistributionName + "End";
+
+        ImGui::PushItemWidth(50.0f);
+        ImGui::Text("StartVector");
+        ImGui::InputFloat(*DistributionNameWithXStart, &StartVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYStart, &StartVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZStart, &StartVector.Z);
+
+        ImGui::Text("EndVector");
+        ImGui::InputFloat(*DistributionNameWithXEnd, &EndVector.X);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithYEnd, &EndVector.Y);
+        ImGui::SameLine();
+        ImGui::InputFloat(*DistributionNameWithZEnd, &EndVector.Z);
+        ImGui::PopItemWidth();
+
+        RenderDistribution.SetDistributionVectors(StartVector, EndVector);
+
+        return;
+        break;
+    }
+
+    default: {
+        UE_LOG(LogLevel::Error, "EDistribution Error");
+        return;
+        break;
+    }
+    }
 }
 
 void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp)
@@ -1882,7 +2094,7 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
     }
 }
 
-void PropertyEditorPanel::DrawParticlePreviewButton()
+void PropertyEditorPanel::DrawParticlePreviewButton(UParticleSystemComponent* ParticleSystemComponent)
 {
     if (ImGui::Button("Preview##Particle"))
     {
@@ -1894,28 +2106,13 @@ void PropertyEditorPanel::DrawParticlePreviewButton()
 
         UWorld* World = EditorEngine->CreatePreviewWindow("ParticlePreview", EWorldType::EditorParticlePreview);
         
+        EditorEngine->GetParticlePreviewUI()->SetParticleSystemComponent(ParticleSystemComponent);
+
         const TArray<AActor*> CopiedActors = World->GetActors();
-        for (AActor* Actor : CopiedActors)
-        {
-            if (Actor->IsA<UTransformGizmo>() || Actor->IsA<APlayerCameraManager>())
-            {
-                continue;
-            }
+        // AActor* ParticleActor = ParticleSystemComponent->GetOwner();
 
-            Actor->Destroy();
-        }
-        World->ClearSelectedActors();
-
-        // SkySphere 생성
-        AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
-        SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
-        UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
-        FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
-        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
-        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
-        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
-        MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
-        SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
+        // AParticleActor* ParticleActor = World->SpawnActor<AParticleActor>();
+        // ParticleActor->ParticleSystemComponent = ParticleSystemComponent;
     }
 }
 

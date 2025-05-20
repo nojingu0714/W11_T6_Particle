@@ -2,6 +2,7 @@
 
 #include "Define.h"
 #include "Container/Map.h"
+#include "Container/Set.h"
 #include "D3D11RHI/GraphicDevice.h"
 #include "UserInterface/Console.h"
 
@@ -34,6 +35,8 @@ public:
     template<typename T>
     ID3D11Buffer* CreateStaticVertexBuffer(T* vertices, uint32 arraySize) const;
     
+    ID3D11Buffer* CreateEmptyDynamicVertexBuffer(uint32 SizeInBytes);
+
     template<typename T>
     ID3D11Buffer* CreateDynamicVertexBuffer(const TArray<T>& vertices) const;
     template<typename T>
@@ -63,7 +66,7 @@ public:
     ID3D11RasterizerState* GetRasterizerState(ERasterizerState InState) const { return RasterizerStates[static_cast<uint32>(InState)]; }
     ID3D11BlendState* GetBlendState(EBlendState InState) const { return BlendStates[static_cast<uint32>(InState)]; }
     ID3D11DepthStencilState* GetDepthStencilState(EDepthStencilState InState) const { return DepthStencilStates[static_cast<uint32>(InState)]; }
-
+    
     void AddOrSetComputeShader(FName InCSName, ID3D11ComputeShader* InShader);
     
     void CreateVertexShader(const FString& InShaderName, const FString& InFileName, D3D_SHADER_MACRO* pDefines);
@@ -79,6 +82,7 @@ public:
     void AddOrSetInputLayout(FName InInputLayoutName, ID3D11InputLayout* InInputLayout);
 
     void AddOrSetVertexBuffer(FName InVBName, ID3D11Buffer* InBuffer);
+    void AddOrSetVertexBuffer(ID3D11Buffer* InBuffer);
     void AddOrSetIndexBuffer(FName InPBName, ID3D11Buffer* InBuffer);
     void AddOrSetConstantBuffer(FName InCBName, ID3D11Buffer* InBuffer);
     void AddOrSetSRVStructuredBuffer(FName InSBName, ID3D11Buffer* InBuffer);
@@ -96,6 +100,7 @@ public:
     ID3D11InputLayout* GetInputLayout(const FName InInputLayoutName) const;
 
     ID3D11Buffer* GetVertexBuffer(const FName InVBName);
+    bool IsVertexBufferExist(ID3D11Buffer* InBuffer);
     ID3D11Buffer* GetIndexBuffer(const FName InIBName);
     ID3D11Buffer* GetConstantBuffer(const FName InCBName);
 
@@ -115,6 +120,7 @@ private:
     TMap<FName, ID3D11InputLayout*> InputLayouts;
 
     TMap<FName, ID3D11Buffer*> VertexBuffers;
+    TSet<ID3D11Buffer*> VertexBuffersSet;
     TMap<FName, ID3D11Buffer*> IndexBuffers;
     TMap<FName, ID3D11Buffer*> ConstantBuffers;
 
@@ -129,6 +135,7 @@ private:
     
     ID3D11DepthStencilState* DepthStencilStates[static_cast<uint32>(EDepthStencilState::End)] = {};
 };
+
 
 template <typename T>
 ID3D11Buffer* FRenderResourceManager::CreateImmutableVertexBuffer(const TArray<T>& vertices) const
@@ -232,6 +239,8 @@ ID3D11Buffer* FRenderResourceManager::CreateStaticVertexBuffer(T* vertices, uint
 
     return CreateStaticVertexBuffer(verticeArray);
 }
+
+
 
 template <typename T>
 ID3D11Buffer* FRenderResourceManager::CreateDynamicVertexBuffer(const TArray<T>& vertices) const
