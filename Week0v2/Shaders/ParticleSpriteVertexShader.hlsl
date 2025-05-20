@@ -128,7 +128,8 @@ VSOutput mainVS(ParticleVSInput input, uint vertexID : SV_VertexID) // SV_Vertex
 
     // 카메라를 향하는 축 정렬 빌보딩 (Cylindrical/Spherical 빌보딩은 더 복잡)
     // 파티클의 로컬 X축은 카메라의 Right 벡터, Y축은 카메라의 Up 벡터를 사용
-    float3 billboardedPosition = mul(float4(input.Position, 1.0f), Model).xyz;
+    //float3 billboardedPosition = mul(float4(input.Position, 1.0f), Model).xyz;
+    float3 billboardedPosition = input.Position.xyz;
     billboardedPosition += CameraRightVector * rotatedOffset.x;
     billboardedPosition += CameraUpVector * rotatedOffset.y;
     // (만약 완벽한 구형 빌보딩(Spherical Billboarding)을 원한다면,

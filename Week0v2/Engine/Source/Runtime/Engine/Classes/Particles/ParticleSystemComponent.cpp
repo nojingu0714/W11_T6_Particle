@@ -78,7 +78,7 @@ void UParticleSystemComponent::UpdateDynamicData()
         Source.PivotOffset      = Instance->PivotOffset;
         Source.MaxDrawCount     = Instance->ActiveParticles;
         //초기값을 멀로 줘야하지?????
-        Source.bUseLocalSpace   = true;
+        Source.bUseLocalSpace   = false;
 
         // 렌더용 데이터
         Source.LocalToWorld = Instance->Component->GetWorldMatrix();

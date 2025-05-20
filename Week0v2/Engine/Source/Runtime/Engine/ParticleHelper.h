@@ -13,7 +13,7 @@
 // if 문의 오류를 막기 위해 do while 사용
 #define SPAWN_INIT																										\
     do{   \
-        if ((Owner != NULL) && (Owner->Component != NULL))  \
+        if ((Owner == NULL) || (Owner->Component == NULL))  \
         {   \
             UE_LOG(LogLevel::Error, "SPAWN_INIT NULL"); \
         }   \
@@ -37,7 +37,7 @@ struct FMatrix;
 #define BEGIN_UPDATE_LOOP																								\
 {			\
     do{   \
-        if ((Owner != NULL) && (Owner->Component != NULL))  \
+        if ((Owner == NULL) || (Owner->Component == NULL))  \
         {   \
             UE_LOG(LogLevel::Error, "BEGINE_UPDATE_LOOP NULL"); \
         }   \
