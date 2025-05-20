@@ -61,7 +61,7 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
     }
 
     ID3D11SamplerState* linearSampler = Renderer.GetSamplerState(ESamplerType::Linear);
-    Graphics.DeviceContext->PSSetSamplers(static_cast<uint32>(ESamplerType::Linear), 1, &linearSampler);
+    Graphics.DeviceContext->PSSetSamplers(0, 1, &linearSampler);
 }
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
@@ -92,105 +92,111 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
     GEngineLoop.Renderer.GetResourceManager()
         ->UpdateConstantBuffer(TEXT("FSceneConstant"), &SceneCB);
 
-    // 2) 모든 파티클 시스템 컴포넌트 순회
+    auto* DC = GEngineLoop.GraphicDevice.DeviceContext;
+
     for (UParticleSystemComponent* PSC : ParticleSystemComponents)
     {
         for (FDynamicEmitterDataBase* Base : PSC->EmitterRenderData)
         {
-            // 스프라이트만 처리
-
             auto* SpriteData = static_cast<FDynamicSpriteEmitterData*>(Base);
             if (SpriteData->Source.eEmitterType != DET_Sprite) 
                 continue;
-            const auto& Src  = SpriteData->Source;
 
-            int32 Count    = Src.ActiveParticleCount;
-            int32 NumVerts = Count * 4;
-            int32 NumPrims = Count * 2;
-            int32 VertStride = sizeof(FParticleSpriteVertex);
-            int32 VBSize     = VertStride * NumVerts;
-            int32 IBSize     = sizeof(uint16) * NumPrims * 3;
+            int32 Count = SpriteData->Source.ActiveParticleCount;
+            if (Count <= 0) 
+                continue;
 
-            // 3) GPU 버퍼가 없다면 생성
+            // 1) 버퍼 사이즈 계산
+            const int32 NumVerts     = Count * 4;
+            const int32 NumIndices   = Count * 6;         // 1 파티클당 2 tri → 6 인덱스
+            const UINT  VertStride   = sizeof(FParticleSpriteVertex);
+            const int32 VBSize       = VertStride * NumVerts;
+            const int32 IBSize       = sizeof(uint16) * NumIndices;
+
+            // 2) 버퍼 생성(또는 재할당)
             if (!SpriteData->VertexBuffer || SpriteData->VertexBufferSize < VBSize)
             {
-                if (SpriteData->VertexBuffer)
-                    { SpriteData->VertexBuffer->Release(); }
-                D3D11_BUFFER_DESC vbDesc = {};
-                vbDesc.Usage          = D3D11_USAGE_DYNAMIC;
-                vbDesc.ByteWidth      = VBSize;
-                vbDesc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
-                vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-                GEngineLoop.GraphicDevice.Device->CreateBuffer(&vbDesc, nullptr, &SpriteData->VertexBuffer);
+                if (SpriteData->VertexBuffer) SpriteData->VertexBuffer->Release();
+                D3D11_BUFFER_DESC desc = {};
+                desc.Usage          = D3D11_USAGE_DYNAMIC;
+                desc.ByteWidth      = VBSize;
+                desc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
+                desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+                GEngineLoop.GraphicDevice.Device
+                    ->CreateBuffer(&desc, nullptr, &SpriteData->VertexBuffer);
                 SpriteData->VertexBufferSize = VBSize;
             }
             if (!SpriteData->IndexBuffer || SpriteData->IndexBufferSize < IBSize)
             {
-                if (SpriteData->IndexBuffer)
-                    { SpriteData->IndexBuffer->Release(); }
-                D3D11_BUFFER_DESC ibDesc = {};
-                ibDesc.Usage          = D3D11_USAGE_DYNAMIC;
-                ibDesc.ByteWidth      = IBSize;
-                ibDesc.BindFlags      = D3D11_BIND_INDEX_BUFFER;
-                ibDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-                GEngineLoop.GraphicDevice.Device->CreateBuffer(&ibDesc, nullptr, &SpriteData->IndexBuffer);
+                if (SpriteData->IndexBuffer) SpriteData->IndexBuffer->Release();
+                D3D11_BUFFER_DESC desc = {};
+                desc.Usage          = D3D11_USAGE_DYNAMIC;
+                desc.ByteWidth      = IBSize;
+                desc.BindFlags      = D3D11_BIND_INDEX_BUFFER;
+                desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+                GEngineLoop.GraphicDevice.Device
+                    ->CreateBuffer(&desc, nullptr, &SpriteData->IndexBuffer);
                 SpriteData->IndexBufferSize = IBSize;
             }
 
-            // 4) Map → 데이터 채우기 → Unmap
-            D3D11_MAPPED_SUBRESOURCE Mapped;
-            auto* DC = GEngineLoop.GraphicDevice.DeviceContext;
-
-            // 정점
-            void* VertexPtr = nullptr;
-            DC->Map(SpriteData->VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
-            VertexPtr = Mapped.pData;
+            // 3) 정점 데이터 채우기
+            D3D11_MAPPED_SUBRESOURCE vbMapped;
+            DC->Map(SpriteData->VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &vbMapped);
+            SpriteData->GetVertexAndIndexData(
+                /*VertexData=*/ vbMapped.pData,
+                /*IndexData=*/ nullptr,  // 인덱스는 다음 단계에서 채우기
+                /*ParticleOrder=*/ nullptr,
+                /*CameraPos=*/ SceneCB.CameraPos,
+                /*LocalToWorld=*/ FMatrix::CreateScaleMatrix(
+                                      PSC->GetWorldScale().X,
+                                      PSC->GetWorldScale().Y,
+                                      PSC->GetWorldScale().Z),
+                /*InstanceFactor=*/ 1
+            );
             DC->Unmap(SpriteData->VertexBuffer, 0);
 
-            // 2. Index Buffer
-            void* IndexPtr = nullptr;
-            DC->Map(SpriteData->IndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
-            IndexPtr = Mapped.pData;
+            // 4) 인덱스 데이터 채우기
+            D3D11_MAPPED_SUBRESOURCE ibMapped;
+            DC->Map(SpriteData->IndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ibMapped);
+            {
+                uint16* indices = reinterpret_cast<uint16*>(ibMapped.pData);
+                for (int32 i = 0; i < Count; ++i)
+                {
+                    int32 vBase = i * 4;
+                    int32 iBase = i * 6;
+                    // quad: (0,1,2) + (0,2,3)
+                    indices[iBase + 0] = vBase + 0;
+                    indices[iBase + 1] = vBase + 1;
+                    indices[iBase + 2] = vBase + 2;
+                    indices[iBase + 3] = vBase + 0;
+                    indices[iBase + 4] = vBase + 2;
+                    indices[iBase + 5] = vBase + 3;
+                }
+            }
             DC->Unmap(SpriteData->IndexBuffer, 0);
 
-            // 3. 한 번에 호출 (메모리는 따로 맵핑해도, 호출은 한번만 가능)
-            SpriteData->GetVertexAndIndexData(
-                VertexPtr,
-                IndexPtr,
-                /*ParticleOrder*/ nullptr,
-                SceneCB.CameraPos,
-                FMatrix::CreateScaleMatrix(
-                    PSC->GetWorldScale().X,
-                    PSC->GetWorldScale().Y,
-                    PSC->GetWorldScale().Z
-                ),
-                /*InstanceFactor*/ 1
-            );
-
             // 5) IA 셋업
-            UINT stride = VertStride, offset = 0;
-            DC->IASetVertexBuffers(0, 1, &SpriteData->VertexBuffer, &stride, &offset);
-            DC->IASetIndexBuffer(SpriteData->IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+            UINT offset = 0;
+            // DC->IASetInputLayout(  YourParticleInputLayout );
+            DC->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+            DC->IASetVertexBuffers(0, 1, &SpriteData->VertexBuffer, &VertStride, &offset);
+            DC->IASetIndexBuffer(  SpriteData->IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-            if (SpriteData->Source.Material == nullptr)
-                return;
-            // 6) 셰이더 & 리소스 바인딩
-            std::shared_ptr<FTexture> texture = GEngineLoop.ResourceManager.GetTexture(SpriteData->Source.Material->GetMaterialInfo().DiffuseTexturePath);
-            if (texture)
+            // 6) 텍스처 바인딩
+            // 6) 셰이더 리소스 바인딩
+            if (SpriteData->Source.Material)
             {
-                GEngineLoop.GraphicDevice.DeviceContext->PSSetShaderResources(0, 1, &texture->TextureSRV);
+                auto texture = GEngineLoop.ResourceManager
+                                   .GetTexture(SpriteData->Source
+                                                   .Material
+                                                   ->GetMaterialInfo()
+                                                   .DiffuseTexturePath);
+                if (texture)
+                    DC->PSSetShaderResources(0, 1, &texture->TextureSRV);
             }
-            // 인스턴스 상수
-            // GEngineLoop.Renderer.GetResourceManager()
-            //     ->UpdateConstantBuffer(TEXT("FParticleInstanceConstant"),
-            //                            &Src.RequiredModule->ParticleConstantBuffer);
-            // ID3D11Buffer* PCB = GEngineLoop.Renderer.GetResourceManager()
-            //                        ->GetConstantBuffer(TEXT("FParticleInstanceConstant"));
-            // DC->VSSetConstantBuffers(1, 1, &PCB);
-            // DC->PSSetConstantBuffers(1, 1, &PCB);
-            int32 ParticleCount = SpriteData->Source.ActiveParticleCount;
-            DC->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0); // 인덱스 버퍼 언바인딩
-            DC->Draw(ParticleCount * 4,0);
+
+            // 7) 드로우 호출 (인덱스 개수 = Count*6)
+            DC->DrawIndexed(NumIndices, 0, 0);
         }
     }
 }

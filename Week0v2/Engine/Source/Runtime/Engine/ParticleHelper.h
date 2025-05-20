@@ -189,22 +189,22 @@ struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD
 struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용 정점 데이터 
 {
     /** The position of the particle. */
-    FVector Position;
+    FVector Position = FVector::ZeroVector;
     /** The relative time of the particle. */
-    float RelativeTime;
+    float RelativeTime = 0.0f;
     /** The previous position of the particle. */
-    FVector OldPosition;
+    FVector OldPosition = FVector::ZeroVector;
     /** Value that remains constant over the lifetime of a particle. */
     // 보통 난수의 시드값으로 사용
-    float ParticleId;
+    float ParticleId = 0.0f;
     /** The size of the particle. */
-    FVector2D Size;
+    FVector2D Size = FVector2D::OneVector;
     /** The rotation of the particle. */
-    float Rotation;
+    float Rotation = 0.0f;
     /** The sub-image index for the particle. */
-    float SubImageIndex;
+    float SubImageIndex = 0.0f;
     /** The color of the particle. */
-    FLinearColor Color;
+    FLinearColor Color = FLinearColor::White;
 };
 
 struct FMeshParticleInstanceVertex // GPU로 전송되는 메시 인스텅신 파티클용 정점 데이터
