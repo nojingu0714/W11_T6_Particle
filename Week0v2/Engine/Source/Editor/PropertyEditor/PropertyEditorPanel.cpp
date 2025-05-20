@@ -2111,8 +2111,8 @@ void PropertyEditorPanel::DrawParticlePreviewButton(UParticleSystemComponent* Pa
         const TArray<AActor*> CopiedActors = World->GetActors();
         // AActor* ParticleActor = ParticleSystemComponent->GetOwner();
 
-        // AParticleActor* ParticleActor = World->SpawnActor<AParticleActor>();
-        // ParticleActor->ParticleSystemComponent = ParticleSystemComponent;
+        AParticleActor* ParticleActor = World->SpawnActor<AParticleActor>();
+        ParticleActor->ParticleSystemComponent = ParticleSystemComponent;
     }
 }
 

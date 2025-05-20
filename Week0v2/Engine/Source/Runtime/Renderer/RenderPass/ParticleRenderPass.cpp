@@ -79,47 +79,45 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 {
-    FMatrix View = FMatrix::Identity;
-    FMatrix Proj = FMatrix::Identity;
-    FMatrix ViewProj = FMatrix::Identity;
 
-    
-
-    FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
-    FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
-
-    std::shared_ptr<FEditorViewportClient> curEditorViewportClient = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
-    if (curEditorViewportClient != nullptr)
-    {
-        View = curEditorViewportClient->GetViewMatrix();
-        Proj = curEditorViewportClient->GetProjectionMatrix();
-        ViewProj = curEditorViewportClient->GetViewProjectionMatrix();
-    }
-
-    FPerFrameConstants PerFrameConstants;
-    
-    PerFrameConstants.ViewMatrix = View;
-    PerFrameConstants.ProjectionMatrix = Proj;
-    
-    USceneComponent* overrideComp = curEditorViewportClient->GetOverrideComponent();
-    if (overrideComp)
-    {
-        PerFrameConstants.CameraWorldPosition = overrideComp->GetWorldLocation();
-    }
-    else
-    {
-        PerFrameConstants.CameraWorldPosition = curEditorViewportClient->ViewTransformPerspective.GetLocation();
-    }
-
-    
-    PerFrameConstants.CameraUpVector = curEditorViewportClient->ViewTransformPerspective.GetUpVector();
-    PerFrameConstants.CameraRightVector = curEditorViewportClient->ViewTransformPerspective.GetRightVector();
-    renderResourceManager->UpdateConstantBuffer("FPerFrameConstants", &PerFrameConstants);
         
 
     for (const UParticleSystemComponent* ParticleSystemComponent : ParticleSystemComponents)
     {
+            FMatrix View = FMatrix::Identity;
+            FMatrix Proj = FMatrix::Identity;
+            FMatrix ViewProj = FMatrix::Identity;
+        
+            FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
+            FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
 
+            std::shared_ptr<FEditorViewportClient> curEditorViewportClient = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
+            if (curEditorViewportClient != nullptr)
+            {
+                View = curEditorViewportClient->GetViewMatrix();
+                Proj = curEditorViewportClient->GetProjectionMatrix();
+                ViewProj = curEditorViewportClient->GetViewProjectionMatrix();
+            }
+
+            FPerFrameConstants PerFrameConstants;
+        
+            PerFrameConstants.ViewMatrix = View;
+            PerFrameConstants.ProjectionMatrix = Proj;
+        
+            USceneComponent* overrideComp = curEditorViewportClient->GetOverrideComponent();
+            if (overrideComp)
+            {
+                PerFrameConstants.CameraWorldPosition = overrideComp->GetWorldLocation();
+            }
+            else
+            {
+                PerFrameConstants.CameraWorldPosition = curEditorViewportClient->ViewTransformPerspective.GetLocation();
+            }
+
+        
+            PerFrameConstants.CameraUpVector = curEditorViewportClient->ViewTransformPerspective.GetUpVector();
+            PerFrameConstants.CameraRightVector = curEditorViewportClient->ViewTransformPerspective.GetRightVector();
+            renderResourceManager->UpdateConstantBuffer("FPerFrameConstants", &PerFrameConstants);
             for (const FDynamicEmitterDataBase* EmitterDataBase : ParticleSystemComponent->EmitterRenderData)
             {
                 if (EmitterDataBase)
