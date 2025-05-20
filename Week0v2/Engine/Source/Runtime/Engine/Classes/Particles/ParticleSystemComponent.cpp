@@ -34,13 +34,14 @@ void UParticleSystemComponent::BeginPlay()
 
 void UParticleSystemComponent::UpdateDynamicData()
 {
+    // 1) 이전 데이터 해제
     for (FDynamicEmitterDataBase* OldData : EmitterRenderData)
     {
         delete OldData;
     }
     EmitterRenderData.Empty();
     
-    // 2) 각 EmitterInstance에 대해 렌더 데이터 생성
+    // 2) 각 EmitterInstance별 리플레이 데이터 준비
     int32 EmitterIndex = 0;
     for (FParticleEmitterInstance* Instance : EmitterInstances)
     {
@@ -50,58 +51,53 @@ void UParticleSystemComponent::UpdateDynamicData()
             continue;
         }
         
-        // 그냥 리플레이 데이터에 다 박으면 안되나????????????????"??????
-        FDynamicSpriteEmitterData* SpriteData = new FDynamicSpriteEmitterData();
-        SpriteData->EmitterIndex      = EmitterIndex;
+        auto* SpriteData = new FDynamicSpriteEmitterData();
+        SpriteData->EmitterIndex = EmitterIndex;
         auto& Source = SpriteData->Source;
 
-        // — 기본 리플레이 필드
+        // — 리플레이 필드 채우기
         Source.eEmitterType        = DET_Sprite;
         Source.ActiveParticleCount = Instance->ActiveParticles;
+        // VertexShader 쪽에서 <Position,Size,Rotation,Color>만 쓰므로
         Source.ParticleStride      = Instance->ParticleStride;
         Source.Scale               = Instance->Component->GetWorldScale();
 
-        // — 메모리 블록(ParticleData + ParticleIndices) 복사
-        int32 DataBytes   = Instance->MaxActiveParticles * Instance->ParticleStride;
-        int32 IndexCount  = Instance->MaxActiveParticles;
+        // — 시뮬레이션용 메모리 데이터 복사(필요하다면)
+        int32 DataBytes  = Instance->MaxActiveParticles * Instance->ParticleStride;
+        int32 IndexCount = Instance->MaxActiveParticles;
         Source.DataContainer.Alloc(DataBytes, IndexCount);
-        std::memcpy(Source.DataContainer.ParticleData,
-                    Instance->ParticleData,
-                    DataBytes);
-        std::memcpy(Source.DataContainer.ParticleIndices,
-                    Instance->ParticleIndices,
+        std::memcpy(Source.DataContainer.ParticleData,    Instance->ParticleData,   DataBytes);
+        std::memcpy(Source.DataContainer.ParticleIndices, Instance->ParticleIndices,
                     sizeof(uint16) * Instance->ActiveParticles);
 
-        // — 파티클 시스템 세팅
-        Source.Material         = Instance->RequiredModule->SpriteTexture;
-        Source.RequiredModule   = Instance->RequiredModule;
-        Source.PivotOffset      = Instance->PivotOffset;
-        Source.MaxDrawCount     = Instance->ActiveParticles;
-        //초기값을 멀로 줘야하지?????
-        //Source.bUseLocalSpace   = Instance->bUseLocalSpace;
+        // — 머티리얼·모듈 정보
+        Source.Material       = Instance->RequiredModule->SpriteTexture;
+        Source.RequiredModule = Instance->RequiredModule;
+        Source.PivotOffset    = Instance->PivotOffset;
+        Source.MaxDrawCount   = Instance->ActiveParticles;
+        // Source.bUseLocalSpace = Instance->bUseLocalSpace;
 
-        // 3) 렌더러가 사용할 추가 세팅
+        // — RenderData 초기화
         SpriteData->bSelected = false;
         SpriteData->bValid    = true;
         SpriteData->Init(SpriteData->bSelected);
-        
-        // 2-5) 배열에 추가
+
         EmitterRenderData.Add(SpriteData);
-    
         ++EmitterIndex;
     }
-        for (FDynamicEmitterDataBase* BaseData : EmitterRenderData)
+
+    // 3) RHI 버퍼 생성·업데이트 (VertexBuffer만)
+    for (FDynamicEmitterDataBase* Base : EmitterRenderData)
     {
-        auto* SpriteData = static_cast<FDynamicSpriteEmitterData*>(BaseData);
+        auto* SpriteData = static_cast<FDynamicSpriteEmitterData*>(Base);
+        auto& Src = SpriteData->Source;
 
-        int32 ActiveCount = SpriteData->Source.ActiveParticleCount;
-        int32 NumVerts    = ActiveCount * 4;
-        int32 NumPrims    = ActiveCount * 2;
+        // 파티클당 1정점, 총 정점 수 = ActiveParticleCount
+        int32 VertexCount = Src.ActiveParticleCount;
         int32 VertStride  = sizeof(FParticleSpriteVertex);
-        int32 VBSize      = VertStride * NumVerts;
-        int32 IBSize      = sizeof(uint16) * NumPrims * 3;
+        int32 VBSize      = VertexCount * VertStride;
 
-        // --- VertexBuffer 생성 또는 크기 검사 ---
+        // --- VertexBuffer 생성 또는 재할당 ---
         if (!SpriteData->VertexBuffer || SpriteData->VertexBufferSize < VBSize)
         {
             if (SpriteData->VertexBuffer)
@@ -109,81 +105,53 @@ void UParticleSystemComponent::UpdateDynamicData()
                 SpriteData->VertexBuffer->Release();
                 SpriteData->VertexBuffer = nullptr;
             }
-            D3D11_BUFFER_DESC desc = {};
-            desc.Usage               = D3D11_USAGE_DYNAMIC;
-            desc.ByteWidth           = VBSize;
-            desc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
-            desc.CPUAccessFlags      = D3D11_CPU_ACCESS_WRITE;
-            desc.MiscFlags           = 0;
-
-            D3D11_SUBRESOURCE_DATA initData = {};
-            initData.pSysMem = nullptr; // Map으로 쓸 거니까 초기값은 비워도 됩니다
-
-            auto hr = GEngineLoop.GraphicDevice.Device->CreateBuffer(&desc, nullptr, &SpriteData->VertexBuffer);
-            if (hr != S_OK)
-            {
-                UE_LOG(LogLevel::Error, "Particle Vertex Buffer Create Failed");
-            }
+            D3D11_BUFFER_DESC vbDesc = {};
+            vbDesc.Usage          = D3D11_USAGE_DYNAMIC;
+            vbDesc.ByteWidth      = VBSize;
+            vbDesc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
+            vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+            GEngineLoop.GraphicDevice.Device->CreateBuffer(&vbDesc, nullptr, &SpriteData->VertexBuffer);
             SpriteData->VertexBufferSize = VBSize;
         }
 
-        // --- IndexBuffer 생성 또는 크기 검사 ---
-        if (!SpriteData->IndexBuffer || SpriteData->IndexBufferSize < IBSize)
-        {
-            if (SpriteData->IndexBuffer)
-            {
-                SpriteData->IndexBuffer->Release();
-                SpriteData->IndexBuffer = nullptr;
-            }
-            D3D11_BUFFER_DESC desc = {};
-            desc.Usage          = D3D11_USAGE_DYNAMIC;
-            desc.ByteWidth      = IBSize;
-            desc.BindFlags      = D3D11_BIND_INDEX_BUFFER;
-            desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        // --- VertexBuffer에 데이터 채우기 ---
+        D3D11_MAPPED_SUBRESOURCE Mapped;
+        auto* DC = GEngineLoop.GraphicDevice.DeviceContext;
+        DC->Map(SpriteData->VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
 
-            auto hr = GEngineLoop.GraphicDevice.Device->CreateBuffer(&desc, nullptr, &SpriteData->IndexBuffer);
-            if (hr != S_OK)
-            {
-                UE_LOG(LogLevel::Error, "Particle Index Buffer Create Failed");
-            }
-            SpriteData->IndexBufferSize = IBSize;
-        }
-
-        // --- 데이터를 GPU로 업로드 (Map/Unmap) ---
-        // 1) Build CPU-side arrays (or use GetVertexAndIndexData)
-        std::vector<FParticleSpriteVertex> verts(NumVerts);
-        std::vector<uint16> indices(NumPrims * 3);
+        // 파티클 1개당 하나의 FParticleSpriteVertex
         SpriteData->GetVertexAndIndexData(
-            verts.data(), indices.data(), nullptr,
-            /*CameraPos*/{},
-            /*LocalToWorld*/FMatrix::Identity,
-            /*InstanceFactor*/1
+            Mapped.pData,        // VertexData
+            nullptr,             // FillIndexData (인덱스 버퍼 사용 안 함)
+            nullptr,             // ParticleOrder
+            /*CameraPos=*/{},    // 필요한 값으로 교체
+            /*LocalToWorld=*/FMatrix::Identity,
+            /*InstanceFactor=*/1
         );
+        {
+            auto* VertArray = reinterpret_cast<FParticleSpriteVertex*>(Mapped.pData);
+            int32 Count = SpriteData->Source.ActiveParticleCount;
+            int32 LogMax = FMath::Min(Count, 10);  // 최대 10개까지만
 
-        // 2) Map vertex buffer
-        D3D11_MAPPED_SUBRESOURCE mapped;
-        GEngineLoop.GraphicDevice.DeviceContext->Map(
-            SpriteData->VertexBuffer,
-            0,
-            D3D11_MAP_WRITE_DISCARD,
-            0,
-            &mapped
-        );
-        memcpy(mapped.pData, verts.data(), VBSize);
-        GEngineLoop.GraphicDevice.DeviceContext->Unmap(SpriteData->VertexBuffer, 0);
-
-        // 3) Map index buffer
-        GEngineLoop.GraphicDevice.DeviceContext->Map(
-            SpriteData->IndexBuffer,
-            0,
-            D3D11_MAP_WRITE_DISCARD,
-            0,
-            &mapped
-        );
-        memcpy(mapped.pData, indices.data(), IBSize);
-        GEngineLoop.GraphicDevice.DeviceContext->Unmap(SpriteData->IndexBuffer, 0);
+            UE_LOG(LogLevel::Warning, TEXT("=== SpriteVertex After UpdateDynamicData (up to %d) ==="), LogMax);
+            for (int i = 0; i < LogMax; ++i)
+            {
+                const auto& V = VertArray[i];
+                UE_LOG(LogLevel::Warning, 
+                    TEXT("V[%d]: Pos=(%.2f,%.2f,%.2f)  Size=(%.2f,%.2f)  Rot=%.2f  Color=(%.2f,%.2f,%.2f,%.2f)  RelT=%.2f"),
+                    i,
+                    V.Position.X,  V.Position.Y,  V.Position.Z,
+                    V.Size.X,      V.Size.Y,
+                    V.Rotation,
+                    V.Color.R,     V.Color.G,     V.Color.B,     V.Color.A,
+                    V.RelativeTime
+                );
+            }
+        }
+        DC->Unmap(SpriteData->VertexBuffer, 0);
     }
 
+    // 다음 렌더 패스에서 UpdateDynamicData가 반영되도록 플래그
     MarkRenderDynamicDataDirty();
 }
 
@@ -291,7 +259,6 @@ void UParticleSystemComponent::CreateDynamicData()
             {
                 //NewDynamicEmitterData->StatID = EmitterInst->SpriteTemplate->GetStatIDRT();
                 NewDynamicEmitterData->bValid = true;
-                NewDynamicEmitterData->EmitterIndex = EmitterIndex;
                 NewDynamicEmitterData->EmitterIndex = EmitterIndex;
                 EmitterRenderData.Add(NewDynamicEmitterData);
 

@@ -197,6 +197,21 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
             --i;  // ActiveParticles가 하나 줄어들었으니 인덱스 보정
         }
     }
+    UE_LOG(LogLevel::Display, TEXT("=== Particle States After Tick ==="));
+    for (int32 i = 0; i < ActiveParticles; ++i)
+    {
+        const uint16 SlotIndex = ParticleIndices[i];
+        uint8*    DataPtr     = ParticleData + SlotIndex * ParticleStride;
+        FBaseParticle& P     = *reinterpret_cast<FBaseParticle*>(DataPtr);
+
+        UE_LOG(LogLevel::Display, TEXT("Particle %d | Loc=(%.2f,%.2f,%.2f)  Vel=(%.2f,%.2f,%.2f)  RelT=%.2f"),
+            i,
+            P.Location.X, P.Location.Y, P.Location.Z,
+            P.Velocity.X, P.Velocity.Y, P.Velocity.Z,
+            P.RelativeTime
+        );
+    }
+
     UE_LOG(LogLevel::Warning, "Particles : %d", ActiveParticles);
 
     SpawnModules.Empty();

@@ -12,7 +12,7 @@ UParticleLODLevel* UParticleEmitter::GetCurrentLODLevel(FParticleEmitterInstance
 
 FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemComponent* InComponent)
 {
-    FParticleEmitterInstance* Instance = 0;
+    FParticleEmitterInstance* Instance = nullptr;
 
     UParticleLODLevel* LODLevel = LODLevels[0];
 
@@ -38,6 +38,7 @@ FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemCompon
         Instance->CurrentLODLevel = LODLevels[Instance->CurrentLODLevelIndex];
         Instance->Init();
     }
+    return Instance;
 }
 
 void UParticleEmitter::CacheEmitterModuleInfo()

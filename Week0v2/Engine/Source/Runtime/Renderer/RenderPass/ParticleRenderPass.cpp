@@ -188,9 +188,9 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
             //                        ->GetConstantBuffer(TEXT("FParticleInstanceConstant"));
             // DC->VSSetConstantBuffers(1, 1, &PCB);
             // DC->PSSetConstantBuffers(1, 1, &PCB);
-            
-            // 7) DrawIndexed
-            DC->DrawIndexed(NumPrims * 3, 0, 0);
+            int32 ParticleCount = SpriteData->Source.ActiveParticleCount;
+            DC->IASetIndexBuffer(nullptr, DXGI_FORMAT_UNKNOWN, 0); // 인덱스 버퍼 언바인딩
+            DC->Draw(ParticleCount * 4,0);
         }
     }
 }

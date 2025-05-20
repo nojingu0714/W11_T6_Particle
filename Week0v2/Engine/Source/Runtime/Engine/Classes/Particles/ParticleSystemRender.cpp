@@ -105,8 +105,12 @@ void FDynamicSpriteEmitterDataBase::SortSpriteParticles(int32 SortMode, bool bLo
     });
 }
 
-bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* FillIndexData,
-                                                      TArray<FParticleOrder>* ParticleOrder, const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const
+bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,
+                                                      void* FillIndexData,
+                                                      TArray<FParticleOrder>* ParticleOrder,
+                                                      const FVector& InCameraPosition,
+                                                      const FMatrix& InLocalToWorld,
+                                                      uint32 InstanceFactor) const
 {
     int32 ParticleCount = Source.ActiveParticleCount;
     if ((Source.MaxDrawCount >= 0) && (ParticleCount > Source.MaxDrawCount))
@@ -114,93 +118,49 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* F
         ParticleCount = Source.MaxDrawCount;
     }
 
-    // Put the camera origin in the appropriate coordinate space.
     FVector CameraPosition = InCameraPosition;
     if (Source.bUseLocalSpace)
     {
         FMatrix InvSelf = InLocalToWorld.Inverse();
         CameraPosition = InvSelf.TransformPosition(InCameraPosition);
     }
-    
-    int32	ParticleIndex;
-    
+
     int32 VertexStride = sizeof(FParticleSpriteVertex);
-	uint8* TempVert = (uint8*)VertexData;
-	FParticleSpriteVertex* FillVertex;
-    
-    FVector ParticlePosition;
-    FVector ParticleOldPosition;
-    float SubImageIndex = 0.0f;
+    uint8* TempVert = (uint8*)VertexData;
 
     const uint8* ParticleData = Source.DataContainer.ParticleData;
     const uint16* ParticleIndices = Source.DataContainer.ParticleIndices;
     const TArray<FParticleOrder>* OrderedIndices = ParticleOrder;
 
-
-	for (int32 i = 0; i < ParticleCount; i++)
-	{
-		ParticleIndex = OrderedIndices ? (*OrderedIndices)[i].ParticleIndex : i;
-		DECLARE_PARTICLE_CONST(Particle, ParticleData + Source.ParticleStride * ParticleIndices[ParticleIndex]);
-
-		const FVector2D Size = GetParticleSize(Particle, Source);
-
-		ParticlePosition = Particle.Location;
-		ParticleOldPosition = Particle.OldLocation;
-
-	    // 공전 모듈 계산
-		//ApplyOrbitToPosition(Particle, Source, InLocalToWorld, ParticlePosition, ParticleOldPosition);
-
-	    // 카메라 오프셋 용
-	    
-		// if (Source.CameraPayloadOffset != 0)
-		// {
-		// 	FVector CameraOffset = GetCameraOffsetFromPayload(Source.CameraPayloadOffset, Particle, ParticlePosition, CameraPosition);
-		// 	ParticlePosition += CameraOffset;
-		// 	ParticleOldPosition += CameraOffset;
-		// }
-	    
-	    // 아틀라스 용
-
-		// if (Source.SubUVDataOffset > 0)
-		// {
-		// 	FFullSubUVPayload* SubUVPayload = (FFullSubUVPayload*)(((uint8*)&Particle) + Source.SubUVDataOffset);
-		// 	SubImageIndex = SubUVPayload->ImageIndex;
-		// }
-
-
-		for (uint32 Factor = 0; Factor < InstanceFactor; Factor++)
-		{
-			FillVertex = (FParticleSpriteVertex*)TempVert;
-			FillVertex->Position = ParticlePosition;
-			FillVertex->RelativeTime = Particle.RelativeTime;
-			FillVertex->OldPosition = ParticleOldPosition;
-			// Create a floating point particle ID from the counter, map into approximately 0-1
-			//FillVertex->ParticleId = (Particle.Flags & STATE_CounterMask) / 10000.0f;
-		    FillVertex->ParticleId = (float)(Particle.Flags) / 10000.0f;
-			FillVertex->Size = FVector2D(GetParticleSizeWithUVFlipInSign(Particle, Size));
-			FillVertex->Rotation = Particle.Rotation;
-			FillVertex->SubImageIndex = SubImageIndex;
-			FillVertex->Color = Particle.Color;
-
-			TempVert += VertexStride;
-		}
-	}
-    uint16* DestIndex = reinterpret_cast<uint16*>(FillIndexData);
-    for (int32 i = 0; i < ParticleCount; ++i)
+    for (int32 i = 0; i < ParticleCount; i++)
     {
-        uint16 BaseV = i * 4;
-        // 첫 삼각형
-        *DestIndex++ = BaseV + 0;
-        *DestIndex++ = BaseV + 1;
-        *DestIndex++ = BaseV + 2;
-        // 두 번째 삼각형
-        *DestIndex++ = BaseV + 2;
-        *DestIndex++ = BaseV + 3;
-        *DestIndex++ = BaseV + 0;
+        int32 ParticleIndex = OrderedIndices ? (*OrderedIndices)[i].ParticleIndex : i;
+        DECLARE_PARTICLE_CONST(Particle, ParticleData + Source.ParticleStride * ParticleIndices[ParticleIndex]);
+
+        const FVector2D Size = GetParticleSize(Particle, Source);
+        FVector ParticlePosition = Particle.Location;
+        FVector ParticleOldPosition = Particle.OldLocation;
+        float SubImageIndex = 0.0f;
+
+        // 여기서 InstanceFactor는 무시해도 됨 (1이라 가정)
+        FParticleSpriteVertex* FillVertex = (FParticleSpriteVertex*)TempVert;
+        FillVertex->Position = ParticlePosition;
+        
+        FillVertex->RelativeTime = Particle.RelativeTime;
+        FillVertex->OldPosition = ParticleOldPosition;
+        FillVertex->ParticleId = (float)(Particle.Flags) / 10000.0f;
+        FillVertex->Size = FVector2D(GetParticleSizeWithUVFlipInSign(Particle, Size));
+        FillVertex->Rotation = Particle.Rotation;
+        FillVertex->SubImageIndex = SubImageIndex;
+        FillVertex->Color = Particle.Color;
+
+        TempVert += VertexStride;
     }
 
-	return true;
+    // 인덱스는 사용 안 하므로 생성하지 않음
+    return true;
 }
+
 
 bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder,
     TArray<FBaseParticle>& ParticleData, const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const
