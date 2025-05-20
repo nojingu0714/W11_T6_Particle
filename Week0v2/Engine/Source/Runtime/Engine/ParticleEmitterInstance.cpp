@@ -269,8 +269,8 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
         const float testVelocityMagnitude = 1.0f; // 테스트용 속도 크기 (원하는 값으로 조절)
         // 테스트용 방향 벡터 설정
         CurrentTestDirection = directions[directionIndex];
-        //FVector TestParticleVelocity = CurrentTestDirection * testVelocityMagnitude;
-        FVector TestParticleVelocity = FVector(1.0f, 0.0f, 0.0f); 
+        FVector TestParticleVelocity = CurrentTestDirection * testVelocityMagnitude;
+        //FVector TestParticleVelocity = FVector(1.0f, 0.0f, 0.0f); 
         // 다음 방향으로 업데이트 (순환)
         directionIndex = (directionIndex + 1) % numDirections;
         
@@ -354,7 +354,6 @@ void FParticleEmitterInstance::PreSpawn(FBaseParticle& Particle, const FVector& 
 
 void FParticleEmitterInstance::PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime)
 {
-    Particle->Location += Particle->Velocity * SpawnTime;
 }
 
 
@@ -366,6 +365,7 @@ void FParticleEmitterInstance::KillParticle(int32 Index)
     // 2) 마지막 활성 슬롯 인덱스 가져오기
     int32 LastArrayIndex = ActiveParticles - 1;
     uint16 LastSlotIndex = ParticleIndices[LastArrayIndex];
+    
 
     // 3) 제거할 위치에 마지막 슬롯 복사
     //    → O(1)로 중간 삭제
