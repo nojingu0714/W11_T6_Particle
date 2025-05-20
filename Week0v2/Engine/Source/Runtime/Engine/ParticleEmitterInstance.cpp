@@ -1,4 +1,4 @@
-﻿#include "ParticleEmitterInstance.h"
+#include "ParticleEmitterInstance.h"
 
 #include "LaunchEngineLoop.h"
 #include "Particles/ParticleEmitter.h"
@@ -155,19 +155,6 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
         P.RotationRate   = P.BaseRotationRate;
         P.Size           = P.BaseSize;
         P.Color          = P.BaseColor;
-
-
-        // (c) 물리적 통합
-        P.Location      += P.Velocity * DeltaTime;
-        P.Rotation      += P.RotationRate * DeltaTime;
-        P.RelativeTime  += DeltaTime * P.OneOverMaxLifetime;
-
-        // (d) 수명 초과 시 슬롯 제거
-        if (P.RelativeTime >= 1.0f)
-        {
-            KillParticle(i);
-            --i;  // ActiveParticles가 하나 줄어들었으니 인덱스 보정
-        }
     }
 
     // (b) 모든 Update 모듈 실행, 전달해준 this를 통해 목록에 접근하므로 
@@ -175,6 +162,26 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     for (UParticleModule* Mod : UpdateModules)
     {
         Mod->Update(this, /*Offset=*/0 * ParticleStride, DeltaTime);
+    }
+
+    for (int32 i = 0; i < ActiveParticles; ++i)
+    {
+        const uint16 SlotIndex = ParticleIndices[i];
+        // 버퍼 오프셋 계산
+        uint8* DataPtr = ParticleData + SlotIndex * ParticleStride;
+        FBaseParticle& P = *reinterpret_cast<FBaseParticle*>(DataPtr);
+
+        // (c) 물리적 통합
+        P.Location += P.Velocity * DeltaTime;
+        P.Rotation += P.RotationRate * DeltaTime;
+        P.RelativeTime += DeltaTime * P.OneOverMaxLifetime;
+
+        // (d) 수명 초과 시 슬롯 제거
+        if (P.RelativeTime >= 1.0f)
+        {
+            KillParticle(i);
+            --i;  // ActiveParticles가 하나 줄어들었으니 인덱스 보정
+        }
     }
 
     UE_LOG(LogLevel::Warning, "Particles : %d", ActiveParticles);
