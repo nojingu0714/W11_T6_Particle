@@ -125,10 +125,8 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
                 if (EmitterDataBase)
                 {
                     EmitterDataBase->ExecuteRender(ViewProj);
-                    
                 }
             }
-        
     }
 
     // for (const UBillboardComponent* item : BillboardComponents)

@@ -141,37 +141,7 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
             );
         }
     }
-
-    // 언리얼 식이 아닌 TArray<FBaseParticle>로 된 Particle 관리 방법 
-    // for (auto Particle : BaseParticles)
-    // {
-    //     // 활성 파티클의 버퍼 오프셋 계산
-    //     // int32 Index = ParticleIndices[i];
-    //     // FBaseParticle& P = *reinterpret_cast<FBaseParticle*>(ParticleData + Index * ParticleStride);
-    //
-    //     Particle->OldLocation     = Particle->Location;
-    //     Particle->Velocity        = Particle->BaseVelocity;
-    //     Particle->RotationRate    = Particle->BaseRotationRate;
-    //     Particle->Size            = Particle->BaseSize;
-    //     Particle->Color           = Particle->BaseColor;
-    //
-    //     for (UParticleModule* UpdateModule : UpdateModules)
-    //     {
-    //         UpdateModule->Update(this, Particle, DeltaTime);
-    //     }
-    //
-    //     Particle->Location      += Particle->Velocity     * DeltaTime;
-    //     Particle->Rotation      += Particle->RotationRate * DeltaTime;
-    //     Particle->RelativeTime  += DeltaTime * Particle->OneOverMaxLifetime;
-    //
-    //     // 수명 만료 시 파티클 제거
-    //     if (Particle->RelativeTime >= 1.0f)
-    //     {
-    //         // KillParticle(Particle);
-    //         DeadParticles.Add(Particle);
-    //     }
-    // }
-    // KilParticles();
+    
     for (int32 i = 0; i < ActiveParticles; ++i)
     {
         const uint16 SlotIndex = ParticleIndices[i];

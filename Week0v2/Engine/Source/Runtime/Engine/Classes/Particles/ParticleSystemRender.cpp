@@ -290,7 +290,6 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData, void* Fi
 
 void FDynamicSpriteEmitterData::ExecuteRender(const FMatrix& ViewProj) const
 {
-    
     // 업데이트 전에 sorting
     // Sort and generate particles for this view.
     const FDynamicSpriteEmitterReplayDataBase* SourceData = GetSourceData();
