@@ -192,11 +192,6 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
         P.Size           = P.BaseSize;
         P.Color          = P.BaseColor;
 
-        // (b) 모든 Update 모듈 실행
-        for (UParticleModule* Mod : UpdateModules)
-        {
-            Mod->Update(this, /*Offset=*/SlotIndex * ParticleStride, DeltaTime);
-        }
 
         // (c) 물리적 통합
         P.Location      += P.Velocity * DeltaTime;
@@ -210,6 +205,14 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
             --i;  // ActiveParticles가 하나 줄어들었으니 인덱스 보정
         }
     }
+
+    // (b) 모든 Update 모듈 실행, 전달해준 this를 통해 목록에 접근하므로 
+    //  offset은 딱히 무슨 값 넣어도 상관 없음
+    for (UParticleModule* Mod : UpdateModules)
+    {
+        Mod->Update(this, /*Offset=*/0 * ParticleStride, DeltaTime);
+    }
+
     UE_LOG(LogLevel::Warning, "Particles : %d", ActiveParticles);
 
     SpawnModules.Empty();

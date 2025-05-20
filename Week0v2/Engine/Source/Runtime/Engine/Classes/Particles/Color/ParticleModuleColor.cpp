@@ -37,16 +37,17 @@ void UParticleModuleColor::Spawn(FParticleEmitterInstance* Owner, int32 Offset, 
     Particle.Color.A = fAlpha;
 }
 
-void UParticleModuleColor::Update(FParticleEmitterInstance* Owner, int32 Offset, FBaseParticle* ParticleBase, float DeltaTime)
+void UParticleModuleColor::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
 {
-    TEMP_UPDATE_LOOP;
     FVector ColorVec;
     float	fAlpha;
     
+    BEGIN_UPDATE_LOOP;
     ColorVec = ColorScaleOverLife.GetValue(Particle.RelativeTime);
     fAlpha = AlphaScaleOverLife.GetValue(Particle.RelativeTime);
     Particle.Color.R = ColorVec.X;
     Particle.Color.G = ColorVec.Y;
     Particle.Color.B = ColorVec.Z;
     Particle.Color.A = fAlpha;
+    END_UPDATE_LOOP;
 }

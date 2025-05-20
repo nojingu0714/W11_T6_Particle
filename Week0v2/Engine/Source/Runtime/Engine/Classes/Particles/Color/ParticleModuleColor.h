@@ -21,5 +21,5 @@ public:
     void InitializeDefaults();
 
     virtual void Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase) override;
-    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, FBaseParticle* ParticleBase, float DeltaTime) override;
+    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime) override;
 };

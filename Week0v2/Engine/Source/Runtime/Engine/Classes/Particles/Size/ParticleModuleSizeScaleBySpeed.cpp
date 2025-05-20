@@ -7,16 +7,17 @@ UParticleModuleSizeScaleBySpeed::UParticleModuleSizeScaleBySpeed()
     bUpdateModule = true;
 }
 
-void UParticleModuleSizeScaleBySpeed::Update(FParticleEmitterInstance* Owner, int32 Offset, FBaseParticle* ParticleBase, float DeltaTime)
+void UParticleModuleSizeScaleBySpeed::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
 {
     FVector Scale(SpeedScale.X, SpeedScale.Y, 1.0f);
     FVector ScaleMax(MaxScale.X, MaxScale.Y, 1.0f);
 
-    TEMP_UPDATE_LOOP;
+    BEGIN_UPDATE_LOOP;
     FVector Size = Scale * Particle.Velocity.Magnitude();
     Size = Size.Max(FVector(1.0f));
     Size = Size.Min(ScaleMax);
     Particle.Size = Particle.BaseSize * Size;
+    END_UPDATE_LOOP;
 }
 
 void UParticleModuleSizeScaleBySpeed::CompileModule(FParticleEmitterBuildInfo& EmitterInfo)

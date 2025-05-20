@@ -16,6 +16,6 @@ public:
     FVector2D MaxScale;
 
 
-    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, FBaseParticle* ParticleBase, float DeltaTime);
+    virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime);
     virtual void CompileModule(struct FParticleEmitterBuildInfo& EmitterInfo) override;
 };
