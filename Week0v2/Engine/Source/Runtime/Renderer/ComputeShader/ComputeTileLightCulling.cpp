@@ -38,7 +38,7 @@ void FComputeTileLightCulling::AddRenderObjectsToRenderPass(UWorld* InWorld)
 {
     LightComponents.Empty();
     
-    if (InWorld->WorldType == EWorldType::Editor || InWorld->WorldType == EWorldType::EditorPreview)
+    if (InWorld->WorldType == EWorldType::Editor || InWorld->WorldType == EWorldType::EditorPreview || InWorld->WorldType == EWorldType::EditorParticlePreview)
     {
         for (const auto iter : TObjectRange<USceneComponent>())
         {
