@@ -28,7 +28,9 @@ public:
     TArray<UParticleLODLevel*> LODLevels;
 
     int32 ParticleSize;
-    
+    // 특수한 모듈이 요구하는 바이트 
+    int32 ReqInstanceBytes;
+
     FParticleEmitterInstance* CreateInstance(UParticleSystemComponent* InComponent);
     
     enum EEmitterRenderMode EmitterRenderMode = ERM_MAX;

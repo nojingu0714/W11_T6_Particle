@@ -598,6 +598,8 @@
     <FxCompile Include="Shaders\FinalVertexShader.hlsl" />
     <FxCompile Include="Shaders\SkeletalUberLitPixelShader.hlsl" />
     <FxCompile Include="Shaders\SkeletalUberLitVertexShader.hlsl" />
+    <FxCompile Include="Shaders\SpriteParticleVertexShader.hlsl" />
+    <FxCompile Include="Shaders\SpriteParticlePixelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Week0v2.natvis" />

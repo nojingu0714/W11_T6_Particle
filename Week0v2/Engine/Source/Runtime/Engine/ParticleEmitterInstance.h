@@ -40,7 +40,8 @@ struct FParticleEmitterInstance
     TArray<FBaseParticle*> DeadParticles;
     
     UParticleModuleRequired* RequiredModule;
-    /** Pointer to the particle data array.                             */
+    
+    /** Pointer to the particle data array.                              */
     uint8* ParticleData;
     /** Pointer to the particle index array.                            */
     uint16* ParticleIndices;
@@ -64,9 +65,23 @@ struct FParticleEmitterInstance
     int32 MaxActiveParticles = 1024;
     /** The fraction of time left over from spawning.                   */
 
+    /** The fraction of time left over from spawning.					*/
+    float SpawnFraction;
+    /** The number of seconds that have passed since the instance was
+ *	created.
+ */
+    float SecondsSinceCreation;
+    /** The location of the emitter instance							*/
+    FVector Location;
     /** The previous location of the instance.							*/
     FVector OldLocation;
     // Emitter 시작 후 총 누적 시간 
+    /** The bounding box for the particles.								*/
+    // FBox ParticleBoundingBox;
+    /** Flag indicating if the render data is dirty.					*/
+    int32 IsRenderDataDirty;
+    
+    
     float EmitterTime = 0.0f;
     bool bEnabled= true;
     FVector2D PivotOffset;

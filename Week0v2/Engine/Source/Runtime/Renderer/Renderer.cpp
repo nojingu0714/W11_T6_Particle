@@ -108,6 +108,9 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateVertexPixelShader(TEXT("LetterBox"), nullptr);
     LetterBoxRenderPass = std::make_shared<FLetterBoxRenderPass>(TEXT("LetterBox"));
 
+    CreateVertexPixelShader(TEXT("SpriteParticle"), nullptr);
+    ParticleRenderPass = std::make_shared<FParticleRenderPass>(TEXT("SpriteParticle"));
+    
     CreateVertexPixelShader(TEXT("Blur"), nullptr);
     BlurRenderPass = std::make_shared<FBlurRenderPass>(TEXT("Blur"));
     
@@ -283,6 +286,8 @@ void FRenderer::Render(const std::shared_ptr<FEditorViewportClient>& ActiveViewp
             SkeletalRenderPass->Prepare(ActiveViewportClient);
             SkeletalRenderPass->Execute(ActiveViewportClient);
         }
+        ParticleRenderPass->Prepare(ActiveViewportClient);
+        ParticleRenderPass->Execute(ActiveViewportClient);
     }
     
     // if (ActiveViewportClient->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Particles))
@@ -352,6 +357,7 @@ void FRenderer::ClearRenderObjects() const
     BlurRenderPass->ClearRenderObjects();
     ParticleRenderPass->ClearRenderObjects();
     FinalRenderPass->ClearRenderObjects();
+    ParticleRenderPass->ClearRenderObjects();
 }
 
 void FRenderer::SetViewMode(const EViewModeIndex evi)
@@ -429,6 +435,7 @@ void FRenderer::AddRenderObjectsToRenderPass(UWorld* World) const
     BlurRenderPass->AddRenderObjectsToRenderPass(World);
     ParticleRenderPass->AddRenderObjectsToRenderPass(World);
     FinalRenderPass->AddRenderObjectsToRenderPass(World);
+    ParticleRenderPass->AddRenderObjectsToRenderPass(World);
 }
 
 void FRenderer::MappingVSPSInputLayout(const FName InShaderProgramName, FName VSName, FName PSName, FName InInputLayoutName)

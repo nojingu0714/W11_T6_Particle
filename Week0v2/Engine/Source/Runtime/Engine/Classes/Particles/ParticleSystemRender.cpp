@@ -20,15 +20,40 @@ FVector2D GetParticleSize(const FBaseParticle& Particle, const FDynamicSpriteEmi
 
 void FParticleDataContainer::Alloc(int32 InParticleDataNumBytes, int32 InParticleIndicesNumShorts)
 {
+    ParticleDataNumBytes     = InParticleDataNumBytes;
+    ParticleIndicesNumShorts = InParticleIndicesNumShorts;
+    // 전체 바이트 = 데이터 영역 + 인덱스 배열 크기
+    MemBlockSize = ParticleDataNumBytes + sizeof(uint16) * ParticleIndicesNumShorts;
+
+    // malloc 으로 한 번에 할당
+    ParticleData = static_cast<uint8*>(std::malloc(MemBlockSize));
+    if (!ParticleData)
+    {
+        // 할당 실패 처리 (로그, 예외 등)
+        throw std::bad_alloc();
+    }
+
+    // 인덱스 배열은 데이터 블록 끝에 위치
+    ParticleIndices = reinterpret_cast<uint16*>(ParticleData + ParticleDataNumBytes);
 }
 
 void FParticleDataContainer::Free()
 {
+    if (ParticleData)
+    {
+        std::free(ParticleData);
+        ParticleData    = nullptr;
+        ParticleIndices = nullptr;
+    }
+    MemBlockSize             = 0;
+    ParticleDataNumBytes     = 0;
+    ParticleIndicesNumShorts = 0;
 }
 
 void FDynamicEmitterDataBase::ExecuteRender(const FMatrix& ViewProj) const
 {
     
+
 }
 
 void FDynamicSpriteEmitterDataBase::SortSpriteParticles(int32 SortMode, bool bLocalSpace, 
@@ -161,6 +186,19 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* F
 			TempVert += VertexStride;
 		}
 	}
+    uint16* DestIndex = reinterpret_cast<uint16*>(FillIndexData);
+    for (int32 i = 0; i < ParticleCount; ++i)
+    {
+        uint16 BaseV = i * 4;
+        // 첫 삼각형
+        *DestIndex++ = BaseV + 0;
+        *DestIndex++ = BaseV + 1;
+        *DestIndex++ = BaseV + 2;
+        // 두 번째 삼각형
+        *DestIndex++ = BaseV + 2;
+        *DestIndex++ = BaseV + 3;
+        *DestIndex++ = BaseV + 0;
+    }
 
 	return true;
 }

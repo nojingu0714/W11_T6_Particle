@@ -6,6 +6,7 @@
 #include "ParticleHelper.h"
 #include "D3D11RHI/CBStructDefine.h"
 #include "Engine/World.h"
+#include "Particles/ParticleModuleRequired.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Renderer/Renderer.h"
 #include "UnrealEd/EditorViewportClient.h"
@@ -78,6 +79,7 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 {
+    // 1) 뷰·프로젝션·카메라 상수 업데이트
     FMatrix View = FMatrix::Identity;
     FMatrix Proj = FMatrix::Identity;
     FMatrix ViewProj = FMatrix::Identity;
