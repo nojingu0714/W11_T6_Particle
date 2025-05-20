@@ -1,0 +1,25 @@
+
+#include "ShaderHeaders/GSamplers.hlsli"
+
+Texture2D gTexture : register(t0);
+struct PS_INPUT
+{
+    float4 Position : SV_Position;
+    float2 TexCoord : TEXCOORD0;
+    float4 Color         : COLOR0;        // 파티클 색상
+    float  RelativeTimePS: TEXCOORD1;
+    float  ParticleIdPS  : TEXCOORD2;
+};
+
+// 픽셀 셰이더
+float4 mainPS(PS_INPUT input) : SV_Target
+{
+    // float4 col = gTexture.Sample(linearSampler, input.TexCoord);
+    // float threshold = 0.01; // 필요한 경우 임계값을 조정
+    // if (col.a < threshold)
+    //     clip(-1); // 픽셀 버리기
+
+    float4 col = float4(1.f,1.f,1.f,1.f);
+    
+    return col;
+}

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Container/Array.h"
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
@@ -17,6 +17,13 @@ struct FBaseParticle;
 class UParticleSystemComponent;
 class UParticleLODLevel;
 class UParticleEmitter;
+
+
+// 동적 버퍼는 인스턴스에서 계속 업데이트 하기 때문에 이미터가 아니라 인스턴스가 소유
+struct FParticleEmitterRenderData
+{
+    ID3D11Buffer* VertexBuffer = nullptr;
+};
 
 struct FParticleEmitterInstance
 {
@@ -56,7 +63,7 @@ struct FParticleEmitterInstance
     /** The maximum number of active particles that can be held in 
      *  the particle data array.
      */
-    int32 MaxActiveParticles;
+    int32 MaxActiveParticles = 1024;
     /** The fraction of time left over from spawning.                   */
 
     /** The fraction of time left over from spawning.					*/
@@ -81,6 +88,7 @@ struct FParticleEmitterInstance
     FVector2D PivotOffset;
 
     FParticleEmitterInstance();
+    virtual ~FParticleEmitterInstance() {}
     
     void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent, float InEmitterDuration = 1.0f);
     void Init();
@@ -118,6 +126,13 @@ struct FParticleEmitterInstance
     */
     virtual bool FillReplayData( FDynamicEmitterReplayDataBase& OutData );
 
+    FParticleEmitterRenderData& GetRenderData()
+    {
+        return ParticleEmitterRenderData;
+    }
+    
+private:
+    FParticleEmitterRenderData ParticleEmitterRenderData;
 };
 
 

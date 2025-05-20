@@ -176,6 +176,18 @@ struct alignas(16)  FLetterBoxConstants // 레지스터 슬롯은 다른 버퍼�
     
 };
 
+struct alignas(16)  FPerFrameConstants
+{
+    FMatrix ViewMatrix;
+    FMatrix ProjectionMatrix;
+    FVector CameraWorldPosition;
+    float  Padding0; // 정렬을 위한 패딩
+    FVector CameraUpVector;    // 카메라의 Up 벡터 (빌보딩 시 필요)
+    float  Padding1;
+    FVector CameraRightVector; // 카메라의 Right 벡터 (빌보딩 시 필요)
+    float  Padding2;
+};
+
 struct alignas(16) FBlurConstants
 {
     // 블러 강도 (가우시안 함수의 표준 편차(sigma) 역할)

@@ -126,6 +126,12 @@ public:
     {
         Ar >> ContainerPrivate;
     }
+
+    T& Last(SizeType IndexFromTheEnd = 0)
+    {
+        SizeType Index = Num() - IndexFromTheEnd - 1;
+        return ContainerPrivate[Index];
+    }
 };
 
 

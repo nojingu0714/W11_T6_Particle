@@ -784,6 +784,8 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.cpp" />
+    <ClCompile Include="Shaders\ParticleSpritePixelShader.hlsl" />
+    <ClCompile Include="Shaders\ParticleSpriteVertexShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

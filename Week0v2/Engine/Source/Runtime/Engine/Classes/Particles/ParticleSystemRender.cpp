@@ -1,7 +1,9 @@
 
+#include "LaunchEngineLoop.h"
 #include "ParticleHelper.h"
 #include "Container/Array.h"
 #include "Math/Matrix.h"
+#include "Renderer/RenderPass/ParticleRenderPass.h"
 
 FVector2D GetParticleSize(const FBaseParticle& Particle, const FDynamicSpriteEmitterReplayDataBase& Source)
 {
@@ -46,6 +48,12 @@ void FParticleDataContainer::Free()
     MemBlockSize             = 0;
     ParticleDataNumBytes     = 0;
     ParticleIndicesNumShorts = 0;
+}
+
+void FDynamicEmitterDataBase::ExecuteRender(const FMatrix& ViewProj) const
+{
+    
+
 }
 
 void FDynamicSpriteEmitterDataBase::SortSpriteParticles(int32 SortMode, bool bLocalSpace, 
@@ -106,7 +114,7 @@ void FDynamicSpriteEmitterDataBase::SortSpriteParticles(int32 SortMode, bool bLo
 }
 
 bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* FillIndexData,
-                                                      TArray<FParticleOrder>* ParticleOrder, const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const
+                                                      TArray<FParticleOrder>* ParticleOrder, uint32 InstanceFactor) const
 {
     int32 ParticleCount = Source.ActiveParticleCount;
     if ((Source.MaxDrawCount >= 0) && (ParticleCount > Source.MaxDrawCount))
@@ -114,13 +122,6 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* F
         ParticleCount = Source.MaxDrawCount;
     }
 
-    // Put the camera origin in the appropriate coordinate space.
-    FVector CameraPosition = InCameraPosition;
-    if (Source.bUseLocalSpace)
-    {
-        FMatrix InvSelf = InLocalToWorld.Inverse();
-        CameraPosition = InvSelf.TransformPosition(InCameraPosition);
-    }
     
     int32	ParticleIndex;
     
@@ -185,19 +186,19 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData,  void* F
 			TempVert += VertexStride;
 		}
 	}
-    uint16* DestIndex = reinterpret_cast<uint16*>(FillIndexData);
-    for (int32 i = 0; i < ParticleCount; ++i)
-    {
-        uint16 BaseV = i * 4;
-        // 첫 삼각형
-        *DestIndex++ = BaseV + 0;
-        *DestIndex++ = BaseV + 1;
-        *DestIndex++ = BaseV + 2;
-        // 두 번째 삼각형
-        *DestIndex++ = BaseV + 2;
-        *DestIndex++ = BaseV + 3;
-        *DestIndex++ = BaseV + 0;
-    }
+    // uint16* DestIndex = reinterpret_cast<uint16*>(FillIndexData);
+    // for (int32 i = 0; i < ParticleCount; ++i)
+    // {
+    //     uint16 BaseV = i * 4;
+    //     // 첫 삼각형
+    //     *DestIndex++ = BaseV + 0;
+    //     *DestIndex++ = BaseV + 1;
+    //     *DestIndex++ = BaseV + 2;
+    //     // 두 번째 삼각형
+    //     *DestIndex++ = BaseV + 2;
+    //     *DestIndex++ = BaseV + 3;
+    //     *DestIndex++ = BaseV + 0;
+    // }
 
 	return true;
 }
@@ -285,6 +286,63 @@ bool FDynamicSpriteEmitterData::GetVertexAndIndexData(void* VertexData, void* Fi
 	}
 
 	return true;
+}
+
+void FDynamicSpriteEmitterData::ExecuteRender(const FMatrix& ViewProj) const
+{
+    
+    // 업데이트 전에 sorting
+    // Sort and generate particles for this view.
+    const FDynamicSpriteEmitterReplayDataBase* SourceData = GetSourceData();
+    if (!SourceData || SourceData->ActiveParticleCount == 0)
+    {
+        return; // 렌더링할 파티클 없음
+    }
+    
+    int32 ParticleCount = SourceData->ActiveParticleCount;
+    if ((SourceData->MaxDrawCount >= 0) && (ParticleCount > SourceData->MaxDrawCount))
+    {
+        ParticleCount = SourceData->MaxDrawCount;
+    }
+    
+    if (ParticleCount == 0)
+    {
+        return;
+    }
+    
+    if (UMaterial* Material = SourceData->Material)
+    {
+        FParticleRenderPass::UpdateMaterialConstants(Material->GetMaterialInfo());
+        //MaterialResource = MaterialInterface->GetRenderProxy();
+    }
+    
+    TArray<FParticleOrder> ParticleOrders;
+
+    ParticleOrders.SetNum(ParticleCount);
+    SortSpriteParticles(true, SourceData->bUseLocalSpace,ParticleCount, SourceData->DataContainer.ParticleData,
+        SourceData->ParticleStride, SourceData->DataContainer.ParticleIndices, &ViewProj, SourceData->LocalToWorld,ParticleOrders);
+
+    
+    ID3D11Buffer* VB = SourceData->ParticleEmitterRenderData.VertexBuffer;
+
+    D3D11_MAPPED_SUBRESOURCE sub = {};
+    const HRESULT hr = FEngineLoop::GraphicDevice.DeviceContext->Map(VB, 0,D3D11_MAP_WRITE_DISCARD,0, &sub);
+    if (FAILED(hr))
+    {
+        // 실패 시 메시지 박스 표시
+        std::string errorMessage = "Map failed for Dynamic VertexBuffer type: ";
+        MessageBoxA(nullptr, errorMessage.c_str(), "Error", MB_OK | MB_ICONERROR);
+        return;
+    }
+    GetVertexAndIndexData(sub.pData, nullptr, &ParticleOrders,  1);
+    FEngineLoop::GraphicDevice.DeviceContext->Unmap(VB, 0);
+
+    const UINT Stride = sizeof(FParticleSpriteVertex);
+    const UINT Offset = 0;
+    FEngineLoop::GraphicDevice.DeviceContext->IASetVertexBuffers(0, 1, &VB, &Stride, &Offset);
+
+    
+    FEngineLoop::GraphicDevice.DeviceContext->DrawInstanced(4, ParticleCount, 0, 0);
 }
 
 /**  소스 데이터가 채워진 후 호출되는 이 이미터의 다이내믹 렌더링 데이터를 초기화합니다.*/

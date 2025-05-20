@@ -117,9 +117,9 @@ private:
     std::shared_ptr<FFadeRenderPass> FadeRenderPass;
     std::shared_ptr<FLetterBoxRenderPass> LetterBoxRenderPass;
     std::shared_ptr<FBlurRenderPass> BlurRenderPass;
-    std::shared_ptr<FFinalRenderPass> FinalRenderPass;
     std::shared_ptr<FParticleRenderPass> ParticleRenderPass;
-    
+    std::shared_ptr<FFinalRenderPass> FinalRenderPass;
+
     ERasterizerState CurrentRasterizerState = ERasterizerState::SolidBack;
     EViewModeIndex CurrentViewMode = VMI_Lit_Goroud;
     EShadowFilterMode CurrentShadowFilterMode = EShadowFilterMode::PCF;

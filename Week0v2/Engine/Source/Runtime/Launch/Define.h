@@ -243,6 +243,7 @@ enum class EDepthStencilState
 {
     DepthNone,
     LessEqual,
+    TranslucentNoDepthWrite,
     End,
 };
 

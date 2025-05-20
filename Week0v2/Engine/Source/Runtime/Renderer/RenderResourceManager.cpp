@@ -159,6 +159,20 @@ void FRenderResourceManager::LoadStates()
     depthStencilDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;  // 깊이 비교를 항상 통과
     GraphicDevice->CreateDepthStencilState(
         &depthStencilDesc, &DepthStencilStates[static_cast<uint32>(EDepthStencilState::DepthNone)]);
+
+	{
+	    D3D11_DEPTH_STENCIL_DESC StencilDesc = {};
+	    StencilDesc.DepthEnable = TRUE;                     // 깊이 테스트 활성화
+	    StencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // 깊이 버퍼에 쓰기 비활성화
+	    StencilDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; // 일반적인 깊이 테스트 함수 (또는 LESS)
+
+	    StencilDesc.StencilEnable = FALSE;                  // 스텐실 테스트는 보통 사용 안 함
+	    StencilDesc.StencilReadMask = D3D11_DEFAULT_STENCIL_READ_MASK;
+	    StencilDesc.StencilWriteMask = D3D11_DEFAULT_STENCIL_WRITE_MASK;
+
+	    GraphicDevice->CreateDepthStencilState(&StencilDesc, &DepthStencilStates[static_cast<uint32>(EDepthStencilState::TranslucentNoDepthWrite)]);
+	}
+    
 #pragma endregion
 }
 
@@ -204,6 +218,12 @@ void FRenderResourceManager::ReleaseResources()
     {
         VB.Value->Release();
         VB.Value = nullptr;
+    }
+
+    for ( auto VB : VertexBuffersSet)
+    {
+        VB->Release();
+        VB = nullptr;
     }
 }
 
@@ -429,6 +449,11 @@ void FRenderResourceManager::AddOrSetVertexBuffer(const FName InVBName, ID3D11Bu
     VertexBuffers.Add(InVBName, InBuffer);
 }
 
+void FRenderResourceManager::AddOrSetVertexBuffer(ID3D11Buffer* InBuffer)
+{
+    VertexBuffersSet.Add(InBuffer);
+}
+
 void FRenderResourceManager::AddOrSetIndexBuffer(const FName InPBName, ID3D11Buffer* InBuffer)
 {
     if (IndexBuffers.Contains(InPBName))
@@ -567,6 +592,16 @@ ID3D11Buffer* FRenderResourceManager::GetVertexBuffer(const FName InVBName)
     return nullptr;
 }
 
+bool FRenderResourceManager::IsVertexBufferExist(ID3D11Buffer* InBuffer)
+{
+    if (VertexBuffersSet.Contains(InBuffer))
+    {
+        return true;
+    }
+    return false;
+}
+
+
 ID3D11Buffer* FRenderResourceManager::GetIndexBuffer(const FName InIBName)
 {
     if (IndexBuffers.Contains(InIBName))
@@ -644,4 +679,34 @@ void FRenderResourceManager::HotReloadShaders()
             PixelShader.Value->UpdateShader();
         }
     }
+}
+
+ID3D11Buffer* FRenderResourceManager::CreateEmptyDynamicVertexBuffer(uint32 SizeInBytes) 
+{
+    if (SizeInBytes == 0)
+    {
+        UE_LOG(LogLevel::Warning, "Cannot create a dynamic vertex buffer with zero size.");
+        return nullptr;
+    }
+
+    D3D11_BUFFER_DESC vertexBufferDesc = {};
+    vertexBufferDesc.ByteWidth = SizeInBytes;
+    vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;       // CPU에서 업데이트 가능
+    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER; // 버텍스 버퍼로 바인딩
+    vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; // CPU 쓰기 접근 허용
+    vertexBufferDesc.MiscFlags = 0;
+    vertexBufferDesc.StructureByteStride = 0;
+
+    ID3D11Buffer* vertexBuffer = nullptr;
+
+    // 초기 데이터를 제공하지 않으므로 D3D11_SUBRESOURCE_DATA는 nullptr로 전달
+    const HRESULT hr = GraphicDevice->Device->CreateBuffer(&vertexBufferDesc, nullptr, &vertexBuffer);
+    if (FAILED(hr))
+    {
+        UE_LOG(LogLevel::Warning, "Empty Dynamic VertexBuffer Creation failed, HRESULT: 0x%X", hr);
+        return nullptr;
+    }
+    AddOrSetVertexBuffer(vertexBuffer);
+
+    return vertexBuffer;
 }

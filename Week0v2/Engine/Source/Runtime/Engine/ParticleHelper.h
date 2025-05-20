@@ -3,6 +3,7 @@
 #include "Math/Color.h"
 #include "Math/Vector.h"
 #include "UserInterface/Debug/DebugViewModeHelpers.h"
+#include "ParticleEmitterInstance.h"
 
 /*-----------------------------------------------------------------------------
     Helper macros.
@@ -115,6 +116,7 @@ enum EParticleStates
     STATE_CounterMask = (~STATE_Mask)
 };
 
+// sort 결과를 저장하는 구조체
 struct FParticleOrder
 {
     // 1. 원래 파티클 배열에서의 인덱스 (정렬 후에도 어떤 파티클이었는지 알기 위함)
@@ -130,19 +132,17 @@ struct FParticleOrder
         uint32 C; // 다른 정렬 기준을 위한 값 (예: 색상 값의 정수 표현)
     };
 
-    // 생성자 1: ParticleIndex와 float 타입의 Z값을 받아 초기화
-    FParticleOrder(int32 InParticleIndex, float InZ)
-        : ParticleIndex(InParticleIndex)
-        , Z(InZ)
-    {
-    }
-
-    // 생성자 2: ParticleIndex와 uint32 타입의 C값을 받아 초기화
-    FParticleOrder(int32 InParticleIndex, uint32 InC)
-        : ParticleIndex(InParticleIndex)
-        , C(InC)
-    {
-    }
+    // // 생성자 1: ParticleIndex와 float 타입의 Z값을 받아 초기화
+    // FParticleOrder(int32 InParticleIndex, float InZ) :
+    //     ParticleIndex(InParticleIndex),
+    //     Z(InZ)
+    // {}
+    //
+    // // 생성자 2: ParticleIndex와 uint32 타입의 C값을 받아 초기화
+    // FParticleOrder(int32 InParticleIndex, uint32 InC) :
+    //     ParticleIndex(InParticleIndex),
+    //     C(InC)
+    // {}
 };
 
 struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD 구조체 
@@ -270,6 +270,10 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
 // Replay Data Base 
 struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
+    FMatrix LocalToWorld;
+
+    FParticleEmitterRenderData ParticleEmitterRenderData;
+    
     /** The type of emitter. */
     EDynamicEmitterType eEmitterType;
 
@@ -343,13 +347,15 @@ struct FDynamicEmitterDataBase
     int32 EmitterIndex;
 
     virtual const FDynamicEmitterReplayDataBase& GetSource() const = 0;
+
+    virtual void ExecuteRender(const FMatrix& ViewProj) const;
+
 };
 
 struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 {
     virtual int32 GetDynamicVertexStride() const = 0;
 
-    void SortSpriteParticles();
 
     /**
  *	Sort the given sprite particles
@@ -390,7 +396,10 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
     {
         return Source;
     }
-
+    virtual const FDynamicSpriteEmitterReplayDataBase* GetSourceData() const 
+    {
+        return &Source;
+    }
     /**
  *	Retrieve the vertex and (optional) index required to render this emitter.
  *	Render-thread only
@@ -405,19 +414,23 @@ struct FDynamicSpriteEmitterData : public FDynamicSpriteEmitterDataBase
  *	@return	bool			true if successful, false if failed
  */
     bool GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder,
-                               const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const;
-
+                               uint32 InstanceFactor) const;
     bool GetVertexAndIndexData(void* VertexData, void* FillIndexData, TArray<FParticleOrder>* ParticleOrder, TArray<FBaseParticle>& ParticleData,
                                const FVector& InCameraPosition, const FMatrix& InLocalToWorld, uint32 InstanceFactor) const;
     void Init(bool bInSelected);
+
+    
+    virtual void ExecuteRender(const FMatrix& ViewProj) const override;
     
     ID3D11Buffer* VertexBuffer   = nullptr;
     ID3D11Buffer* IndexBuffer    = nullptr;
     int32         VertexBufferSize = 0;
     int32         IndexBufferSize  = 0;
 
+
     FDynamicSpriteEmitterReplayData Source;
 };
+
 
 
 struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase

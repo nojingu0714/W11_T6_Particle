@@ -655,6 +655,7 @@ bool FGraphicsDevice::CreateVertexShader(const std::filesystem::path& InFilePath
             OutputDebugStringA(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
             errorBlob->Release();
         }
+        std::string errorMsg = "Failed to compile vertex shader: " + std::string(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
         abort();
     }
 
