@@ -519,10 +519,6 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.h" />
-    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.h" />
-    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.h" />
-    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.h" />
-    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -602,6 +598,8 @@
     <FxCompile Include="Shaders\FinalVertexShader.hlsl" />
     <FxCompile Include="Shaders\SkeletalUberLitPixelShader.hlsl" />
     <FxCompile Include="Shaders\SkeletalUberLitVertexShader.hlsl" />
+    <FxCompile Include="Shaders\SpriteParticleVertexShader.hlsl" />
+    <FxCompile Include="Shaders\SpriteParticlePixelShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Week0v2.natvis" />
@@ -786,11 +784,6 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSizeBase.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />

@@ -2,13 +2,19 @@
 
 #include "Define.h"
 #include "LaunchEngineLoop.h"
+#include "ParticleHelper.h"
 #include "D3D11RHI/CBStructDefine.h"
 #include "Engine/World.h"
+#include "Particles/ParticleModuleRequired.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Renderer/Renderer.h"
 #include "UnrealEd/EditorViewportClient.h"
 #include "UObject/UObjectIterator.h"
 
+
+FParticleRenderPass::FParticleRenderPass(const FName& InShaderName) : FBaseRenderPass(InShaderName)
+{
+}
 
 FParticleRenderPass::~FParticleRenderPass()
 {
@@ -60,50 +66,133 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 {
+    // 1) 뷰·프로젝션·카메라 상수 업데이트
     FMatrix View = FMatrix::Identity;
     FMatrix Proj = FMatrix::Identity;
-
-    FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
-    FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
-
-    std::shared_ptr<FEditorViewportClient> curEditorViewportClient = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
-    if (curEditorViewportClient != nullptr)
+    auto EditorVC = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
+    if (EditorVC)
     {
-        View = curEditorViewportClient->GetViewMatrix();
-        Proj = curEditorViewportClient->GetProjectionMatrix();
+        View = EditorVC->GetViewMatrix();
+        Proj = EditorVC->GetProjectionMatrix();
     }
-    
-    FSceneConstant SceneConstants;
-    SceneConstants.ViewMatrix = View;
-    SceneConstants.ProjMatrix = Proj;
-    USceneComponent* overrideComp = curEditorViewportClient->GetOverrideComponent();
-    if (overrideComp)
+
+    FSceneConstant SceneCB;
+    SceneCB.ViewMatrix = View;
+    SceneCB.ProjMatrix = Proj;
+    if (EditorVC->GetOverrideComponent())
     {
-        SceneConstants.CameraPos = overrideComp->GetWorldLocation();
-        SceneConstants.CameraLookAt = curEditorViewportClient->ViewTransformPerspective.GetLookAt();
+        SceneCB.CameraPos    = EditorVC->GetOverrideComponent()->GetWorldLocation();
+        SceneCB.CameraLookAt = EditorVC->ViewTransformPerspective.GetLookAt();
     }
     else
     {
-        SceneConstants.CameraPos = curEditorViewportClient->ViewTransformPerspective.GetLocation();
-        SceneConstants.CameraLookAt = curEditorViewportClient->ViewTransformPerspective.GetLookAt();
+        SceneCB.CameraPos    = EditorVC->ViewTransformPerspective.GetLocation();
+        SceneCB.CameraLookAt = EditorVC->ViewTransformPerspective.GetLookAt();
     }
-    
-    renderResourceManager->UpdateConstantBuffer(TEXT("FSceneConstant"), &SceneConstants);
+    GEngineLoop.Renderer.GetResourceManager()
+        ->UpdateConstantBuffer(TEXT("FSceneConstant"), &SceneCB);
 
-    // for (const UBillboardComponent* item : BillboardComponents)
-    // {
-    //     FDebugIconConstant DebugConstant;
-    //     DebugConstant.IconPosition = item->GetWorldLocation();
-    //     DebugConstant.IconScale = 0.2f; //TODO: 게임잼용 임시 스케일 변경
-    //
-    //     renderResourceManager->UpdateConstantBuffer(TEXT("FDebugIconConstant"), &DebugConstant);
-    //
-    //     Graphics.DeviceContext->PSSetShaderResources(0, 1, &item->Texture->TextureSRV);
-    //     
-    //     //TOD 이거 고쳐야함 Warning의 이유
-    //     //D3D11 WARNING: ID3D11DeviceContext::Draw: Vertex Buffer at the input vertex slot 0 is not big enough for what the Draw*() call expects to traverse. This is OK, as reading off the end of the Buffer is defined to return 0. However the developer probably did not intend to make use of this behavior.  [ EXECUTION WARNING #356: DEVICE_DRAW_VERTEX_BUFFER_TOO_SMALL]
-    //     Graphics.DeviceContext->Draw(6, 0); // 내부에서 버텍스 사용중
-    // }
+    // 2) 모든 파티클 시스템 컴포넌트 순회
+    for (UParticleSystemComponent* PSC : ParticleSystemComponents)
+    {
+        for (FDynamicEmitterDataBase* Base : PSC->EmitterRenderData)
+        {
+            // 스프라이트만 처리
+
+            auto* SpriteData = static_cast<FDynamicSpriteEmitterData*>(Base);
+            if (SpriteData->Source.eEmitterType != DET_Sprite) 
+                continue;
+            const auto& Src  = SpriteData->Source;
+
+            int32 Count    = Src.ActiveParticleCount;
+            int32 NumVerts = Count * 4;
+            int32 NumPrims = Count * 2;
+            int32 VertStride = sizeof(FParticleSpriteVertex);
+            int32 VBSize     = VertStride * NumVerts;
+            int32 IBSize     = sizeof(uint16) * NumPrims * 3;
+
+            // 3) GPU 버퍼가 없다면 생성
+            if (!SpriteData->VertexBuffer || SpriteData->VertexBufferSize < VBSize)
+            {
+                if (SpriteData->VertexBuffer)
+                    { SpriteData->VertexBuffer->Release(); }
+                D3D11_BUFFER_DESC vbDesc = {};
+                vbDesc.Usage          = D3D11_USAGE_DYNAMIC;
+                vbDesc.ByteWidth      = VBSize;
+                vbDesc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
+                vbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+                GEngineLoop.GraphicDevice.Device->CreateBuffer(&vbDesc, nullptr, &SpriteData->VertexBuffer);
+                SpriteData->VertexBufferSize = VBSize;
+            }
+            if (!SpriteData->IndexBuffer || SpriteData->IndexBufferSize < IBSize)
+            {
+                if (SpriteData->IndexBuffer)
+                    { SpriteData->IndexBuffer->Release(); }
+                D3D11_BUFFER_DESC ibDesc = {};
+                ibDesc.Usage          = D3D11_USAGE_DYNAMIC;
+                ibDesc.ByteWidth      = IBSize;
+                ibDesc.BindFlags      = D3D11_BIND_INDEX_BUFFER;
+                ibDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+                GEngineLoop.GraphicDevice.Device->CreateBuffer(&ibDesc, nullptr, &SpriteData->IndexBuffer);
+                SpriteData->IndexBufferSize = IBSize;
+            }
+
+            // 4) Map → 데이터 채우기 → Unmap
+            D3D11_MAPPED_SUBRESOURCE Mapped;
+            auto* DC = GEngineLoop.GraphicDevice.DeviceContext;
+
+            // 정점
+            void* VertexPtr = nullptr;
+            DC->Map(SpriteData->VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+            VertexPtr = Mapped.pData;
+            DC->Unmap(SpriteData->VertexBuffer, 0);
+
+            // 2. Index Buffer
+            void* IndexPtr = nullptr;
+            DC->Map(SpriteData->IndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &Mapped);
+            IndexPtr = Mapped.pData;
+            DC->Unmap(SpriteData->IndexBuffer, 0);
+
+            // 3. 한 번에 호출 (메모리는 따로 맵핑해도, 호출은 한번만 가능)
+            SpriteData->GetVertexAndIndexData(
+                VertexPtr,
+                IndexPtr,
+                /*ParticleOrder*/ nullptr,
+                SceneCB.CameraPos,
+                FMatrix::CreateScaleMatrix(
+                    PSC->GetWorldScale().X,
+                    PSC->GetWorldScale().Y,
+                    PSC->GetWorldScale().Z
+                ),
+                /*InstanceFactor*/ 1
+            );
+
+            // 5) IA 셋업
+            UINT stride = VertStride, offset = 0;
+            DC->IASetVertexBuffers(0, 1, &SpriteData->VertexBuffer, &stride, &offset);
+            DC->IASetIndexBuffer(SpriteData->IndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
+            if (SpriteData->Source.Material == nullptr)
+                return;
+            // 6) 셰이더 & 리소스 바인딩
+            std::shared_ptr<FTexture> texture = GEngineLoop.ResourceManager.GetTexture(SpriteData->Source.Material->GetMaterialInfo().DiffuseTexturePath);
+            if (texture)
+            {
+                GEngineLoop.GraphicDevice.DeviceContext->PSSetShaderResources(0, 1, &texture->TextureSRV);
+            }
+            // 인스턴스 상수
+            // GEngineLoop.Renderer.GetResourceManager()
+            //     ->UpdateConstantBuffer(TEXT("FParticleInstanceConstant"),
+            //                            &Src.RequiredModule->ParticleConstantBuffer);
+            // ID3D11Buffer* PCB = GEngineLoop.Renderer.GetResourceManager()
+            //                        ->GetConstantBuffer(TEXT("FParticleInstanceConstant"));
+            // DC->VSSetConstantBuffers(1, 1, &PCB);
+            // DC->PSSetConstantBuffers(1, 1, &PCB);
+            
+            // 7) DrawIndexed
+            DC->DrawIndexed(NumPrims * 3, 0, 0);
+        }
+    }
 }
 
 void FParticleRenderPass::ClearRenderObjects()
