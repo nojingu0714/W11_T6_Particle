@@ -102,30 +102,13 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     {
         return;
     }
-    //   4-1) 이 LODLevel 의 Spawn 모듈 수집
-    for (UParticleModule* Module : CurrentLODLevel->Modules)
+
+    // 변화가 생긴 경우, 다시 Module 재분배
+    if (CurrentLODLevel->bIsModuleDirty) 
     {
-        if (UParticleModuleSpawn* Spawn = Cast<UParticleModuleSpawn>(Module))
-        {
-            SpawnModule = Spawn;
-        }
-        else if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(Module))
-        {
-            RequiredModule = Required;
-        }
-        
-        if (Module->bSpawnModule) 
-        {
-            SpawnModules.Add(Module);
-        }
-
-        if(Module->bUpdateModule)
-        {
-            UpdateModules.Add(Module);
-        }
-        
+        ClassifyModules();
+        CurrentLODLevel->bIsModuleDirty = false;
     }
-
 
     //   4-2) 모듈별로 생성 개수 계산 후 SpawnParticles 호출
     if (SpawnModule != nullptr)
@@ -214,9 +197,37 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     }
 
     UE_LOG(LogLevel::Warning, "Particles : %d", ActiveParticles);
+}
+
+void FParticleEmitterInstance::ClassifyModules()
+{
+    // LODLevel이 소유하고 있는 Modules 분류하기
 
     SpawnModules.Empty();
     UpdateModules.Empty();
+
+    for (UParticleModule* Module : CurrentLODLevel->Modules)
+    {
+        if (UParticleModuleSpawn* Spawn = Cast<UParticleModuleSpawn>(Module))
+        {
+            SpawnModule = Spawn;
+        }
+        else if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(Module))
+        {
+            RequiredModule = Required;
+        }
+
+        if (Module->bSpawnModule)
+        {
+            SpawnModules.Add(Module);
+        }
+
+        if (Module->bUpdateModule)
+        {
+            UpdateModules.Add(Module);
+        }
+
+    }
 }
 
 void FParticleEmitterInstance::SetupEmitterDuration(float InEmitterDuration)

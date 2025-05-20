@@ -85,6 +85,7 @@ struct FParticleEmitterInstance
     void InitParameters(UParticleEmitter* InEmitter, UParticleSystemComponent* InComponent, float InEmitterDuration = 1.0f);
     void Init();
     virtual void Tick(float DeltaTime);
+    void ClassifyModules();
     void SetupEmitterDuration(float InEmitterDuration);
     void SpawnParticles( int32 Count, float StartTime, float Increment, const FVector& InitialLocation, const FVector& InitialVelocity, FParticleEventInstancePayload* EventPayload );
 

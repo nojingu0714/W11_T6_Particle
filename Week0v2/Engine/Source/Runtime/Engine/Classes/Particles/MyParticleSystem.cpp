@@ -17,28 +17,28 @@ UMyParticleSystem::UMyParticleSystem()
     UParticleLODLevel* LODLevel = FObjectFactory::ConstructObject<UParticleLODLevel>(this);
     Emitters[0]->LODLevels.Add(LODLevel);
     UParticleModuleRequired* Required = FObjectFactory::ConstructObject<UParticleModuleRequired>(this);
-    LODLevel->Modules.Add(Required);
+    LODLevel->AddModule(Required);
     LODLevel->RequiredModule = Required;
     UParticleModuleSpawn* Spawn = FObjectFactory::ConstructObject<UParticleModuleSpawn>(this);
     Spawn->InitializeDefaults();
-    LODLevel->Modules.Add(Spawn);
+    LODLevel->AddModule(Spawn);
     UParticleModuleLifetime* Lifetime = FObjectFactory::ConstructObject<UParticleModuleLifetime>(this);
     Lifetime->InitializeDefaults();
-    LODLevel->Modules.Add(Lifetime);
-    UParticleModuleSizeScaleBySpeed* SizeScale = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
-    LODLevel->Modules.Add(SizeScale);
+    LODLevel->AddModule(Lifetime);
+    UParticleModuleSizeScaleBySpeed* SizeScaleBySpeed = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
+    LODLevel->AddModule(SizeScaleBySpeed);
     UParticleModuleSize* Size = FObjectFactory::ConstructObject<UParticleModuleSize>(this);
     Size->InitializeDefaults();
-    LODLevel->Modules.Add(Size);
+    LODLevel->AddModule(Size);
     UParticleModuleLocation* Location = FObjectFactory::ConstructObject<UParticleModuleLocation>(this);
     Location->InitializeDefaults();
-    LODLevel->Modules.Add(Location);
+    LODLevel->AddModule(Location);
     UParticleModuleVelocity* Velocity = FObjectFactory::ConstructObject<UParticleModuleVelocity>(this);
     Velocity->InitializeDefaults();
-    LODLevel->Modules.Add(Velocity);
+    LODLevel->AddModule(Velocity);
     UParticleModuleColor* Color = FObjectFactory::ConstructObject<UParticleModuleColor>(this);
     Color->InitializeDefaults();
-    LODLevel->Modules.Add(Color);
+    LODLevel->AddModule(Color);
 }
 
 UMyParticleSystem::~UMyParticleSystem()
