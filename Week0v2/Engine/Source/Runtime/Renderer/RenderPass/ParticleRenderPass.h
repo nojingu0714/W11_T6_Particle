@@ -27,5 +27,7 @@ private:
     TArray<UParticleSystemComponent*> ParticleSystemComponents;
     
     class ID3D11Buffer* PerFrameConstantBuffer = nullptr;
+
+    ID3D11InputLayout* InputLayout = nullptr;
 };
 

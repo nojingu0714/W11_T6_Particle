@@ -850,6 +850,20 @@ ID3D11InputLayout* FGraphicsDevice::ExtractInputLayout(ID3DBlob* InShaderBlob, I
         if (FAILED(hr))
             continue;
 
+        // 시스템 값 시맨틱인지 확인
+        if (paramDesc.SystemValueType != D3D_NAME_UNDEFINED && paramDesc.SystemValueType != D3D_NAME_INSTANCE_ID) // D3D_NAME_INSTANCE_ID는 예외적으로 처리해야 할 수도 있음 (만약 인스턴스 ID를 직접 버퍼로 제공한다면)
+            // 하지만 보통 SV_InstanceID도 시스템 생성 값이므로 제외 대상.
+            // SV_VertexID, SV_PrimitiveID 등은 확실히 제외.
+        {
+            // 시스템 값 시맨틱(예: SV_Position, SV_VertexID, SV_InstanceID, SV_PrimitiveID 등)은
+            // 입력 레이아웃에 포함시키지 않습니다.
+            // (단, SV_Position은 정점 셰이더의 '출력' 시맨틱이므로 입력 파라미터에는 해당 안 됨)
+            // 여기서 중요한 것은 정점 셰이더의 '입력'으로 사용되는 시스템 값 시맨틱입니다.
+            // SV_VertexID, SV_InstanceID, SV_PrimitiveID 등이 해당됩니다.
+            // D3D_NAME_UNDEFINED는 시스템 값이 아님을 의미합니다.
+            continue; // 다음 파라미터로 넘어감
+        }
+
         D3D11_INPUT_ELEMENT_DESC elementDesc = {};
         elementDesc.SemanticName = paramDesc.SemanticName;
         elementDesc.SemanticIndex = paramDesc.SemanticIndex;
@@ -862,8 +876,31 @@ ID3D11InputLayout* FGraphicsDevice::ExtractInputLayout(ID3DBlob* InShaderBlob, I
         {
             elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
         }
-        elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-        elementDesc.InstanceDataStepRate = 0;
+
+        std::string semanticNameStr = paramDesc.SemanticName;
+        if (semanticNameStr.rfind("INSTANCED_", 0) == 0) // "INSTANCED_"로 시작하는지 확인
+        {
+            elementDesc.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
+            elementDesc.InstanceDataStepRate = 1; // 일반적으로 인스턴스당 1 스텝
+
+            // "INSTANCED_" 접두사를 제거한 실제 시맨틱 이름을 사용해야 할 수도 있음
+            // (셰이더 코드에서는 INSTANCED_POSITION0으로 쓰고, 실제 바인딩은 POSITION0으로)
+            // 이 부분은 엔진 설계에 따라 달라짐. 여기서는 원본 시맨틱 이름을 그대로 사용한다고 가정.
+            // 만약 접두사를 제거해야 한다면:
+            // std::string 고민 = semanticNameStr.substr(strlen("INSTANCED_"));
+            // elementDesc.SemanticName = 고민.c_str(); // 주의: 포인터 유효 기간 문제 발생 가능.
+            // layoutDescs에 저장하기 전에 영구적인 문자열로 만들어야 함.
+            // 가장 간단한 방법은 셰이더에서 시맨틱 이름을
+            // POSITION0_INSTANCED 와 같이 접미사로 하거나,
+            // 또는 INSTANCED_POSITION0을 그대로 사용하는 것입니다.
+            // 여기서는 INSTANCED_POSITION0을 그대로 사용한다고 가정합니다.
+        }
+        else
+        {
+            elementDesc.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+            elementDesc.InstanceDataStepRate = 0;
+        }
+        
 
         // 파라미터의 Mask 값에 따라 구성 요소 수를 결정하고, ComponentType를 기반으로 DXGI_FORMAT을 정합니다.
         // Mask 값은 해당 파라미터의 몇 개 요소가 사용되는지 나타냅니다.

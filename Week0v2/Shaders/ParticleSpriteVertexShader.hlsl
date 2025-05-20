@@ -38,14 +38,14 @@ cbuffer FPerFrameConstants : register(b2) // b0는 상수 버퍼 슬롯 번호
 
 struct ParticleVSInput
 {
-    float3 Position      : POSITION0;     // 파티클 중심 월드 (또는 로컬) 위치
-    float  RelativeTime  : TEXCOORD0;   // 상대적 수명 (0~1)
-    float3 OldPosition   : TEXCOORD1;   // 이전 프레임 위치 (모션 블러용)
-    float  ParticleId    : TEXCOORD2;   // 파티클 고유 ID
-    float2 Size          : TEXCOORD3;   // 파티클 2D 크기 (UV 뒤집기 정보 포함 가능)
-    float  Rotation      : TEXCOORD4;   // 파티클 Z축 회전 (라디안)
-    float  SubImageIndex : TEXCOORD5;   // SubUV 애니메이션 이미지 인덱스
-    float4 Color         : COLOR0;      // 파티클 색상 및 알파
+    float3 Position      : INSTANCED_POSITION0;     // 파티클 중심 월드 (또는 로컬) 위치
+    float  RelativeTime  : INSTANCED_TEXCOORD0;   // 상대적 수명 (0~1)
+    float3 OldPosition   : INSTANCED_TEXCOORD1;   // 이전 프레임 위치 (모션 블러용)
+    float  ParticleId    : INSTANCED_TEXCOORD2;   // 파티클 고유 ID
+    float2 Size          : INSTANCED_TEXCOORD3;   // 파티클 2D 크기 (UV 뒤집기 정보 포함 가능)
+    float  Rotation      : INSTANCED_TEXCOORD4;   // 파티클 Z축 회전 (라디안)
+    float  SubImageIndex : INSTANCED_TEXCOORD5;   // SubUV 애니메이션 이미지 인덱스
+    float4 Color         : INSTANCED_COLOR0;      // 파티클 색상 및 알파
 };
 
 struct VSOutput
