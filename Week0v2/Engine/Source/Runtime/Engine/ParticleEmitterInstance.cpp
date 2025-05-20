@@ -279,27 +279,27 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
         // PostSpawn(Particle, Interp, SpawnTime);
         // BaseParticles.Add(Particle);
 
-        // 테스트를 위한 static 변수들 (함수 내부에 선언하여 해당 함수 범위로 제한)
-        static FVector CurrentTestDirection = FVector(1.0f, 0.0f, 0.0f); // 초기 방향: +X (Right)
-        static int directionIndex = 0; // 현재 방향 인덱스
-
-        // 6가지 방향 정의: Right, Left, Up, Down, Forward, Backward
-        const FVector directions[] = {
-            FVector(1.0f, 0.0f, 0.0f),  // Right (+X)
-            FVector(-1.0f, 0.0f, 0.0f), // Left (-X)
-            FVector(0.0f, 1.0f, 0.0f),  // Up (+Y)
-            FVector(0.0f, -1.0f, 0.0f), // Down (-Y)
-            FVector(0.0f, 0.0f, 1.0f),  // Forward (+Z)
-            FVector(0.0f, 0.0f, -1.0f)  // Backward (-Z)
-        };
-        const int numDirections = sizeof(directions) / sizeof(directions[0]);
-        const float testVelocityMagnitude = 1.0f; // 테스트용 속도 크기 (원하는 값으로 조절)
-        // 테스트용 방향 벡터 설정
-        CurrentTestDirection = directions[directionIndex];
-        FVector TestParticleVelocity = CurrentTestDirection * testVelocityMagnitude;
-        //FVector TestParticleVelocity = FVector(1.0f, 0.0f, 0.0f); 
-        // 다음 방향으로 업데이트 (순환)
-        directionIndex = (directionIndex + 1) % numDirections;
+        // // 테스트를 위한 static 변수들 (함수 내부에 선언하여 해당 함수 범위로 제한)
+        // static FVector CurrentTestDirection = FVector(1.0f, 0.0f, 0.0f); // 초기 방향: +X (Right)
+        // static int directionIndex = 0; // 현재 방향 인덱스
+        //
+        // // 6가지 방향 정의: Right, Left, Up, Down, Forward, Backward
+        // const FVector directions[] = {
+        //     FVector(1.0f, 0.0f, 0.0f),  // Right (+X)
+        //     FVector(-1.0f, 0.0f, 0.0f), // Left (-X)
+        //     FVector(0.0f, 1.0f, 0.0f),  // Up (+Y)
+        //     FVector(0.0f, -1.0f, 0.0f), // Down (-Y)
+        //     FVector(0.0f, 0.0f, 1.0f),  // Forward (+Z)
+        //     FVector(0.0f, 0.0f, -1.0f)  // Backward (-Z)
+        // };
+        // const int numDirections = sizeof(directions) / sizeof(directions[0]);
+        // const float testVelocityMagnitude = 1.0f; // 테스트용 속도 크기 (원하는 값으로 조절)
+        // // 테스트용 방향 벡터 설정
+        // CurrentTestDirection = directions[directionIndex];
+        // FVector TestParticleVelocity = CurrentTestDirection * testVelocityMagnitude;
+        // //FVector TestParticleVelocity = FVector(1.0f, 0.0f, 0.0f); 
+        // // 다음 방향으로 업데이트 (순환)
+        // directionIndex = (directionIndex + 1) % numDirections;
         
         // --- 1) 슬롯 확보 ---
         // 단순히 ActiveParticles를 인덱스로 쓰되, 최대까지 체크
@@ -314,22 +314,20 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
         ParticleIndices[ActiveParticles++] = static_cast<uint16>(NewIndex);
         
 
-        FVector ParticleVelocity;
-
         // --- 2) PreSpawn: 기본 속성 초기화 ---
         // (위에서 언급한 PreSpawn 함수: RequiredModule 기반 초기화)
-        //PreSpawn(*Particle, InitialLocation, InitialVelocity);
-        PreSpawn(*Particle, InitialLocation, TestParticleVelocity);
+        PreSpawn(*Particle, InitialLocation, InitialVelocity);
+        //PreSpawn(*Particle, InitialLocation, TestParticleVelocity);
 
         // --- 3) 각 Spawn 모듈 적용 ---
         const float SpawnTime = StartTime + Increment * i;
-        // for (UParticleModuleSpawn* SpawnModule : SpawnModules)
-        // {
-        //     SpawnModule->Spawn(this,
-        //         /*Offset=*/NewIndex * ParticleStride,
-        //         SpawnTime,
-        //         *Particle);
-        // }
+        for (auto* SpawnModule : SpawnModules)
+        {
+            SpawnModule->Spawn(this,
+                /*Offset=*/NewIndex * ParticleStride,
+                SpawnTime,
+                Particle);
+        }
 
         // --- 4) PostSpawn: 보간 및 이벤트 페이로드 ---
         const float Interp = ComputeInterp(i);
