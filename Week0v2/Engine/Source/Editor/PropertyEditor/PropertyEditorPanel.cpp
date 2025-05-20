@@ -54,6 +54,7 @@
 #include "Particles/Size/ParticleModuleSize.h"
 #include "Particles/Color/ParticleModuleColor.h"
 #include "Particles/Size/ParticleModuleSizeScaleBySpeed.h"
+#include "Engine/Source/Editor/UnrealEd/ParticlePreviewUI.h"
 #include "UObject/UObjectIterator.h"
 
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
@@ -802,7 +803,7 @@ void PropertyEditorPanel::Render()
     {
         // TODO : Particle Comp
         UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PickedComponent);
-        DrawParticlePreviewButton();
+        DrawParticlePreviewButton(ParticleComp);
         for (auto Emitter : ParticleComp->Template->Emitters)
         {
             if (!Emitter->LODLevels[0])
@@ -2092,7 +2093,7 @@ void PropertyEditorPanel::DrawSkeletalMeshPreviewButton(const FString& FilePath)
     }
 }
 
-void PropertyEditorPanel::DrawParticlePreviewButton()
+void PropertyEditorPanel::DrawParticlePreviewButton(UParticleSystemComponent* ParticleSystemComponent)
 {
     if (ImGui::Button("Preview##Particle"))
     {
@@ -2104,11 +2105,21 @@ void PropertyEditorPanel::DrawParticlePreviewButton()
 
         UWorld* World = EditorEngine->CreatePreviewWindow("ParticlePreview", EWorldType::EditorParticlePreview);
         
+        EditorEngine->GetParticlePreviewUI()->SetParticleSystemComponent(ParticleSystemComponent);
+
         const TArray<AActor*> CopiedActors = World->GetActors();
+        AActor* ParticleActor = ParticleSystemComponent->GetOwner();
+        
         for (AActor* Actor : CopiedActors)
         {
             if (Actor->IsA<UTransformGizmo>() || Actor->IsA<APlayerCameraManager>())
             {
+                continue;
+            }
+            if (ParticleActor == Actor) 
+            {
+                // 해당 컴포넌트의 Actor는 삭제하지 않아서 
+                // Preview에서 접근 가능하도록 처리
                 continue;
             }
 

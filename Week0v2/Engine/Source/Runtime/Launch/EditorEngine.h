@@ -72,4 +72,7 @@ private:
     FParticlePreviewUI* ParticlePreviewUI = nullptr;
     SLevelEditor* LevelEditor = nullptr;
     UEditorPlayer* EditorPlayer = nullptr;
+
+public:
+    FParticlePreviewUI* GetParticlePreviewUI() { return ParticlePreviewUI; }
 };

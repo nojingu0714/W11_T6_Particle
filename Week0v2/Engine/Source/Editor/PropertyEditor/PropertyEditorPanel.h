@@ -10,6 +10,7 @@ class USceneComponent;
 class ULevel;
 struct FSimpleFloatDistribution;
 struct FSimpleVectorDistribution;
+class UParticleSystemComponent;
 
 struct FBoneRotation
 {
@@ -54,7 +55,7 @@ private:
     void RenderDelegate(ULevel* Level) const;
     
     void DrawSkeletalMeshPreviewButton(const FString& FilePath) const;
-    void DrawParticlePreviewButton();
+    void DrawParticlePreviewButton(UParticleSystemComponent* ParticleSystemComponent);
 private:
     float Width = 0, Height = 0;
     

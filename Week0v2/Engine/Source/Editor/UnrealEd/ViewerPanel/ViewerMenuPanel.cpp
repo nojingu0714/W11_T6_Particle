@@ -1,4 +1,5 @@
-﻿#include "ViewerMenuPanel.h"
+#include "ViewerMenuPanel.h"
+#include "Particles/ParticleSystemComponent.h"
 
 void ViewerMenuPanel::Render()
 {
@@ -70,4 +71,9 @@ void ViewerMenuPanel::OnResize(HWND hWnd)
     GetClientRect(hWnd, &ClientRect);
     Width = ClientRect.right - ClientRect.left;
     Height = ClientRect.bottom - ClientRect.top;
+}
+
+void ViewerMenuPanel::SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent)
+{
+    ParticleSystemComponent = InParticleSystemComponent;
 }

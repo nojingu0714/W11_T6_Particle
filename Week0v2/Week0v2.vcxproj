@@ -187,6 +187,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\AnimSequenceEditorPanel.cpp" />
+    <ClCompile Include="Engine\Source\Editor\UnrealEd\EditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\ParticlePreviewUI.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\ViewerPanel\ParticleCurvePanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\ViewerPanel\ParticleDetailPanel.cpp" />

@@ -1,4 +1,6 @@
-﻿#include "ParticlePreviewUI.h"
+#include "ParticlePreviewUI.h"
+
+#include "Define.h"
 
 #include "PropertyEditor/OutlinerEditorPanel.h"
 #include "PropertyEditor/PreviewControlEditorPanel.h"
@@ -6,6 +8,11 @@
 #include "ViewerPanel/ViewerControlPanel.h"
 #include "ViewerPanel/ViewerMenuPanel.h"
 #include "ViewerPanel/ViewerParticleEmitters.h"
+#include "Engine/World.h"
+#include "Engine/Source/Runtime/Launch/EditorEngine.h"
+#include "Engine/Source/Runtime/CoreUObject/UObject/Casts.h"
+
+extern UEngine* GEngine;
 
 void FParticlePreviewUI::Initialize(SLevelEditor* LevelEditor, float Width, float Height)
 {
@@ -20,6 +27,14 @@ void FParticlePreviewUI::Initialize(SLevelEditor* LevelEditor, float Width, floa
 
     auto CurvePanel = std::make_shared<ParticleCurvePanel>();
     Panels["ParticleCurvePanel"] = CurvePanel;
+}
+
+void FParticlePreviewUI::SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent)
+{
+    Panels["ViewerControlPanel"].get()->SetParticleSystemComponent(InParticleSystemComponent);
+    Panels["ViewerMenuPanel"].get()->SetParticleSystemComponent(InParticleSystemComponent);
+    Panels["ViewerParticleEmitters"].get()->SetParticleSystemComponent(InParticleSystemComponent);
+    Panels["ParticleCurvePanel"].get()->SetParticleSystemComponent(InParticleSystemComponent);
 }
 
 void FParticlePreviewUI::Render() const

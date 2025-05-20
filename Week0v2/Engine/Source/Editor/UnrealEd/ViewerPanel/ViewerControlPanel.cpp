@@ -1,8 +1,9 @@
-﻿#include "ViewerControlPanel.h"
+#include "ViewerControlPanel.h"
 
 #include "Engine/AssetManager.h"
 #include "LevelEditor/SLevelEditor.h"
 #include "tinyfiledialogs/tinyfiledialogs.h"
+#include "Particles/ParticleSystemComponent.h"
 
 
 class FDrawer;
@@ -49,6 +50,11 @@ void ViewerControlPanel::OnResize(HWND hWnd)
     GetClientRect(hWnd, &ClientRect);
     Width = ClientRect.right - ClientRect.left;
     Height = ClientRect.bottom - ClientRect.top;
+}
+
+void ViewerControlPanel::SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent)
+{
+    ParticleSystemComponent = InParticleSystemComponent;
 }
 
 
