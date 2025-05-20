@@ -77,7 +77,7 @@ void ViewerParticleEmitters::Render()
         }
         ImGui::End();
     }
-    DetailPanel.Render(nullptr);
+    DetailPanel.Render(SelectedModule);
 }
 
 void ViewerParticleEmitters::OnResize(HWND hWnd)
