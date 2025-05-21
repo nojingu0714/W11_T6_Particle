@@ -90,6 +90,7 @@ void FEditorIconRenderPass::Execute(const std::shared_ptr<FViewportClient> InVie
 
     }
 
+    UpdateScreenConstant(InViewportClient);
     renderResourceManager->UpdateConstantBuffer(TEXT("FSceneConstant"), &SceneConstants);
     
     for (const UBillboardComponent* item : BillboardComponents)

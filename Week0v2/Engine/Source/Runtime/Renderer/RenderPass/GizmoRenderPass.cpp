@@ -98,6 +98,7 @@ void FGizmoRenderPass::Execute(const std::shared_ptr<FViewportClient> InViewport
         std::shared_ptr<FEditorViewportClient> CurrentEditorViewportClient = std::dynamic_pointer_cast<FEditorViewportClient>(InViewportClient);
         
         UpdateMatrixConstants(GizmoComp, View, Proj);
+        UpdateScreenConstant(InViewportClient);
 
         if (!GizmoComp->GetStaticMesh()) continue;
 
