@@ -5,7 +5,7 @@
 enum EParticleCollisionComplete : int
 {
     /**	Kill the particle when MaxCollisions is reached		*/
-    EPCC_Kill,
+    EPCC_Kill = 0,
     /**	Freeze the particle in place						*/
     EPCC_Freez,
     /**	Stop collision checks, but keep updating			*/

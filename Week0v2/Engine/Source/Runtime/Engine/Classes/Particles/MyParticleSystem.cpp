@@ -27,29 +27,28 @@ UMyParticleSystem::UMyParticleSystem()
     UParticleModuleLifetime* Lifetime = FObjectFactory::ConstructObject<UParticleModuleLifetime>(this);
     Lifetime->InitializeDefaults();
     LODLevel->AddModule(Lifetime);
-   /* UParticleModuleSizeScaleBySpeed* SizeScaleBySpeed = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
-    LODLevel->AddModule(SizeScaleBySpeed);
-    UParticleModuleSize* Size = FObjectFactory::ConstructObject<UParticleModuleSize>(this);
-    Size->InitializeDefaults();
-    LODLevel->AddModule(Size);
-    UParticleModuleLocation* Location = FObjectFactory::ConstructObject<UParticleModuleLocation>(this);
-    Location->InitializeDefaults();
-    LODLevel->AddModule(Location);
-    UParticleModuleVelocity* Velocity = FObjectFactory::ConstructObject<UParticleModuleVelocity>(this);
-    Velocity->InitializeDefaults();
-    LODLevel->AddModule(Velocity);
-    UParticleModuleColor* Color = FObjectFactory::ConstructObject<UParticleModuleColor>(this);
-    Color->InitializeDefaults();
-    LODLevel->AddModule(Color);
+       UParticleModuleSizeScaleBySpeed* SizeScaleBySpeed = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
+       LODLevel->AddModule(SizeScaleBySpeed);
+       UParticleModuleSize* Size = FObjectFactory::ConstructObject<UParticleModuleSize>(this);
+       Size->InitializeDefaults();
+       LODLevel->AddModule(Size);
+       UParticleModuleLocation* Location = FObjectFactory::ConstructObject<UParticleModuleLocation>(this);
+       Location->InitializeDefaults();
+       LODLevel->AddModule(Location);
+       UParticleModuleVelocity* Velocity = FObjectFactory::ConstructObject<UParticleModuleVelocity>(this);
+       Velocity->InitializeDefaults();
+       LODLevel->AddModule(Velocity);
+       UParticleModuleColor* Color = FObjectFactory::ConstructObject<UParticleModuleColor>(this);
+       Color->InitializeDefaults();
+       LODLevel->AddModule(Color);
 
-    UParticleModuleCollision* Collision = FObjectFactory::ConstructObject<UParticleModuleCollision>(this);
-    Collision->InitializeDefaults();
-    LODLevel->AddModule(Collision);
-    
-    LODLevel->AddModule(Color);*/
+       UParticleModuleCollision* Collision = FObjectFactory::ConstructObject<UParticleModuleCollision>(this);
+       Collision->InitializeDefaults();
+       LODLevel->AddModule(Collision);
 
-    UParticleModuleSnow* Snow = FObjectFactory::ConstructObject<UParticleModuleSnow>(this);
-    LODLevel->AddModule(Snow);
+
+    // UParticleModuleSnow* Snow = FObjectFactory::ConstructObject<UParticleModuleSnow>(this);
+    // LODLevel->AddModule(Snow);
 }
 
 UMyParticleSystem::~UMyParticleSystem()
