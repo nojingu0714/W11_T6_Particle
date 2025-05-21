@@ -15,7 +15,6 @@ UParticleModuleSnow::UParticleModuleSnow()
     MatInfo.DiffuseTexturePath = L"Assets/Texture/Snow.png";
 
     MyMatarial->SetMaterialInfo(MatInfo);
-   
 }
 
 void UParticleModuleSnow::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase)
@@ -38,10 +37,10 @@ void UParticleModuleSnow::Spawn(FParticleEmitterInstance* Owner, int32 Offset, f
     // 각 파티클의 흔들림 특성 저장
     ParticleBase->Flags = rand();
 
-
-
-   // Matarial->SetFName
-   // Owner->RequiredModule->SpriteTexture = MyMatarial;
+    if (!Owner->RequiredModule->SpriteTexture)
+    {
+        Owner->RequiredModule->SpriteTexture = MyMatarial;
+    }
 }
 
 void UParticleModuleSnow::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
