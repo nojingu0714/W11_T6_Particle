@@ -921,7 +921,7 @@ void PropertyEditorPanel::Render()
         //        }
         //        else if (UParticleModuleCollision* Collision = Cast<UParticleModuleCollision>(Module)) 
         //        {
-        //            ImGui::Text("Particle Module Color");
+        //            ImGui::Text("Particle Module Collision");
         //            ImGui::InputFloat("Bounce Factor", &Collision->BounceFactor);
         //            ImGui::InputFloat("Friction Factor", &Collision->FrictionFactor);
         //            ImGui::InputFloat("Collision Radius", &Collision->CollisionRadius);

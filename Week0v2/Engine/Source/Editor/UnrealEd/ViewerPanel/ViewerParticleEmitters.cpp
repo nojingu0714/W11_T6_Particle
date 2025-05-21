@@ -13,6 +13,7 @@
 #include "Particles/ParticleModuleRequired.h"
 #include "Particles/Spawn/ParticleModuleSpawn.h"
 #include "ParticleEmitterInstance.h"
+#include "Particles/Collision/ParticleModuleCollision.h"
 
 void ViewerParticleEmitters::SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent)
 {
@@ -144,7 +145,12 @@ void ViewerParticleEmitters::Render()
                                 lod->Modules.Add(nm);
                                 SelectedModule = nm;
                             }
-
+                            if (ImGui::MenuItem("UParticleModuleCollision"))
+                            {
+                                auto* nm = FObjectFactory::ConstructObject<UParticleModuleCollision>(nullptr);
+                                lod->Modules.Add(nm);
+                                SelectedModule = nm;
+                            }
                             // 모든 인스턴스 모듈 재분류
                             for (auto* inst : ParticleSystemComponent->EmitterInstances)
                                 inst->ClassifyModules();
