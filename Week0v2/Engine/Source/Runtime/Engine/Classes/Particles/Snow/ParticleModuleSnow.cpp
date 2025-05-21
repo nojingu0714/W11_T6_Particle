@@ -3,31 +3,35 @@
 #include "Engine/Source/Runtime/Engine/ParticleEmitterInstance.h"
 #include "Particles/ParticleModuleRequired.h"
 
-UParticleModuleSnow::UParticleModuleSnow()
+UParticleModuleSnow::UParticleModuleSnow() :
+    SpawnXMin(-80.0f),
+    SpawnXMax(80.0f),
+    SpawnYMin(-40.0f),
+    SpawnYMax(40.0f),
+    SpawnZMin(30.0f),
+    SpawnZMax(40.0f)
 {
-    bUpdateModule = true;
-    bSpawnModule = true;
 
+    bUpdateModule = true;
+    bSpawnModule=true;
+
+  
     MyMatarial = FObjectFactory::ConstructObject<UMaterial>(this);
     FObjMaterialInfo MatInfo;
     MatInfo.MTLName = "Snow";
     MatInfo.DiffuseTextureName = "Snow.png";
     MatInfo.DiffuseTexturePath = L"Assets/Texture/Snow.png";
-
     MyMatarial->SetMaterialInfo(MatInfo);
 }
 
 void UParticleModuleSnow::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase)
 {
     ParticleBase->RelativeTime = 0.0f;
-
-    // 넓은 범위에서 시작 (XY 평면에 분포)
-    float randX = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * 80.0f;  // -80~80 범위
-    float randY = (static_cast<float>(rand()) / RAND_MAX * 2.0f - 1.0f) * 40.0f;  // -40~40 범위 (깊이)
-
-    // Z축이 이제 높이 (위쪽)
-    float startZ = 30.0f + (static_cast<float>(rand()) / RAND_MAX * 10.0f);  // 30~40 범위
-    ParticleBase->Location = FVector(randX, randY, startZ);
+    // Min/Max 값을 사용한 랜덤 위치 계산
+    float randX = SpawnXMin + static_cast<float>(rand()) / RAND_MAX * (SpawnXMax - SpawnXMin);
+    float randY = SpawnYMin + static_cast<float>(rand()) / RAND_MAX * (SpawnYMax - SpawnYMin);
+    float randZ = SpawnZMin + static_cast<float>(rand()) / RAND_MAX * (SpawnZMax - SpawnZMin);
+    ParticleBase->Location = FVector(randX, randY, randZ);
 
     // 낙하 속도 (-Z 방향으로)
     float fallSpeed = 1.5f + (static_cast<float>(rand()) / RAND_MAX * 1.0f);  // 1.5~2.5 범위
