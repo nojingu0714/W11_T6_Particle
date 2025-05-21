@@ -418,15 +418,15 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
     }
 
     // If the template is disabled, don't return data.
-    UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
-    if ((LODLevel == NULL) || (LODLevel->bEnabled == false))
-    {
-        return false;
-    }
+    // UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
+    // if ((LODLevel == NULL) || (LODLevel->bEnabled == false))
+    // {
+    //     return false;
+    // }
     // Must be filled in by implementation in derived class
     OutData.eEmitterType = DET_Unknown;
     
-    OutData.LocalToWorld = Component->GetWorldMatrix();
+    OutData.ComponentLocalToWorld = Component->GetWorldMatrix();
 
     OutData.ParticleEmitterRenderData = ParticleEmitterRenderData;
 
@@ -443,18 +443,33 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
 
     int32 ParticleMemSize = MaxActiveParticles * ParticleStride;
 
+    
+    // — 메모리 블록(ParticleData + ParticleIndices) 복사
+    int32 DataBytes   = MaxActiveParticles * ParticleStride;
+    int32 IndexCount  = MaxActiveParticles;
+    OutData.DataContainer.Alloc(DataBytes, IndexCount);
+    std::memcpy(OutData.DataContainer.ParticleData,
+                ParticleData,
+                DataBytes);
+    std::memcpy(OutData.DataContainer.ParticleIndices,
+                ParticleIndices,
+                sizeof(uint16) * ActiveParticles);
+
+    
     //언리얼에서도 모든 emitter가 스프라이트인 걸로 가정하고 한다.
     FDynamicSpriteEmitterReplayDataBase* NewReplayData =
     static_cast< FDynamicSpriteEmitterReplayDataBase* >( &OutData );
 
-    //NewReplayData->RequiredModule = LODLevel->RequiredModule->CreateRendererResource();
-    NewReplayData->Material = NULL;	// 파생된 구현에서 설정해야 합니다.
+    NewReplayData->RequiredModule = RequiredModule;
+    NewReplayData->Material = RequiredModule->SpriteTexture;	// 파생된 구현에서 설정해야 합니다.
     
-    NewReplayData->MaxDrawCount =
-        (LODLevel->RequiredModule->bUseMaxDrawCount == true) ? LODLevel->RequiredModule->MaxDrawCount : -1;
+    NewReplayData->MaxDrawCount =ActiveParticles;
     
     NewReplayData->PivotOffset =   (PivotOffset);
-    NewReplayData->bUseLocalSpace = LODLevel->RequiredModule->bUseLocalSpace;
+    NewReplayData->bUseLocalSpace = false;
+
+    OutData.ComponentLocalToWorld = Component->GetWorldMatrix();
+    OutData.ParticleEmitterRenderData = GetRenderData();
 
     return true;
 }

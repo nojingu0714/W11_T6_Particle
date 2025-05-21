@@ -32,6 +32,7 @@ const FBaseParticle& Name = *((const FBaseParticle*) (Address));
 #define DECLARE_PARTICLE_PTR(Name,Address)		\
 FBaseParticle* Name = (FBaseParticle*) (Address);
 
+class UStaticMesh;
 struct FDynamicEmitterDataBase;
 struct FMatrix;
 #define BEGIN_UPDATE_LOOP																								\
@@ -199,7 +200,7 @@ struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD
     {}
 };
 
-struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용 정점 데이터 
+struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용 정점 데이터 //일단 메쉬의 인스턴스 버퍼로도 사용
 {
     /** The position of the particle. */
     FVector Position;
@@ -220,25 +221,46 @@ struct FParticleSpriteVertex // GPU로 전달되는 스프라이트 파티클용
     FLinearColor Color;
 };
 
+// struct FMeshParticleInstanceVertex // GPU로 전송되는 메시 인스텅신 파티클용 정점 데이터
+// {
+//     /** The color of the particle. */
+//     FLinearColor Color;
+//
+//     /** The instance to world transform of the particle. Translation vector is packed into W components. */
+//     FVector4 Transform[3];
+//
+//     /** The velocity of the particle, XYZ: direction, W: speed. */
+//     FVector4 Velocity;
+//
+//     /** The sub-image texture offsets for the particle. */
+//     int16 SubUVParams[4];
+//
+//     /** The sub-image lerp value for the particle. */
+//     float SubUVLerp;
+//
+//     /** The relative time of the particle. */
+//     float RelativeTime;
+// };
+
 struct FMeshParticleInstanceVertex // GPU로 전송되는 메시 인스텅신 파티클용 정점 데이터
 {
-    /** The color of the particle. */
-    FLinearColor Color;
-
-    /** The instance to world transform of the particle. Translation vector is packed into W components. */
-    FVector4 Transform[3];
-
-    /** The velocity of the particle, XYZ: direction, W: speed. */
-    FVector4 Velocity;
-
-    /** The sub-image texture offsets for the particle. */
-    int16 SubUVParams[4];
-
-    /** The sub-image lerp value for the particle. */
-    float SubUVLerp;
-
+    /** The position of the particle. */
+    FVector Position;
     /** The relative time of the particle. */
     float RelativeTime;
+    /** The previous position of the particle. */
+    FVector OldPosition;
+    /** Value that remains constant over the lifetime of a particle. */
+    // 보통 난수의 시드값으로 사용
+    float ParticleId;
+    /** The size of the particle. */
+    FVector2D Size;
+    /** The rotation of the particle. */
+    float Rotation;
+    /** The sub-image index for the particle. */
+    float SubImageIndex;
+    /** The color of the particle. */
+    FLinearColor Color;
 };
 
 struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
@@ -270,7 +292,7 @@ struct FParticleDataContainer // 파티클 데이터 용 메모리 블록
 // Replay Data Base 
 struct FDynamicEmitterReplayDataBase // 재생 모드에서 Emitter 상태를 저장 복원 
 {
-    FMatrix LocalToWorld;
+    FMatrix ComponentLocalToWorld; //
 
     FParticleEmitterRenderData ParticleEmitterRenderData;
     
@@ -326,6 +348,34 @@ struct FDynamicSpriteEmitterReplayData : public FDynamicSpriteEmitterReplayDataB
         // FDynamicSpriteEmitterReplayDataBase::Serialize( Ar );
         //
         // // ...
+    }
+};
+
+/** Source data for Mesh emitters */
+struct FDynamicMeshEmitterReplayData
+    : public FDynamicSpriteEmitterReplayDataBase
+{
+    int32	SubUVInterpMethod;
+    int32	SubUVDataOffset;
+    int32	SubImages_Horizontal;
+    int32	SubImages_Vertical;
+    bool	bScaleUV;
+    int32	MeshRotationOffset;
+    int32	MeshMotionBlurOffset;
+    uint8	MeshAlignment;
+    bool	bMeshRotationActive;
+
+    FDynamicMeshEmitterReplayData() : 
+    SubUVInterpMethod( 0 ),
+    SubUVDataOffset( 0 ),
+    SubImages_Horizontal( 0 ),
+    SubImages_Vertical( 0 ),
+    bScaleUV( false ),
+    MeshRotationOffset( 0 ),
+    MeshMotionBlurOffset( 0 ),
+    MeshAlignment( 0 ),
+    bMeshRotationActive( false )
+    {
     }
 };
 
@@ -439,6 +489,21 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterDataBase
     {
         return sizeof(FMeshParticleInstanceVertex);
     }
+
+    void GetInstanceData(void* InstanceData, uint32 InstanceFactor, const TArray<FParticleOrder>* ParticleOrder) const;
+
+    /** Returns the source data for this particle system */
+    virtual const FDynamicEmitterReplayDataBase& GetSource() const override
+    {
+        return Source;
+    }
+
+    virtual void ExecuteRender(const FMatrix& ViewProj) const override;
+
+    FDynamicSpriteEmitterReplayData Source;
+
+    
+    UStaticMesh*		StaticMesh;
 };
 
 /*-----------------------------------------------------------------------------
@@ -468,6 +533,8 @@ public:
         }
         DynamicEmitterDataArray.Empty();
     }
+
+    
 
     /** The Current Emmitter we are rendering **/
     uint32 EmitterIndex;

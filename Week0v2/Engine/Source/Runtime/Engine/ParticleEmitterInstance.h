@@ -23,6 +23,7 @@ class UParticleEmitter;
 struct FParticleEmitterRenderData
 {
     ID3D11Buffer* VertexBuffer = nullptr;
+    ID3D11Buffer* InstanceBuffer = nullptr;
 };
 
 struct FParticleEmitterInstance
