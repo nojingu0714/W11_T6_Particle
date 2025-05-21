@@ -27,7 +27,7 @@ FEditorViewportClient::FEditorViewportClient()
     , Viewport(nullptr)
     , ViewportIndex(0)
     , ViewportType(LVT_Perspective)
-    , ShowFlag(31 | (1ULL << 10))
+    , ShowFlag(31 | (1ULL << 11))
     , ViewMode(VMI_Lit_Phong)
 {
 }
