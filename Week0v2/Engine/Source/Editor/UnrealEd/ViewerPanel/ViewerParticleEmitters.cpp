@@ -37,6 +37,19 @@ void ViewerParticleEmitters::Render()
         {
             const TArray<UParticleEmitter*>& Emitters = ParticleSystemComponent->Template->Emitters;
             int EmitterCount = Emitters.Num();
+
+            // ✅ Emitter 추가 버튼 (가장 위에 따로)
+            if (ImGui::Button("Emitter 추가"))
+            {
+                UParticleEmitter* NewEmitter = FObjectFactory::ConstructObject<UParticleEmitter>(nullptr);
+                UParticleLODLevel* NewLOD = FObjectFactory::ConstructObject<UParticleLODLevel>(nullptr);
+                NewEmitter->LODLevels.Add(NewLOD);
+                ParticleSystemComponent->Template->Emitters.Add(NewEmitter);
+            }
+
+            ImGui::Separator(); // Emitter UI들과 구분
+
+
             if (EmitterCount > 0)
             {
                 // Create one column per emitter
