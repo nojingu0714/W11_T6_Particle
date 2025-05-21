@@ -15,11 +15,10 @@ struct PS_INPUT
 float4 mainPS(PS_INPUT input) : SV_Target
 {
     float4 col = gTexture.Sample(linearSampler, input.TexCoord);
-    // float threshold = 0.01; // 필요한 경우 임계값을 조정
-    // if (col.a < threshold)
-    //     clip(-1); // 픽셀 버리기
-
-    // float4 col = float4(1.f,1.f,1.f,1.f);
+    // 알파 테스트 - 낮은 알파값 픽셀 제거
+    const float threshold = 0.1;
+    if (col.a < threshold)
+        clip(-1);
     
     return col;
 }
