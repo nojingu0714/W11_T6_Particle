@@ -23,6 +23,6 @@ public:
 
     UParticleModuleRequired* RequiredModule;    
     TArray<UParticleModule*> Modules;
-    bool bIsModuleDirty = false;    // 현재는 Module 추가 삭제에 관해서 dirty 플래그가 켜짐
+    bool bIsModuleDirty = true;    // 현재는 Module 추가 삭제에 관해서 dirty 플래그가 켜짐
     UParticleModuleTypeDataBase* TypeDataModule;
 };

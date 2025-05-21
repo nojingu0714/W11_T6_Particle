@@ -4,6 +4,7 @@
 #include "ParticleHelper.h"
 #include "ParticleLODLevel.h"
 #include "ParticleMeshEmitterInstance.h"
+#include "ParticleModuleRequired.h"
 #include "ParticleSpriteEmitterInstance.h"
 #include "TypeData/ParticleModuleTypeDataBase.h"
 
@@ -22,11 +23,11 @@ FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemCompon
     if (!InComponent)
         return nullptr;
 
-    if (ParticleEmitterType == EParticleEmitterType::Sprite)
+    if (LODLevel[0].RequiredModule->ParticleEmitterType == EParticleEmitterType::Sprite)
     {
         Instance = new FParticleSpriteEmitterInstance;
     }
-    else if (ParticleEmitterType == EParticleEmitterType::Mesh)
+    else if (LODLevel[0].RequiredModule->ParticleEmitterType == EParticleEmitterType::Mesh)
     {
         Instance = new FParticleMeshEmitterInstance;
     }
@@ -40,6 +41,8 @@ FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemCompon
         Instance->CurrentLODLevelIndex =0;
         Instance->CurrentLODLevel = LODLevels[Instance->CurrentLODLevelIndex];
         Instance->Init();
+
+        
     }
     return Instance;
 }
