@@ -44,10 +44,13 @@ void ViewerParticleEmitters::Render()
             newEmitter->LODLevels.Add(newLOD);
 
             auto* RequiredModule = FObjectFactory::ConstructObject<UParticleModuleRequired>(nullptr);
-            newLOD->Modules.Add(RequiredModule);
+            newLOD->RequiredModule = RequiredModule;
+            RequiredModule->InitializeDefulat();
+            newLOD->AddModule(RequiredModule);
 
             auto* SpawnModule = FObjectFactory::ConstructObject<UParticleModuleSpawn>(nullptr);
-            newLOD->Modules.Add(SpawnModule);
+            newLOD->AddModule(SpawnModule);
+            SpawnModule->InitializeDefaults();
 
             ParticleSystemComponent->Template->Emitters.Add(newEmitter);
         }
@@ -112,24 +115,28 @@ void ViewerParticleEmitters::Render()
                                 auto* nm = FObjectFactory::ConstructObject<UParticleModuleLifetime>(nullptr);
                                 lod->Modules.Add(nm);
                                 SelectedModule = nm;
+                                nm->InitializeDefaults();
                             }
                             if (ImGui::MenuItem("UParticleModuleSize"))
                             {
                                 auto* nm = FObjectFactory::ConstructObject<UParticleModuleSize>(nullptr);
                                 lod->Modules.Add(nm);
                                 SelectedModule = nm;
+                                nm->InitializeDefaults();
                             }
                             if (ImGui::MenuItem("UParticleModuleColor"))
                             {
                                 auto* nm = FObjectFactory::ConstructObject<UParticleModuleColor>(nullptr);
                                 lod->Modules.Add(nm);
                                 SelectedModule = nm;
+                                nm->InitializeDefaults();
                             }
                             if (ImGui::MenuItem("UParticleModuleVelocity"))
                             {
                                 auto* nm = FObjectFactory::ConstructObject<UParticleModuleVelocity>(nullptr);
                                 lod->Modules.Add(nm);
                                 SelectedModule = nm;
+                                nm->InitializeDefaults();
                             }
                             if (ImGui::MenuItem("UParticleModuleSnow"))
                             {
