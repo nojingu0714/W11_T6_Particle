@@ -26,7 +26,7 @@ void FParticleMeshRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
     for (UParticleSystemComponent* ParticleSystemComponent : TObjectRange<UParticleSystemComponent>())
     {
-        if (((ParticleSystemComponent->GetWorld()->WorldType != EWorldType::Editor && ParticleSystemComponent->GetWorld()->WorldType != EWorldType::EditorPreview)) || ParticleSystemComponent->GetWorld() != World)
+        if (((ParticleSystemComponent->GetWorld()->WorldType != EWorldType::Editor && ParticleSystemComponent->GetWorld()->WorldType != EWorldType::EditorParticlePreview)) || ParticleSystemComponent->GetWorld() != World)
         {
             continue;
         }

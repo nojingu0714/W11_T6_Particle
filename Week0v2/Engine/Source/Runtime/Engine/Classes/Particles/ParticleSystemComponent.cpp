@@ -4,6 +4,7 @@
 #include "ParticleEmitter.h"
 #include "ParticleEmitterInstance.h"
 #include "ParticleHelper.h"
+#include "ParticleLODLevel.h"
 #include "ParticleModuleRequired.h"
 #include "ParticleSystem.h"
 #include "UserInterface/Debug/DebugViewModeHelpers.h"
@@ -147,9 +148,11 @@ inline void UParticleSystemComponent::ResetSystem()
 {
     for (auto instance : EmitterInstances)
     {
+        //instance->CurrentLODLevel->bIsModuleDirty = true;
         delete instance;
     }
     EmitterInstances.Empty();
+
     
     ClearEmitterDataArray();
 }
@@ -222,6 +225,7 @@ void UParticleSystemComponent::CreateDynamicData()
     //return ParticleDynamicData;
 
     
+    MarkRenderDynamicDataDirty();
 }
 
 void UParticleSystemComponent::ClearEmitterDataArray()
