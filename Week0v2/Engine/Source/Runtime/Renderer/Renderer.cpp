@@ -432,7 +432,7 @@ void FRenderer::AddRenderObjectsToRenderPass(UWorld* World) const
     BlurRenderPass->AddRenderObjectsToRenderPass(World);
     ParticleRenderPass->AddRenderObjectsToRenderPass(World);
     FinalRenderPass->AddRenderObjectsToRenderPass(World);
-    ParticleRenderPass->AddRenderObjectsToRenderPass(World);
+    //ParticleRenderPass->AddRenderObjectsToRenderPass(World);
 }
 
 void FRenderer::MappingVSPSInputLayout(const FName InShaderProgramName, FName VSName, FName PSName, FName InInputLayoutName)
