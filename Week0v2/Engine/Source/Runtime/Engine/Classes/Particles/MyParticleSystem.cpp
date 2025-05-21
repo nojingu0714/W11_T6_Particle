@@ -41,8 +41,8 @@ UMyParticleSystem::UMyParticleSystem()
     Color->InitializeDefaults();
     LODLevel->AddModule(Color);*/
 
-    UParticleModuleSnow* Snow = FObjectFactory::ConstructObject<UParticleModuleSnow>(this);
-    LODLevel->AddModule(Snow);
+   // UParticleModuleSnow* Snow = FObjectFactory::ConstructObject<UParticleModuleSnow>(nullptr);
+    //LODLevel->AddModule(Snow);
 }
 
 UMyParticleSystem::~UMyParticleSystem()
