@@ -18,22 +18,22 @@ FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemCompon
 
     UParticleLODLevel* LODLevel = LODLevels[0];
 
-    if (LODLevel == nullptr)
+
+    if (!InComponent)
         return nullptr;
-    if (LODLevel->TypeDataModule)
+
+    if (ParticleEmitterType == EParticleEmitterType::Sprite)
     {
-        Instance = LODLevel->TypeDataModule->CreateInstance(this, InComponent);
+        Instance = new FParticleSpriteEmitterInstance;
     }
-    else
+    else if (ParticleEmitterType == EParticleEmitterType::Mesh)
     {
-        if (!InComponent)
-            return nullptr;
-        //Instance = new FParticleSpriteEmitterInstance;
         Instance = new FParticleMeshEmitterInstance;
-        if (!Instance)
-            return nullptr;
-        Instance->InitParameters(this, InComponent);
     }
+    if (!Instance)
+        return nullptr;
+    Instance->InitParameters(this, InComponent);
+    
 
     if (Instance)
     {

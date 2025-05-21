@@ -76,20 +76,32 @@ VSOutput mainVS(VertexInput_MeshData meshInput, VertexInput_InstanceData instanc
 
     matrix scaleMatrix = matrix(
         particleScaleX, 0, 0, 0,
-        0, particleScaleY, 0, 0,
-        0, 0, particleScaleX, 0,          // Z 스케일은 1.0
+        0, particleScaleX, 0, 0,
+        0, 0, particleScaleX, 0,          
         0, 0, 0, 1
     );
+
+    
 
     // Z축 회전 행렬
     float s = sin(instanceInput.Rotation);
     float c = cos(instanceInput.Rotation);
-    matrix rotationMatrix = matrix(
+    matrix rotationX = matrix(
         c,  s, 0, 0,
        -s,  c, 0, 0,
         0,  0, 1, 0,
         0,  0, 0, 1
     );
+
+    // Y축 회전 행렬
+    matrix rotationY = matrix(
+        c,  0, -s, 0, // DirectX: c, 0, s / 0, 1, 0 / -s, 0, c
+        0,  1,  0, 0,
+        s,  0,  c, 0, // 위 주석 참고
+        0,  0,  0, 1
+    );
+
+    matrix rotationMatrix = mul(rotationX, rotationY);
 
     // 이동 변환 행렬
     // instanceInput.Position이 이미 월드 좌표라면 EmitterWorldMatrix는 Identity
