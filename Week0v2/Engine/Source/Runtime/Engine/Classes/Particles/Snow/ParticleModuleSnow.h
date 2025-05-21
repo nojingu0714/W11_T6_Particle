@@ -1,5 +1,6 @@
 #pragma once
 #include "Particles/ParticleModule.h"
+#include "Define.h"
 
 class UMaterial;
 
@@ -20,8 +21,6 @@ private:
     float SpawnZMin;
     float SpawnZMax;
 
-
-    UMaterial* MyMatarial;
 
 public:
     UParticleModuleSnow();

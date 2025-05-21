@@ -14,14 +14,6 @@ UParticleModuleSnow::UParticleModuleSnow() :
 
     bUpdateModule = true;
     bSpawnModule=true;
-
-  
-    MyMatarial = FObjectFactory::ConstructObject<UMaterial>(this);
-    FObjMaterialInfo MatInfo;
-    MatInfo.MTLName = "Snow";
-    MatInfo.DiffuseTextureName = "Snow.png";
-    MatInfo.DiffuseTexturePath = L"Assets/Texture/Snow.png";
-    MyMatarial->SetMaterialInfo(MatInfo);
 }
 
 void UParticleModuleSnow::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase)
@@ -41,10 +33,7 @@ void UParticleModuleSnow::Spawn(FParticleEmitterInstance* Owner, int32 Offset, f
     // 각 파티클의 흔들림 특성 저장
     ParticleBase->Flags = rand();
 
-    if (!Owner->RequiredModule->SpriteTexture)
-    {
-        Owner->RequiredModule->SpriteTexture = MyMatarial;
-    }
+  
 }
 
 void UParticleModuleSnow::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)

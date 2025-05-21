@@ -6,6 +6,7 @@
 #include "DirectXTK/Include/DDSTextureLoader.h"
 #include "Engine/FLoaderOBJ.h"
 #include "UserInterface/Console.h"
+#include "Engine/Source/Runtime/Engine/ParticleHelper.h"
 
 void FResourceManager::Initialize(FGraphicsDevice* device)
 {
@@ -23,17 +24,25 @@ void FResourceManager::Initialize(FGraphicsDevice* device)
     //FManagerOBJ::LoadObjStaticMeshAsset("Assets//AxisCircleZ.obj");
     // FManagerOBJ::LoadObjStaticMeshAsset("Assets/helloBlender.obj");
 
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/ocean_sky.jpg");
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/font.png");
-	LoadTextureFromDDS(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/font.dds");
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/emart.png");
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/T_Explosion_SubUV.png");
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/UUID_Font.png");
-	LoadTextureFromDDS(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/UUID_Font.dds");
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/Wooden Crate_Crate_BaseColor.png");
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/spotLight.png");
-	LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Contents/Textures/Logo.png");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/ocean_sky.jpg");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/font.png");
+    LoadTextureFromDDS(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/font.dds");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/emart.png");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/T_Explosion_SubUV.png");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/UUID_Font.png");
+    LoadTextureFromDDS(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/UUID_Font.dds");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/Wooden Crate_Crate_BaseColor.png");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Assets/Texture/spotLight.png");
+    LoadTextureFromFile(GraphicDevice->Device, GraphicDevice->DeviceContext, L"Contents/Textures/Logo.png");
+
+
+    FObjMaterialInfo MatInfo;
+    MatInfo.MTLName = "Snow";
+    MatInfo.DiffuseTextureName = "Snow.png";
+    MatInfo.DiffuseTexturePath = L"Assets/Texture/Snow.png";
+    FManagerOBJ::CreateMaterial(MatInfo);
 }
+
 
 void FResourceManager::Release()
 {
