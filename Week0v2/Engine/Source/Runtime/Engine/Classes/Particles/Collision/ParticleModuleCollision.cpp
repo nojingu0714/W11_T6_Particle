@@ -59,9 +59,19 @@ void UParticleModuleCollision::Update(FParticleEmitterInstance* Owner, int32 Off
              FVector Ref = Particle.Velocity - Normal * 2.f * (Particle.Velocity.Dot(Normal));
             Particle.BaseVelocity = Ref * BounceFactor + Particle.Velocity * (1.f - FrictionFactor);
             CollisionParticleBase->Collisions++;
-            if (CollisionParticleBase->Collisions >= 2)
+            if (CollisionParticleBase->Collisions>= MaxCollisions.GetValue(0))
             {
-                UE_LOG(LogLevel::Error,"Collision need to be Killed");
+                if (Response == EPCC_Kill)
+                    Particle.RelativeTime = 1.0f;
+                else if (Response == EPCC_Freez)
+                {
+                    Particle.Velocity = FVector(0, 0, 0);
+                    Particle.BaseVelocity = FVector(0, 0, 0);
+                }
+                else
+                {
+                    Particle.RelativeTime = 1.0f;
+                }
             }
              break; // 여러 AABB 중 하나만 충돌 처리
          }
@@ -72,6 +82,7 @@ void UParticleModuleCollision::Update(FParticleEmitterInstance* Owner, int32 Off
 
 void UParticleModuleCollision::InitializeDefaults()
 {
+    
 }
 
 bool UParticleModuleCollision::SphereIntersectsAABB(const FVector& Center, float Radius, const FVector& BoxMin, const FVector& BoxMax)
