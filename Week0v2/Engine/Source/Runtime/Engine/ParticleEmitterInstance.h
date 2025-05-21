@@ -35,11 +35,9 @@ struct FParticleEmitterInstance
     int32 CurrentLODLevelIndex;
     UParticleLODLevel* CurrentLODLevel;
 
-    TArray<FBaseParticle*> BaseParticles;
     class UParticleModuleSpawn* SpawnModule;    // 실제로 Spawn되는 숫자에 영향을 주는 모듈만
     TArray<UParticleModule*> SpawnModules;      // Spawn된 Particle의 성질을 변경하는 모듈들
     TArray<UParticleModule*> UpdateModules;
-    TArray<FBaseParticle*> DeadParticles;
     
     UParticleModuleRequired* RequiredModule;
     
@@ -77,7 +75,9 @@ struct FParticleEmitterInstance
     // FBox ParticleBoundingBox;
     /** Flag indicating if the render data is dirty.					*/
     int32 IsRenderDataDirty;
-    
+
+    //Module별 Payload를 관리할 Map
+    TMap<UParticleModule*, uint32> ModulePayloadOffsetMap;
     
     // 0 ~ 1 사이의 Emitter 진행 정도를 알려주는 값, Duration이 Emitter 한 바퀴 기간
     float EmitterTime = 0.0f;
@@ -103,7 +103,6 @@ struct FParticleEmitterInstance
     void PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity);
     void PostSpawn(FBaseParticle* Particle, float InterpolationPercentage, float SpawnTime);
     void KillParticle(int32 Index);
-    void KilParticles();
 
     /**
     * Get the current material to render with.
