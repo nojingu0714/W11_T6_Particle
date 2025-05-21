@@ -7,6 +7,8 @@
 #include "SubUVAnimation.h"
 #include "Engine/Classes/Components/PrimitiveComponents/UTexture.h"
 
+class UStaticMesh;
+
 enum class EParticleUVFlipMode : uint8
 {
     /** Flips UV on all particles. */
@@ -107,6 +109,18 @@ struct FParticleRequiredModule
     uint8 bUseVelocityForMotionBlur : 1;
 };
 
+enum EParticleEmitterType
+{
+    Unknown = 0,
+    Sprite,
+    Mesh,
+    Beam2,
+    Ribbon,
+    AnimTrail,
+    Custom
+};
+
+
 class UMaterial;
 class UTexture;
 
@@ -135,6 +149,10 @@ public:
     uint8 bScaleUV : 1;
     int32 SubImages_Horizontal;
     int32 SubImages_Vertical;
+    
+    
+    
+    EParticleEmitterType ParticleEmitterType = EParticleEmitterType::Sprite;
     /**
      *	The amount of time (particle-relative, 0.0 to 1.0) to 'lock' on a random sub image
      *	    0.0 = change every frame
@@ -159,6 +177,7 @@ public:
 
     UTexture* CutoutTexture;
     UMaterial* SpriteTexture;
+    UStaticMesh* MeshData;
     uint8 bUseMaxDrawCount = false;
     int32 MaxDrawCount;
     uint8 bUseLocalSpace = true;

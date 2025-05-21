@@ -919,12 +919,29 @@ void PropertyEditorPanel::Render()
                     RenderFSimpleFloatDistribution(Color->AlphaScaleOverLife, 0.0f, "FloatOverLife");
                     ImGui::Separator();
                 }
-                else if (UParticleModuleCollision* Collsion = Cast<UParticleModuleCollision>(Module)) 
+                else if (UParticleModuleCollision* Collision = Cast<UParticleModuleCollision>(Module)) 
                 {
                     ImGui::Text("Particle Module Color");
-                    ImGui::InputFloat("Bounce Factor", &Collsion->BounceFactor);
-                    ImGui::InputFloat("Friction Factor", &Collsion->FrictionFactor);
-                    ImGui::InputFloat("Collision Radius", &Collsion->CollisionRadius);
+                    ImGui::InputFloat("Bounce Factor", &Collision->BounceFactor);
+                    ImGui::InputFloat("Friction Factor", &Collision->FrictionFactor);
+                    ImGui::InputFloat("Collision Radius", &Collision->CollisionRadius);
+                    RenderFSimpleFloatDistribution(Collision->MaxCollisions, 0.0f, "MaxCollisions");
+                    const char* EPCC_Names[] = {
+                        "Kill",
+                        "Freeze",
+                        "Halt Collisions",
+                        "Freeze Translation",
+                        "Freeze Rotation",
+                        "Freeze Movement"
+                    };
+
+                    // Combo를 이용한 선택 UI
+                    int currentItem = static_cast<int>(Collision->Response);
+                    if (ImGui::Combo("Collision Response", &currentItem, EPCC_Names, EPCC_MAX))
+                    {
+                        // 사용자가 선택을 변경했을 경우 처리
+                        Collision->Response = static_cast<EParticleCollisionComplete>(currentItem);
+                    }
                     ImGui::Separator();
                 }
                 
@@ -2136,6 +2153,8 @@ void PropertyEditorPanel::DrawParticlePreviewButton(UParticleSystemComponent* Pa
         ParticleActor->SetDefaultParticleSystem();
 
         EditorEngine->GetParticlePreviewUI()->SetParticleSystemComponent(ParticleActor->ParticleSystemComponent);
+        ParticleActor->ParticleSystemComponent->Template = ParticleSystemComponent->Template;
+        ParticleActor->ParticleSystemComponent->InitParticles();
     }
 }
 

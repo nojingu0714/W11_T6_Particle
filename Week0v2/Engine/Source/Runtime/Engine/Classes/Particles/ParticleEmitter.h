@@ -12,16 +12,6 @@ enum EEmitterRenderMode : int
     ERM_MAX,
 };
 
-enum EParticleEmitterType
-{
-    Unknown = 0,
-    Sprite,
-    Mesh,
-    Beam2,
-    Ribbon,
-    AnimTrail,
-    Custom
-};
 
 class UParticleSystemComponent;
 struct FParticleEmitterInstance;
@@ -46,8 +36,6 @@ public:
     
     enum EEmitterRenderMode EmitterRenderMode = ERM_MAX;
 
-    
-    EParticleEmitterType ParticleEmitterType = EParticleEmitterType::Sprite;
     
     void CacheEmitterModuleInfo();
 };

@@ -45,18 +45,20 @@ struct FParticleEmitterInstance
     uint8* ParticleData;
     /** Pointer to the particle index array.                            */
     uint16* ParticleIndices;
-    /** Pointer to the instance data array.                             */
-    uint8* InstanceData;
-    /** The size of the Instance data array.                            */
-    int32 InstancePayloadSize;
-    /** The offset to the particle data.                                */
-    int32 PayloadOffset;
+    //Module별 Payload를 관리할 Map
+    TMap<UParticleModule*, uint32> ModulePayloadOffsetMap;
     /** The total size of a particle (in bytes).                        */
     int32 ParticleSize;
     /** The stride between particles in the ParticleData array.         */
     int32 ParticleStride;
     /** The number of particles currently active in the emitter.        */
     int32 ActiveParticles;
+    /** Pointer to the instance data array.                             */
+    uint8* InstanceData;
+    /** The size of the Instance data array.                            */
+    int32 InstancePayloadSize;
+    /** The offset to the particle data.                                */
+    int32 PayloadOffset;
     /** Monotonically increasing counter. */
     uint32 ParticleCounter;
     /** The maximum number of active particles that can be held in 
@@ -76,9 +78,6 @@ struct FParticleEmitterInstance
     /** Flag indicating if the render data is dirty.					*/
     int32 IsRenderDataDirty;
 
-    //Module별 Payload를 관리할 Map
-    TMap<UParticleModule*, uint32> ModulePayloadOffsetMap;
-    
     // 0 ~ 1 사이의 Emitter 진행 정도를 알려주는 값, Duration이 Emitter 한 바퀴 기간
     float EmitterTime = 0.0f;
     // 언리얼에서는 Emitter가 생성된 뒤 누적 시간이지만, 여기서는 Duration 값을 넘으면 0으로 초기화
