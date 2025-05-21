@@ -140,7 +140,7 @@ namespace OBJ
 
         FString VBName;
         FString IBName;
-        // ID3D11Buffer* VertexBuffer;
+        // ID3D11Buffer* DynamicInstanceVertexBuffer;
         // ID3D11Buffer* IndexBuffer;
         
         TArray<FObjMaterialInfo> Materials;
