@@ -16,7 +16,7 @@ public:
     
 
     int32 Level = 0;
-    bool bEnabled;
+    bool bEnabled = true;
 
     void AddModule(UParticleModule* InParticleModule);
     void DeleteModule(UParticleModule* InParticleModule);

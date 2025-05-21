@@ -2,6 +2,14 @@
 #include "Particles/ParticleEmitter.h"
 #include "ParticleHelper.h"
 
+FParticleSpriteEmitterInstance::FParticleSpriteEmitterInstance()
+{
+}
+
+FParticleSpriteEmitterInstance::~FParticleSpriteEmitterInstance()
+{
+}
+
 FDynamicEmitterReplayDataBase* FParticleSpriteEmitterInstance::GetReplayData()
 {
     if (ActiveParticles <= 0 || !bEnabled)

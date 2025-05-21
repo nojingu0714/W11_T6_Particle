@@ -16,8 +16,8 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
     {
         Instance->Tick(DeltaTime);
     }
-    // CreateDynamicData();
-    UpdateDynamicData();
+    CreateDynamicData();
+    //UpdateDynamicData();
 }
 
 UParticleSystemComponent::UParticleSystemComponent()
