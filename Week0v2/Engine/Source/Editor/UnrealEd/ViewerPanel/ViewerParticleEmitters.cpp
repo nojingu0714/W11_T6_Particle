@@ -10,6 +10,8 @@
 #include <Particles/Color/ParticleModuleColor.h>
 #include <Particles/Velocity/ParticleModuleVelocity.h>
 #include <Particles/Snow/ParticleModuleSnow.h>
+#include "Particles/ParticleModuleRequired.h"
+#include "Particles/Spawn/ParticleModuleSpawn.h"
 #include "ParticleEmitterInstance.h"
 
 void ViewerParticleEmitters::SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent)
@@ -19,139 +21,146 @@ void ViewerParticleEmitters::SetParticleSystemComponent(UParticleSystemComponent
 
 void ViewerParticleEmitters::Render()
 {
-    const ImGuiIO& IO = ImGui::GetIO();
-    ImFont* IconFont = IO.Fonts->Fonts.size() == 1 ? IO.FontDefault : IO.Fonts->Fonts[FEATHER_FONT];
-    constexpr ImVec2 IconSize = ImVec2(32, 32);
-    ImVec2 WinSize = ImVec2(Width, Height);
-    
-    ImGui::SetNextWindowPos(ImVec2(Width*0.3, 70));
-
-    ImGui::SetNextWindowSize(ImVec2(Width * 0.7, Height * 0.6 - 70));
-
-    ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_HorizontalScrollbar;
-    //UE_LOG(LogLevel::Error, "ViewerControlPanel::Render() called");
-
-    if (ImGui::Begin("Emitters", nullptr, PanelFlags))
+    //--- 창 설정 ---
+    ImGui::SetNextWindowPos(ImVec2(Width * 0.3f, 70));
+    ImGui::SetNextWindowSize(ImVec2(Width * 0.7f, Height * 0.6f - 70));
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoResize
+        | ImGuiWindowFlags_NoMove
+        | ImGuiWindowFlags_NoCollapse
+        | ImGuiWindowFlags_HorizontalScrollbar;
+    if (!ImGui::Begin("Emitters", nullptr, flags))
     {
-        if (ParticleSystemComponent && ParticleSystemComponent->Template)
+        ImGui::End();
+        return;
+    }
+
+    //--- Emitter 추가 버튼 ---
+    if (ParticleSystemComponent && ParticleSystemComponent->Template)
+    {
+        if (ImGui::Button("Add Emitter"))
         {
-            const TArray<UParticleEmitter*>& Emitters = ParticleSystemComponent->Template->Emitters;
-            int EmitterCount = Emitters.Num();
+            UParticleEmitter* newEmitter = FObjectFactory::ConstructObject<UParticleEmitter>(nullptr);
+            UParticleLODLevel* newLOD = FObjectFactory::ConstructObject<UParticleLODLevel>(nullptr);
+            newEmitter->LODLevels.Add(newLOD);
 
-            // ✅ Emitter 추가 버튼 (가장 위에 따로)
-            if (ImGui::Button("Emitter 추가"))
+            auto* RequiredModule = FObjectFactory::ConstructObject<UParticleModuleRequired>(nullptr);
+            newLOD->Modules.Add(RequiredModule);
+
+            auto* SpawnModule = FObjectFactory::ConstructObject<UParticleModuleSpawn>(nullptr);
+            newLOD->Modules.Add(SpawnModule);
+
+            ParticleSystemComponent->Template->Emitters.Add(newEmitter);
+        }
+        ImGui::Separator();
+
+        const auto& Emitters = ParticleSystemComponent->Template->Emitters;
+        int emitterCount = Emitters.Num();
+        if (emitterCount > 0)
+        {
+            //--- 테이블 시작 ---
+            if (ImGui::BeginTable("EmitterTable", emitterCount,
+                ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_NoBordersInBody))
             {
-                UParticleEmitter* NewEmitter = FObjectFactory::ConstructObject<UParticleEmitter>(nullptr);
-                UParticleLODLevel* NewLOD = FObjectFactory::ConstructObject<UParticleLODLevel>(nullptr);
-                NewEmitter->LODLevels.Add(NewLOD);
-                ParticleSystemComponent->Template->Emitters.Add(NewEmitter);
-            }
-
-            ImGui::Separator(); // Emitter UI들과 구분
-
-
-            if (EmitterCount > 0)
-            {
-                // Create one column per emitter
-                ImGui::Columns(EmitterCount, "EmitterColumns", true);
-                for (int E = 0; E < EmitterCount; ++E)
+                // 헤더 행
+                ImGui::TableNextRow(ImGuiTableRowFlags_Headers);
+                for (int col = 0; col < emitterCount; ++col)
                 {
-                    UParticleEmitter* Emitter = Emitters[E];
-                    // Header for this emitter
-                    ImGui::Text("Emitter %d", E);
-                    ImGui::Separator();
-                    // List modules in LOD0 in their defined order
-                    UParticleLODLevel* LOD = Emitter->LODLevels[0];
-                    if (LOD)
+                    ImGui::TableSetColumnIndex(col);
+                    FString headerText = FString::Printf(TEXT("Emitter %d"), col);
+                    ImGui::TableHeader(*headerText);
+                }
+
+                // 콘텐츠 행
+                ImGui::TableNextRow();
+                for (int col = 0; col < emitterCount; ++col)
+                {
+                    ImGui::TableSetColumnIndex(col);
+                    ImGui::BeginGroup();
+
+                    UParticleLODLevel* lod = Emitters[col]->LODLevels[0];
+                    if (lod)
                     {
-                        for (int M = 0; M < LOD->Modules.Num(); ++M)
+                        // 모듈 리스트
+                        for (int m = 0; m < lod->Modules.Num(); ++m)
                         {
-                            UParticleModule* Module = LOD->Modules[M];
-                            // 클래스 이름을 FString으로 가져오기
-                            FString ClassName = Module->GetClass()->GetName();
-                            // 고유 ID 생성: 보이는 레이블은 ClassName, 내부 ID는 인덱스 조합
-                            FString Id = FString::Printf(TEXT("%s##%d_%d"), *ClassName, E, M);
-                            if (ImGui::Selectable(*Id, SelectedModule == Module))
+                            UParticleModule* module = lod->Modules[m];
+                            FString className = module->GetClass()->GetName();
+                            FString selectableId = FString::Printf(TEXT("%s##%d_%d"),
+                                *className, col, m);
+                            if (ImGui::Selectable(*selectableId,
+                                SelectedModule == module))
                             {
-                                SelectedModule = Module;
+                                SelectedModule = module;
                             }
                         }
 
-                        // 모듈 추가 버튼 및 팝업 메뉴
                         ImGui::Separator();
-                        FString AddButtonId = FString::Printf(TEXT("Add Module##%d"), E);
-                        if (ImGui::Button(*AddButtonId))
+
+                        // Add Module 버튼 & 팝업
+                        FString addBtnId = FString::Printf(TEXT("Add Module##%d"), col);
+                        if (ImGui::Button(*addBtnId))
                         {
-                            ImGui::OpenPopup(*FString::Printf(TEXT("ModuleTypesPopup##%d"), E));
+                            FString popupId = FString::Printf(TEXT("ModulePopup##%d"), col);
+                            ImGui::OpenPopup(*popupId);
                         }
 
-                        // 모듈 유형 선택 팝업
-                        if (ImGui::BeginPopup(*FString::Printf(TEXT("ModuleTypesPopup##%d"), E)))
+                        FString popupId = FString::Printf(TEXT("ModulePopup##%d"), col);
+                        if (ImGui::BeginPopup(*popupId))
                         {
-                            // 기본 모듈 유형들
                             if (ImGui::MenuItem("UParticleModuleLifetime"))
                             {
-                                // 새 모듈 생성 및 추가
-                                UParticleModuleLifetime* NewModule = FObjectFactory::ConstructObject<UParticleModuleLifetime>(
-                                   nullptr);
-                                LOD->Modules.Add(NewModule);
-                                SelectedModule = NewModule;
+                                auto* nm = FObjectFactory::ConstructObject<UParticleModuleLifetime>(nullptr);
+                                lod->Modules.Add(nm);
+                                SelectedModule = nm;
                             }
-
                             if (ImGui::MenuItem("UParticleModuleSize"))
                             {
-                                UParticleModuleSize* NewModule = FObjectFactory::ConstructObject<UParticleModuleSize>(
-                                    nullptr);
-                                LOD->Modules.Add(NewModule);
-                                SelectedModule = NewModule;
+                                auto* nm = FObjectFactory::ConstructObject<UParticleModuleSize>(nullptr);
+                                lod->Modules.Add(nm);
+                                SelectedModule = nm;
                             }
-
                             if (ImGui::MenuItem("UParticleModuleColor"))
                             {
-                                UParticleModuleColor* NewModule = FObjectFactory::ConstructObject<UParticleModuleColor>(
-                                    nullptr);
-                                LOD->Modules.Add(NewModule);
-                                SelectedModule = NewModule;
+                                auto* nm = FObjectFactory::ConstructObject<UParticleModuleColor>(nullptr);
+                                lod->Modules.Add(nm);
+                                SelectedModule = nm;
                             }
-
                             if (ImGui::MenuItem("UParticleModuleVelocity"))
                             {
-                                UParticleModuleVelocity* NewModule = FObjectFactory::ConstructObject<UParticleModuleVelocity>(
-                                    nullptr);
-                                LOD->Modules.Add(NewModule);
-                                SelectedModule = NewModule;
+                                auto* nm = FObjectFactory::ConstructObject<UParticleModuleVelocity>(nullptr);
+                                lod->Modules.Add(nm);
+                                SelectedModule = nm;
                             }
-
-                            // 방금 만든 Snow 모듈 추가
                             if (ImGui::MenuItem("UParticleModuleSnow"))
                             {
-                                UParticleModuleSnow* NewModule = FObjectFactory::ConstructObject<UParticleModuleSnow>(
-                                    nullptr);
-                                // 기본값 초기화
-                              
-                              //  ;
-                                LOD->Modules.Add(NewModule);
-                                SelectedModule = NewModule;
-
-
+                                auto* nm = FObjectFactory::ConstructObject<UParticleModuleSnow>(nullptr);
+                                lod->Modules.Add(nm);
+                                SelectedModule = nm;
                             }
 
-                            for (FParticleEmitterInstance* Instance : ParticleSystemComponent->EmitterInstances)
-                            {
-                                Instance->ClassifyModules();
-                            }
+                            // 모든 인스턴스 모듈 재분류
+                            for (auto* inst : ParticleSystemComponent->EmitterInstances)
+                                inst->ClassifyModules();
+
                             ImGui::EndPopup();
                         }
                     }
-                    ImGui::NextColumn();
+
+                    ImGui::EndGroup();
                 }
-                ImGui::Columns(1);
+
+                ImGui::EndTable();
             }
         }
-        ImGui::End();
     }
+
+    ImGui::End();
+
+    // 선택된 모듈 상세 패널
     DetailPanel.Render(SelectedModule);
 }
+
+
 
 void ViewerParticleEmitters::OnResize(HWND hWnd)
 {
