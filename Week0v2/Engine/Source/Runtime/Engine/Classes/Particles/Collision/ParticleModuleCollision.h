@@ -32,7 +32,7 @@ public:
      FSimpleFloatDistribution MaxCollisions;
 
     // 파티클 크기
-    float CollisionRadius;
+    float CollisionRadius= 1.0f;
 
     // 충돌시 반사 여부
     bool bBounce;
@@ -42,7 +42,7 @@ public:
 
 
     /** 반사 강도 (0=완전흡수, 1=완전반사) */
-    float BounceFactor = 3.0f;
+    float BounceFactor = 1.0f;
     /** 마찰 감쇠 (0=무감쇠, 1=완전정지) */
     float FrictionFactor = 0.1f;
     void InitializeDefaults();
@@ -50,4 +50,13 @@ public:
                    const FVector& End,
                    FVector& OutImpactPoint,
                    FVector& OutNormal);
+    bool SphereIntersectsAABB(
+    const FVector& Center,
+    float Radius,
+    const FVector& BoxMin,
+    const FVector& BoxMax);
+    FVector ComputeBoxNormalAtPoint(
+    const FVector& Point,
+    const FVector& BoxMin,
+    const FVector& BoxMax);
 };
