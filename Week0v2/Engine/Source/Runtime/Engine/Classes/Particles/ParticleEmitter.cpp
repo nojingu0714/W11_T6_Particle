@@ -3,6 +3,7 @@
 #include "ParticleEmitterInstance.h"
 #include "ParticleHelper.h"
 #include "ParticleLODLevel.h"
+#include "ParticleMeshEmitterInstance.h"
 #include "ParticleSpriteEmitterInstance.h"
 #include "TypeData/ParticleModuleTypeDataBase.h"
 
@@ -27,7 +28,8 @@ FParticleEmitterInstance* UParticleEmitter::CreateInstance(UParticleSystemCompon
     {
         if (!InComponent)
             return nullptr;
-        Instance = new FParticleSpriteEmitterInstance;
+        //Instance = new FParticleSpriteEmitterInstance;
+        Instance = new FParticleMeshEmitterInstance;
         if (!Instance)
             return nullptr;
         Instance->InitParameters(this, InComponent);

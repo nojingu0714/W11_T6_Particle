@@ -87,7 +87,7 @@ void FParticleEmitterInstance::Init()
     IsRenderDataDirty    = true;
 
     FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
-    ParticleEmitterRenderData.VertexBuffer = renderResourceManager->CreateEmptyDynamicVertexBuffer(sizeof(FParticleSpriteVertex) * MaxActiveParticles);
+    ParticleEmitterRenderData.DynamicInstanceVertexBuffer = renderResourceManager->CreateEmptyDynamicVertexBuffer(sizeof(FParticleSpriteVertex) * MaxActiveParticles);
 }
 
 void FParticleEmitterInstance::Tick(float DeltaTime)

@@ -285,14 +285,14 @@ void FDynamicSpriteEmitterData::ExecuteRender(const FMatrix& ViewProj) const
         SourceData->ParticleStride, SourceData->DataContainer.ParticleIndices, &ViewProj, SourceData->ComponentLocalToWorld,ParticleOrders);
 
     
-    ID3D11Buffer* VB = SourceData->ParticleEmitterRenderData.VertexBuffer;
+    ID3D11Buffer* VB = SourceData->ParticleEmitterRenderData.DynamicInstanceVertexBuffer;
 
     D3D11_MAPPED_SUBRESOURCE sub = {};
     const HRESULT hr = FEngineLoop::GraphicDevice.DeviceContext->Map(VB, 0,D3D11_MAP_WRITE_DISCARD,0, &sub);
     if (FAILED(hr))
     {
         // 실패 시 메시지 박스 표시
-        std::string errorMessage = "Map failed for Dynamic VertexBuffer type: ";
+        std::string errorMessage = "Map failed for Dynamic DynamicInstanceVertexBuffer type: ";
         MessageBoxA(nullptr, errorMessage.c_str(), "Error", MB_OK | MB_ICONERROR);
         return;
     }
@@ -405,14 +405,14 @@ void FDynamicMeshEmitterData::ExecuteRender(const FMatrix& ViewProj) const
         SourceData->ParticleStride, SourceData->DataContainer.ParticleIndices, &ViewProj, SourceData->ComponentLocalToWorld,ParticleOrders);
 
     
-    ID3D11Buffer* InstanceVB = SourceData->ParticleEmitterRenderData.InstanceBuffer;
+    ID3D11Buffer* InstanceVB = SourceData->ParticleEmitterRenderData.DynamicInstanceVertexBuffer;
 
     D3D11_MAPPED_SUBRESOURCE sub = {};
     const HRESULT hr = FEngineLoop::GraphicDevice.DeviceContext->Map(InstanceVB, 0,D3D11_MAP_WRITE_DISCARD,0, &sub);
     if (FAILED(hr))
     {
         // 실패 시 메시지 박스 표시
-        std::string errorMessage = "Map failed for Dynamic VertexBuffer type: ";
+        std::string errorMessage = "Map failed for Dynamic DynamicInstanceVertexBuffer type: ";
         MessageBoxA(nullptr, errorMessage.c_str(), "Error", MB_OK | MB_ICONERROR);
         return;
     }
@@ -427,18 +427,7 @@ void FDynamicMeshEmitterData::ExecuteRender(const FMatrix& ViewProj) const
     VBIBTopMappingInfo->Bind();
 
     
-    // // SubSet마다 Material Update 및 Draw
-    // for (int subMeshIndex = 0; subMeshIndex < renderData->MaterialSubsets.Num(); ++subMeshIndex)
-    // {
-    //     const int materialIndex = renderData->MaterialSubsets[subMeshIndex].MaterialIndex;
-    //         
-    //     UpdateMaterialConstants(StaticMeshComp->GetMaterial(materialIndex)->GetMaterialInfo());
-    //
-    //     // index draw
-    //     const uint64 startIndex = renderData->MaterialSubsets[subMeshIndex].IndexStart;
-    //     const uint64 indexCount = renderData->MaterialSubsets[subMeshIndex].IndexCount;
-    //     Graphics.DeviceContext->DrawIndexed(indexCount, startIndex, 0);
-    // }
+
 
     
 
@@ -446,6 +435,7 @@ void FDynamicMeshEmitterData::ExecuteRender(const FMatrix& ViewProj) const
     const UINT Stride = sizeof(FParticleSpriteVertex);
     const UINT Offset = 0;
     FEngineLoop::GraphicDevice.DeviceContext->IASetVertexBuffers(1, 1, &InstanceVB, &Stride, &Offset);
+
     if (Source.Material)
     {
         auto texture = GEngineLoop.ResourceManager
@@ -458,10 +448,25 @@ void FDynamicMeshEmitterData::ExecuteRender(const FMatrix& ViewProj) const
     }
     
     UINT IndexCount = VBIBTopMappingInfo->GetNumIndices();
-    if (IndexCount > 0)
+    
+    // // SubSet마다 Material Update 및 Draw
+    for (int subMeshIndex = 0; subMeshIndex < renderData->MaterialSubsets.Num(); ++subMeshIndex)
     {
-         FEngineLoop::GraphicDevice.DeviceContext->DrawIndexedInstanced(IndexCount, ParticleCount, 0, 0, 0);
+        const int materialIndex = renderData->MaterialSubsets[subMeshIndex].MaterialIndex;
+            
+        FParticleMeshRenderPass::UpdateMaterialConstants(StaticMesh->GetMaterials()[subMeshIndex]->Material->GetMaterialInfo());
+    
+        // index draw
+        const uint64 startIndex = renderData->MaterialSubsets[subMeshIndex].IndexStart;
+        const uint64 indexCount = renderData->MaterialSubsets[subMeshIndex].IndexCount;
+        if (IndexCount > 0)
+        {
+            FEngineLoop::GraphicDevice.DeviceContext->DrawIndexedInstanced(indexCount, ParticleCount, startIndex, 0, 0);
+        }
+        //FEngineLoop::GraphicDevice.DeviceContext->DrawIndexed(indexCount, startIndex, 0);
     }
+    
+
 }
 
 /**  소스 데이터가 채워진 후 호출되는 이 이미터의 다이내믹 렌더링 데이터를 초기화합니다.*/

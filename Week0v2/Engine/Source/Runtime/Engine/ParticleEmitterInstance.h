@@ -22,8 +22,8 @@ class UParticleEmitter;
 // 동적 버퍼는 인스턴스에서 계속 업데이트 하기 때문에 이미터가 아니라 인스턴스가 소유
 struct FParticleEmitterRenderData
 {
-    ID3D11Buffer* VertexBuffer = nullptr;
-    ID3D11Buffer* InstanceBuffer = nullptr;
+    ID3D11Buffer* DynamicInstanceVertexBuffer = nullptr; //동적버퍼와 인스턴스버퍼는 용도만 다를 뿐 같은 방식으로 생성됨
+    //ID3D11Buffer* InstanceBuffer = nullptr;
 };
 
 struct FParticleEmitterInstance

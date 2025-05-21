@@ -125,7 +125,7 @@ void FParticleMeshRenderPass::Execute(std::shared_ptr<FViewportClient> InViewpor
 
 void FParticleMeshRenderPass::ClearRenderObjects()
 {
-    FBaseRenderPass::ClearRenderObjects();
+    ParticleSystemComponents.Empty();
 }
 
 void FParticleMeshRenderPass::UpdateMaterialConstants(const FObjMaterialInfo& MaterialInfo)

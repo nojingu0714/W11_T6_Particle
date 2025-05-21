@@ -21,23 +21,23 @@ cbuffer FPerFrameConstants : register(b2) // b0는 상수 버퍼 슬롯 번호
 
 struct VertexInput_MeshData
 {
-    float4 position : POSITION; // 버텍스 위치
-    float4 color : COLOR; // 버텍스 색상
-    float3 normal : NORMAL; // 버텍스 노멀
-    float3 tangent : TANGENT;
-    float2 texcoord : TEXCOORD;
+    float4 position : SLOT0_POSITION; // 버텍스 위치
+    float4 color : SLOT0_COLOR; // 버텍스 색상
+    float3 normal : SLOT0_NORMAL; // 버텍스 노멀
+    float3 tangent : SLOT0_TANGENT;
+    float2 texcoord : SLOT0_TEXCOORD;
 };
 
 struct VertexInput_InstanceData
 {
-    float3 Position      : INSTANCED_POSITION0;     // 파티클 중심 월드 (또는 로컬) 위치
-    float  RelativeTime  : INSTANCED_TEXCOORD0;   // 상대적 수명 (0~1)
-    float3 OldPosition   : INSTANCED_TEXCOORD1;   // 이전 프레임 위치 (모션 블러용)
-    float  ParticleId    : INSTANCED_TEXCOORD2;   // 파티클 고유 ID
-    float2 Size          : INSTANCED_TEXCOORD3;   // 파티클 2D 크기 (UV 뒤집기 정보 포함 가능)
-    float  Rotation      : INSTANCED_TEXCOORD4;   // 파티클 Z축 회전 (라디안)
-    float  SubImageIndex : INSTANCED_TEXCOORD5;   // SubUV 애니메이션 이미지 인덱스
-    float4 Color         : INSTANCED_COLOR0;      // 파티클 색상 및 알파
+    float3 Position      : SLOT1_INSTANCED_POSITION0;     // 파티클 중심 월드 (또는 로컬) 위치
+    float  RelativeTime  : SLOT1_INSTANCED_TEXCOORD0;   // 상대적 수명 (0~1)
+    float3 OldPosition   : SLOT1_INSTANCED_TEXCOORD1;   // 이전 프레임 위치 (모션 블러용)
+    float  ParticleId    : SLOT1_INSTANCED_TEXCOORD2;   // 파티클 고유 ID
+    float2 Size          : SLOT1_INSTANCED_TEXCOORD3;   // 파티클 2D 크기 (UV 뒤집기 정보 포함 가능)
+    float  Rotation      : SLOT1_INSTANCED_TEXCOORD4;   // 파티클 Z축 회전 (라디안)
+    float  SubImageIndex : SLOT1_INSTANCED_TEXCOORD5;   // SubUV 애니메이션 이미지 인덱스
+    float4 Color         : SLOT1_INSTANCED_COLOR0;      // 파티클 색상 및 알파
 };
 
 // 정점 셰이더 출력 구조체 (이전과 동일)
@@ -62,8 +62,10 @@ VSOutput mainVS(VertexInput_MeshData meshInput, VertexInput_InstanceData instanc
     // 크기 변환 행렬 (X, Y 스케일, Z 스케일은 1.0으로 가정)
     // 또는 instanceInput.Size.x를 균일 스케일로 사용할 수도 있음.
     // 여기서는 instanceInput.Size를 X, Y 스케일로 사용.
-    float particleScaleX = instanceInput.Size.x;
-    float particleScaleY = instanceInput.Size.y;
+    float particleScaleX = 1.f;
+    float particleScaleY = 1.f;
+    //float particleScaleX = instanceInput.Size.x;
+    //float particleScaleY = instanceInput.Size.y;
     // UV 뒤집기 처리 (만약 Size의 부호를 사용한다면)
     // float2 baseUV = meshInput.TexCoordOS; // SubUV 전에 기본 UV
     // if (particleScaleX < 0.0f) { baseUV.x = 1.0f - baseUV.x; particleScaleX = abs(particleScaleX); }
