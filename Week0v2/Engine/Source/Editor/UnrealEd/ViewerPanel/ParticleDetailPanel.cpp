@@ -14,6 +14,7 @@
 #include <Particles/Snow/ParticleModuleSnow.h>
 
 #include "Components/Mesh/StaticMesh.h"
+#include "Particles/Collision/ParticleModuleCollision.h"
 
 
 void ParticleDetailPanel::Render(UParticleModule* SelectedModule)
@@ -158,6 +159,31 @@ void ParticleDetailPanel::Render(UParticleModule* SelectedModule)
 
             ImGui::Separator();
          }
+        else if (UParticleModuleCollision* Collision = Cast<UParticleModuleCollision>(SelectedModule))
+        {
+            ImGui::Text("Particle Module Collision");
+            ImGui::InputFloat("Bounce Factor", &Collision->BounceFactor);
+            ImGui::InputFloat("Friction Factor", &Collision->FrictionFactor);
+            ImGui::InputFloat("Collision Radius", &Collision->CollisionRadius);
+            RenderFSimpleFloatDistribution(Collision->MaxCollisions, 0.0f, "MaxCollisions");
+            const char* EPCC_Names[] = {
+                "Kill",
+                "Freeze",
+                "Halt Collisions",
+                "Freeze Translation",
+                "Freeze Rotation",
+                "Freeze Movement"
+            };
+
+            // Combo를 이용한 선택 UI
+            int currentItem = static_cast<int>(Collision->Response);
+            if (ImGui::Combo("Collision Response", &currentItem, EPCC_Names, EPCC_MAX))
+            {
+                // 사용자가 선택을 변경했을 경우 처리
+                Collision->Response = static_cast<EParticleCollisionComplete>(currentItem);
+            }
+            ImGui::Separator();
+        }
     }
     ImGui::End();
 }
