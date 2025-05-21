@@ -267,6 +267,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Materials\MaterialInterface.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\ParticleMeshEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Skeletal\SkeletalDefine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\PlayerCameraManager.cpp" />
@@ -375,6 +376,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\FBaseRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\FinalRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\FogRenderPass.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleMeshRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\GizmoRenderPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\LetterBoxRenderPass.cpp" />
@@ -447,6 +449,12 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Animation\CustomAnimInstance\TestAnimInstance.cpp" />
+    <ClCompile Include="Shaders\ParticleMeshPixelShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Shaders\ParticleMeshVertexShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Editor\UnrealEd\ParticlePreviewUI.h" />
@@ -535,6 +543,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Engine\Materials\MaterialInterface.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleHelper.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\ParticleMeshEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Skeletal\SkeletalDefine.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\UserInterface\Debug\DebugViewModeHelpers.h" />
@@ -670,6 +679,7 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\FBaseRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\FinalRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\FogRenderPass.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleMeshRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\GizmoRenderPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\LetterBoxRenderPass.h" />
