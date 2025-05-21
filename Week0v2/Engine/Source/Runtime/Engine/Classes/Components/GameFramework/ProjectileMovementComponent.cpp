@@ -56,7 +56,7 @@ void UProjectileMovementComponent::InitializeComponent()
 
 void UProjectileMovementComponent::TickComponent(float DeltaTime)
 {
-    if (GetWorld()->WorldType == EWorldType::Editor || GetWorld()->WorldType == EWorldType::EditorPreview)
+    if (GetWorld()->WorldType == EWorldType::Editor || GetWorld()->WorldType == EWorldType::EditorPreview||  GetWorld()->WorldType == EWorldType::EditorPreview)
     {
         return; // Todo: change code.
     }

@@ -41,6 +41,7 @@
 #include <Animation/CustomAnimInstance/TestAnimInstance.h>
 #include <Animation/AnimSingleNodeInstance.h>
 
+#include "Actors/ParticleActor.h"
 #include "Particles/ParticleEmitter.h"
 #include "Particles/ParticleLODLevel.h"
 #include "Particles/ParticleSystem.h"
@@ -2108,35 +2109,10 @@ void PropertyEditorPanel::DrawParticlePreviewButton(UParticleSystemComponent* Pa
         EditorEngine->GetParticlePreviewUI()->SetParticleSystemComponent(ParticleSystemComponent);
 
         const TArray<AActor*> CopiedActors = World->GetActors();
-        AActor* ParticleActor = ParticleSystemComponent->GetOwner();
-        
-        for (AActor* Actor : CopiedActors)
-        {
-            if (Actor->IsA<UTransformGizmo>() || Actor->IsA<APlayerCameraManager>())
-            {
-                continue;
-            }
-            if (ParticleActor == Actor) 
-            {
-                // 해당 컴포넌트의 Actor는 삭제하지 않아서 
-                // Preview에서 접근 가능하도록 처리
-                continue;
-            }
+        // AActor* ParticleActor = ParticleSystemComponent->GetOwner();
 
-            Actor->Destroy();
-        }
-        World->ClearSelectedActors();
-
-        // SkySphere 생성
-        AStaticMeshActor* SkySphereActor = World->SpawnActor<AStaticMeshActor>();
-        SkySphereActor->SetActorLabel(TEXT("OBJ_SKYSPHERE"));
-        UStaticMeshComponent* MeshComp = SkySphereActor->GetStaticMeshComponent();
-        FManagerOBJ::CreateStaticMesh("Assets/SkySphere.obj");
-        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"SkySphere.obj"));
-        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetDiffuse(FVector::OneVector);
-        MeshComp->GetStaticMesh()->GetMaterials()[0]->Material->SetEmissive(FVector::OneVector);
-        MeshComp->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
-        SkySphereActor->SetActorScale(FVector(1.0f, 1.0f, 1.0f));
+        // AParticleActor* ParticleActor = World->SpawnActor<AParticleActor>();
+        // ParticleActor->ParticleSystemComponent = ParticleSystemComponent;
     }
 }
 
