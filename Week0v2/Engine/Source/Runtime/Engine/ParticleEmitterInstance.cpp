@@ -33,8 +33,12 @@ void FParticleEmitterInstance::Init()
 
     // 2) ParticleSize, ParticleStride 계산 (FBaseParticle만 저장할 경우)
     const int32 BaseSize        = sizeof(FBaseParticle);
-    const int32 RequiredPayload = SpriteTemplate->ReqInstanceBytes;
-
+    int32 RequiredPayload = 0;//SpriteTemplate->ReqInstanceBytes;
+    for (UParticleModule* M : CurrentLODLevel->Modules)
+    {
+        ModulePayloadOffsetMap[M] = BaseSize + RequiredPayload;
+        RequiredPayload += M->ReqInstanceBytes;
+    }
     // 2) 전체 파티클당 사이즈 (페이로드 포함)
     ParticleSize       = BaseSize + RequiredPayload;
     // 16바이트 정렬 (SSE-friendly)
@@ -182,7 +186,7 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
         if (P.RelativeTime >= 1.0f)
         {
             KillParticle(i);
-            --i;  // ActiveParticles가 하나 줄어들었으니 인덱스 보정
+            --i; // 새로 들어온 파티클도 검사해야 함
         }
     }
 
@@ -216,7 +220,6 @@ void FParticleEmitterInstance::ClassifyModules()
         {
             UpdateModules.Add(Module);
         }
-
     }
 }
 
@@ -248,12 +251,12 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
             : (MaxActiveParticles - 1);  // 꽉 찼을 때 마지막 슬롯 재사용
         // 파티클 데이터 블록에서 해당 슬롯의 위치 계산
         uint8* SlotPtr = ParticleData + NewIndex * ParticleStride;
+        memset(SlotPtr, 0, ParticleStride);
         // FBaseParticle 구조체 포인터 얻기
         FBaseParticle* Particle = reinterpret_cast<FBaseParticle*>(SlotPtr);
         // 활성 인덱스 배열에도 기록
         ParticleIndices[ActiveParticles++] = static_cast<uint16>(NewIndex);
         
-
         // --- 2) PreSpawn: 기본 속성 초기화 ---
         // (위에서 언급한 PreSpawn 함수: RequiredModule 기반 초기화)
         PreSpawn(*Particle, InitialLocation, InitialVelocity);
@@ -344,7 +347,7 @@ void FParticleEmitterInstance::KillParticle(int32 Index)
     // 2) 인덱스 배열 갱신: 마지막 슬롯 인덱스를 덮어 씀
     // ParticleIndices[Index] = LastSlotIndex;
     // ParticleIndices[LastArrayIndex] = CurrSlotIndex;
-    // 3) 남은 "마지막" 슬롯은 0으로 초기화
+    // 3) 남은 “마지막” 슬롯은 0으로 초기화
     {
         uint8* DeadPtr = ParticleData + LastSlotIndex * ParticleStride;
         memset(DeadPtr, 0, ParticleStride);
@@ -354,15 +357,6 @@ void FParticleEmitterInstance::KillParticle(int32 Index)
     --ActiveParticles;
 }
 
-void FParticleEmitterInstance::KilParticles()
-{
-    for (auto Dead : DeadParticles)
-    {
-        BaseParticles.Remove(Dead);
-        delete Dead;
-    }
-    DeadParticles.Empty();
-}
 
 bool FParticleEmitterInstance::IsDynamicDataRequired(UParticleLODLevel* InCurrentLODLevel)
 {

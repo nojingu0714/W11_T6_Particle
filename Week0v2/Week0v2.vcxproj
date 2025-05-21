@@ -244,6 +244,8 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Pawn.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\GameFramework\PlayerController.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\GameFramework\PlayerInput.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Collision\ParticleModuleCollision.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Collision\ParticleModuleCollisionBase.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\FXSystemComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Lifetime\ParticleModuleLifetime.cpp" />
@@ -520,6 +522,8 @@ xcopy /y /d "$(ProjectDir)Engine\Source\ThirdParty\FBX_SDK\2020.3.7\lib\x64\$(Co
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\Pawn.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\PlayerController.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\GameFramework\PlayerInput.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Collision\ParticleModuleCollision.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Collision\ParticleModuleCollisionBase.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\FXSystemComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Lifetime\ParticleModuleLifetime.h" />

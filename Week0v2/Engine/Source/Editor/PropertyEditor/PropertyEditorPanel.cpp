@@ -56,6 +56,7 @@
 #include "Particles/Color/ParticleModuleColor.h"
 #include "Particles/Size/ParticleModuleSizeScaleBySpeed.h"
 #include "Engine/Source/Editor/UnrealEd/ParticlePreviewUI.h"
+#include "Particles/Collision/ParticleModuleCollision.h"
 #include "UObject/UObjectIterator.h"
 
 void PropertyEditorPanel::Initialize(float InWidth, float InHeight)
@@ -918,7 +919,14 @@ void PropertyEditorPanel::Render()
                     RenderFSimpleFloatDistribution(Color->AlphaScaleOverLife, 0.0f, "FloatOverLife");
                     ImGui::Separator();
                 }
-                
+                else if (UParticleModuleCollision* Collsion = Cast<UParticleModuleCollision>(Module)) 
+                {
+                    ImGui::Text("Particle Module Color");
+                    ImGui::InputFloat("Bounce Factor", &Collsion->BounceFactor);
+                    ImGui::InputFloat("Friction Factor", &Collsion->FrictionFactor);
+                    ImGui::InputFloat("Collision Radius", &Collsion->CollisionRadius);
+                    ImGui::Separator();
+                }
                 
 
                 ImGui::Spacing();

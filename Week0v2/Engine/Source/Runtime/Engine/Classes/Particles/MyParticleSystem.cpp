@@ -2,6 +2,7 @@
 #include "ParticleEmitter.h"
 #include "ParticleLODLevel.h"
 #include "ParticleModuleRequired.h"
+#include "Collision/ParticleModuleCollision.h"
 #include "Size/ParticleModuleSizeScaleBySpeed.h"
 #include "Spawn/ParticleModuleSpawn.h"
 #include "Lifetime/ParticleModuleLifetime.h"
@@ -39,6 +40,12 @@ UMyParticleSystem::UMyParticleSystem()
     LODLevel->AddModule(Velocity);
     UParticleModuleColor* Color = FObjectFactory::ConstructObject<UParticleModuleColor>(this);
     Color->InitializeDefaults();
+    LODLevel->AddModule(Color);
+
+    UParticleModuleCollision* Collision = FObjectFactory::ConstructObject<UParticleModuleCollision>(this);
+    Collision->InitializeDefaults();
+    LODLevel->AddModule(Collision);
+    
     LODLevel->AddModule(Color);*/
 
     UParticleModuleSnow* Snow = FObjectFactory::ConstructObject<UParticleModuleSnow>(this);
