@@ -33,7 +33,7 @@ void FParticleRenderPass::AddRenderObjectsToRenderPass(UWorld* World)
 {
     for (UParticleSystemComponent* ParticleSystemComponent : TObjectRange<UParticleSystemComponent>())
     {
-        if (((ParticleSystemComponent->GetWorld()->WorldType != EWorldType::Editor && ParticleSystemComponent->GetWorld()->WorldType != EWorldType::EditorPreview)) || ParticleSystemComponent->GetWorld() != World)
+        if (((ParticleSystemComponent->GetWorld()->WorldType != EWorldType::Editor && ParticleSystemComponent->GetWorld()->WorldType != EWorldType::EditorParticlePreview)) || ParticleSystemComponent->GetWorld() != World)
         {
             continue;
         }
@@ -50,7 +50,7 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
     const FRenderer& Renderer = GEngineLoop.Renderer;
     const FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
 
-    Graphics.DeviceContext->OMSetDepthStencilState(Renderer.GetDepthStencilState(EDepthStencilState::DepthNone), 0);
+    Graphics.DeviceContext->OMSetDepthStencilState(Renderer.GetDepthStencilState(EDepthStencilState::TranslucentNoDepthWrite), 0);
     Graphics.DeviceContext->RSSetState(Renderer.GetRasterizerState(ERasterizerState::SolidNone));
     Graphics.DeviceContext->OMSetBlendState(Renderer.GetBlendState(EBlendState::AlphaBlend), nullptr, 0xffffffff); // 블렌딩 상태 설정, 기본 블렌딩 상태임
 
@@ -120,9 +120,10 @@ void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportCli
             renderResourceManager->UpdateConstantBuffer("FPerFrameConstants", &PerFrameConstants);
             for (const FDynamicEmitterDataBase* EmitterDataBase : ParticleSystemComponent->EmitterRenderData)
             {
-                if (EmitterDataBase)
+                const FDynamicSpriteEmitterData* SpriteEmitterData = dynamic_cast<const FDynamicSpriteEmitterData*>(EmitterDataBase);
+                if (SpriteEmitterData)
                 {
-                    EmitterDataBase->ExecuteRender(ViewProj);
+                    SpriteEmitterData->ExecuteRender(ViewProj);
                 }
             }
     }

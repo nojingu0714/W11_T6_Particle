@@ -16,8 +16,8 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
     {
         Instance->Tick(DeltaTime);
     }
-    // CreateDynamicData();
-    UpdateDynamicData();
+    CreateDynamicData();
+    //UpdateDynamicData();
 }
 
 UParticleSystemComponent::UParticleSystemComponent()
@@ -81,7 +81,7 @@ void UParticleSystemComponent::UpdateDynamicData()
         Source.bUseLocalSpace   = false;
 
         // 렌더용 데이터
-        Source.LocalToWorld = Instance->Component->GetWorldMatrix();
+        Source.ComponentLocalToWorld = Instance->Component->GetWorldMatrix();
         Source.ParticleEmitterRenderData = Instance->GetRenderData();
 
         // 3) 렌더러가 사용할 추가 세팅
@@ -193,7 +193,7 @@ void UParticleSystemComponent::CreateDynamicData()
         
         FDynamicEmitterDataBase* NewDynamicEmitterData = NULL;
         FParticleEmitterInstance* EmitterInst = EmitterInstances[EmitterIndex];
-        if (EmitterInst)
+        if (EmitterInst || !EmitterInst->bEnabled || EmitterInst->ActiveParticles == 0)
         {
             // Create a new dynamic data object for this emitter instance
             NewDynamicEmitterData = EmitterInst->GetDynamicData(false);
@@ -202,6 +202,7 @@ void UParticleSystemComponent::CreateDynamicData()
             {
                 //NewDynamicEmitterData->StatID = EmitterInst->SpriteTemplate->GetStatIDRT();
                 NewDynamicEmitterData->bValid = true;
+                NewDynamicEmitterData->bSelected    = false;
                 NewDynamicEmitterData->EmitterIndex = EmitterIndex;
                 NewDynamicEmitterData->EmitterIndex = EmitterIndex;
                 EmitterRenderData.Add(NewDynamicEmitterData);

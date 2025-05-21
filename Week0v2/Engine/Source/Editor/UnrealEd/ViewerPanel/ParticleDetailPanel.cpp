@@ -11,6 +11,7 @@
 #include "Particles/Spawn/ParticleModuleSpawn.h"
 #include "Particles/Velocity/ParticleModuleVelocity.h"
 #include "Engine/Classes/Components/Material/Material.h"
+#include <Particles/Snow/ParticleModuleSnow.h>
 
 
 
@@ -133,6 +134,74 @@ void ParticleDetailPanel::Render(UParticleModule* SelectedModule)
             RenderFSimpleFloatDistribution(Color->AlphaScaleOverLife, 0.0f, "FloatOverLife");
             ImGui::Separator();
         }
+        else if (UParticleModuleSnow* Snow = Cast<UParticleModuleSnow>(SelectedModule))
+        {
+            ImGui::Text("Particle Module Snow");
+            ImGui::Separator();
+
+            // 좌표 범위
+            ImGui::Text("Spawn Range X:");
+            RenderFSimpleFloatDistribution(Snow->SpawnXMin, 0.0f, "X_Min");
+            ImGui::SameLine();
+            RenderFSimpleFloatDistribution(Snow->SpawnXMax, 0.0f, "X_Max");
+            if (Snow->SpawnXMin.GetValue(0) > Snow->SpawnXMax.GetValue(0)) {
+                Snow->SpawnXMax = Snow->SpawnXMin;
+            }
+
+            ImGui::Text("Spawn Range Y:");
+            RenderFSimpleFloatDistribution(Snow->SpawnYMin, 0.0f, "Y_Min");
+            ImGui::SameLine();
+            RenderFSimpleFloatDistribution(Snow->SpawnYMax, 0.0f, "Y_Max");
+            if (Snow->SpawnYMin.GetValue(0) > Snow->SpawnYMax.GetValue(0)) {
+                Snow->SpawnYMax = Snow->SpawnYMin;
+            }
+
+            ImGui::Text("Spawn Range Z:");
+            RenderFSimpleFloatDistribution(Snow->SpawnZMin, 0.0f, "Z_Min");
+            ImGui::SameLine();
+            RenderFSimpleFloatDistribution(Snow->SpawnZMax, 0.0f, "Z_Max");
+            if (Snow->SpawnZMin.GetValue(0) > Snow->SpawnZMax.GetValue(0)) {
+                Snow->SpawnZMax = Snow->SpawnZMin;
+            }
+
+            ImGui::Separator();
+
+            // 중력 스케일
+            ImGui::Text("Gravity Scale:");
+            RenderFSimpleFloatDistribution(Snow->GravityScale, 1.0f, "GravityScale");
+
+            // 좌우 흔들림
+            ImGui::Text("Sway Settings:");
+            RenderFSimpleFloatDistribution(Snow->SwayFrequency, 0.5f, "SwayFreq");
+
+            ImGui::Text("Sway Amount:");
+            RenderFSimpleFloatDistribution(Snow->SwayMinAmount, 0.3f, "SwayMin");
+            ImGui::SameLine();
+            RenderFSimpleFloatDistribution(Snow->SwayMaxAmount, 0.5f, "SwayMax");
+            if (Snow->SwayMinAmount.GetValue(0) > Snow->SwayMaxAmount.GetValue(0)) {
+                Snow->SwayMaxAmount = Snow->SwayMinAmount;
+            }
+
+            ImGui::Separator();
+
+      
+
+            // 회전 설정
+            ImGui::Text("Rotation:");
+
+            ImGui::Text("Speed:");
+            RenderFSimpleFloatDistribution(Snow->RotationSpeedMin, 0.2f, "RotSpeedMin");
+            ImGui::SameLine();
+            RenderFSimpleFloatDistribution(Snow->RotationSpeedMax, 0.5f, "RotSpeedMax");
+            if (Snow->RotationSpeedMin.GetValue(0) > Snow->RotationSpeedMax.GetValue(0)) {
+                Snow->RotationSpeedMax = Snow->RotationSpeedMin;
+            }
+
+            ImGui::Text("Direction Bias:");
+            RenderFSimpleFloatDistribution(Snow->RotationDirectionBias, 0.0f, "DirBias");
+
+            ImGui::Separator();
+         }
     }
     ImGui::End();
 }

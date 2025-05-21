@@ -487,6 +487,10 @@ void ControlEditorPanel::CreateModifyButton(const ImVec2 ButtonSize, ImFont* Ico
                     case OBJ_PARTICLE:
                     {
                         SpawnedActor = World->SpawnActor<AParticleActor>();
+                        if (AParticleActor* ParticleActor = Cast<AParticleActor>(SpawnedActor)) 
+                        {
+                            ParticleActor->SetDefaultParticleSystem();
+                        }
                         SpawnedActor->SetActorLabel(TEXT("OBJ_PARTICLE"));
                             SpawnedActor->SetTickInEditor(true);
                         // UParticleSubUVComp* Particle = SpawnedActor->AddComponent<UParticleSubUVComp>(EComponentOrigin::Editor);

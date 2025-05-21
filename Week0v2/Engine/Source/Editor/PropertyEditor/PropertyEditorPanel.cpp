@@ -2114,13 +2114,28 @@ void PropertyEditorPanel::DrawParticlePreviewButton(UParticleSystemComponent* Pa
 
         UWorld* World = EditorEngine->CreatePreviewWindow("ParticlePreview", EWorldType::EditorParticlePreview);
         
-        EditorEngine->GetParticlePreviewUI()->SetParticleSystemComponent(ParticleSystemComponent);
 
         const TArray<AActor*> CopiedActors = World->GetActors();
+        for (AActor* Actor : CopiedActors) 
+        {
+            // 카메라 제외하고 Actor 다 지우기 
+            // 실질적으로 새로 만든 World는 카메라 Actor도 없기에 작동은 안하는 코드
+            // Viewport의 렌더는 Editor 카메라를 통해 진행하고 있음
+            if (Actor->IsA<APlayerCameraManager>()) 
+            {
+                continue;
+            }
+
+            Actor->Destroy();
+        }
+        World->ClearSelectedActors();
+
         // AActor* ParticleActor = ParticleSystemComponent->GetOwner();
 
         AParticleActor* ParticleActor = World->SpawnActor<AParticleActor>();
-        ParticleActor->ParticleSystemComponent = ParticleSystemComponent;
+        ParticleActor->SetDefaultParticleSystem();
+
+        EditorEngine->GetParticlePreviewUI()->SetParticleSystemComponent(ParticleActor->ParticleSystemComponent);
     }
 }
 

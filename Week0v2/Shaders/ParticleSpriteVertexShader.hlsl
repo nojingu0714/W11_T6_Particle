@@ -36,6 +36,17 @@ cbuffer FPerFrameConstants : register(b2) // b0는 상수 버퍼 슬롯 번호
 //     // 기타 이미터별 공통 설정 (예: bUseLocalSpace 플래그 등)
 // };
 
+
+struct VSOutput
+{
+    float4 Position    : SV_Position;   // 클립 공간 위치 (필수)
+    float2 TexCoord      : TEXCOORD0;     // UV 좌표
+    float4 Color         : COLOR0;        // 파티클 색상
+    float  RelativeTimePS: TEXCOORD1;
+    float  ParticleIdPS  : TEXCOORD2;
+};
+
+
 struct ParticleVSInput
 {
     float3 Position      : INSTANCED_POSITION0;     // 파티클 중심 월드 (또는 로컬) 위치
@@ -48,14 +59,6 @@ struct ParticleVSInput
     float4 Color         : INSTANCED_COLOR0;      // 파티클 색상 및 알파
 };
 
-struct VSOutput
-{
-    float4 Position    : SV_Position;   // 클립 공간 위치 (필수)
-    float2 TexCoord      : TEXCOORD0;     // UV 좌표
-    float4 Color         : COLOR0;        // 파티클 색상
-    float  RelativeTimePS: TEXCOORD1;
-    float  ParticleIdPS  : TEXCOORD2;
-};
 
 // 정점 셰이더 함수
 VSOutput mainVS(ParticleVSInput input, uint vertexID : SV_VertexID) // SV_VertexID: 0, 1, 2, 3 (Quad의 각 코너)

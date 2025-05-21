@@ -1,4 +1,4 @@
-﻿#include "ParticleEmitterInstance.h"
+#include "ParticleEmitterInstance.h"
 
 #include "LaunchEngineLoop.h"
 #include "Particles/ParticleEmitter.h"
@@ -91,11 +91,12 @@ void FParticleEmitterInstance::Init()
     IsRenderDataDirty    = true;
 
     FRenderResourceManager* renderResourceManager = GEngineLoop.Renderer.GetResourceManager();
-    ParticleEmitterRenderData.VertexBuffer = renderResourceManager->CreateEmptyDynamicVertexBuffer(sizeof(FParticleSpriteVertex) * MaxActiveParticles);
+    ParticleEmitterRenderData.DynamicInstanceVertexBuffer = renderResourceManager->CreateEmptyDynamicVertexBuffer(sizeof(FParticleSpriteVertex) * MaxActiveParticles);
 }
 
 void FParticleEmitterInstance::Tick(float DeltaTime)
 {
+
     SecondsSinceCreation += DeltaTime;
     if (SecondsSinceCreation > EmitterDuration) 
     {
@@ -143,6 +144,7 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
                 /* Velocity */     InitialVelocity,
                 /* EventPayload */ EventPayload
             );
+           
         }
     }
     
@@ -159,19 +161,6 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
         P.RotationRate   = P.BaseRotationRate;
         P.Size           = P.BaseSize;
         P.Color          = P.BaseColor;
-
-
-        // (c) 물리적 통합
-        P.Location      += P.Velocity * DeltaTime;
-        P.Rotation      += P.RotationRate * DeltaTime;
-        P.RelativeTime  += DeltaTime * P.OneOverMaxLifetime;
-
-        // (d) 수명 초과 시 슬롯 제거
-        if (P.RelativeTime >= 1.0f)
-        {
-            KillParticle(i);
-            --i; // 새로 들어온 파티클도 검사해야 함
-        }
     }
 
     // (b) 모든 Update 모듈 실행, 전달해준 this를 통해 목록에 접근하므로 
@@ -179,6 +168,26 @@ void FParticleEmitterInstance::Tick(float DeltaTime)
     for (UParticleModule* Mod : UpdateModules)
     {
         Mod->Update(this, /*Offset=*/0 * ParticleStride, DeltaTime);
+    }
+
+    for (int32 i = 0; i < ActiveParticles; ++i)
+    {
+        const uint16 SlotIndex = ParticleIndices[i];
+        // 버퍼 오프셋 계산
+        uint8* DataPtr = ParticleData + SlotIndex * ParticleStride;
+        FBaseParticle& P = *reinterpret_cast<FBaseParticle*>(DataPtr);
+
+        // (c) 물리적 통합
+        P.Location += P.Velocity * DeltaTime;
+        P.Rotation += P.RotationRate * DeltaTime;
+        P.RelativeTime += DeltaTime * P.OneOverMaxLifetime;
+
+        // (d) 수명 초과 시 슬롯 제거
+        if (P.RelativeTime >= 1.0f)
+        {
+            KillParticle(i);
+            --i; // 새로 들어온 파티클도 검사해야 함
+        }
     }
 
     UE_LOG(LogLevel::Warning, "Particles : %d", ActiveParticles);
@@ -267,6 +276,7 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
         const float Interp = ComputeInterp(i);
         PostSpawn(Particle, Interp, SpawnTime);
     }
+
 }
 
 void FParticleEmitterInstance::PreSpawn(FBaseParticle& Particle, const FVector& InitLocation, const FVector& InitVelocity)
@@ -386,15 +396,15 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
     }
 
     // If the template is disabled, don't return data.
-    UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
-    if ((LODLevel == NULL) || (LODLevel->bEnabled == false))
-    {
-        return false;
-    }
+    // UParticleLODLevel* LODLevel = SpriteTemplate->GetCurrentLODLevel(this);
+    // if ((LODLevel == NULL) || (LODLevel->bEnabled == false))
+    // {
+    //     return false;
+    // }
     // Must be filled in by implementation in derived class
     OutData.eEmitterType = DET_Unknown;
     
-    OutData.LocalToWorld = Component->GetWorldMatrix();
+    OutData.ComponentLocalToWorld = Component->GetWorldMatrix();
 
     OutData.ParticleEmitterRenderData = ParticleEmitterRenderData;
 
@@ -411,18 +421,33 @@ bool FParticleEmitterInstance::FillReplayData(FDynamicEmitterReplayDataBase& Out
 
     int32 ParticleMemSize = MaxActiveParticles * ParticleStride;
 
+    
+    // — 메모리 블록(ParticleData + ParticleIndices) 복사
+    int32 DataBytes   = MaxActiveParticles * ParticleStride;
+    int32 IndexCount  = MaxActiveParticles;
+    OutData.DataContainer.Alloc(DataBytes, IndexCount);
+    std::memcpy(OutData.DataContainer.ParticleData,
+                ParticleData,
+                DataBytes);
+    std::memcpy(OutData.DataContainer.ParticleIndices,
+                ParticleIndices,
+                sizeof(uint16) * ActiveParticles);
+
+    
     //언리얼에서도 모든 emitter가 스프라이트인 걸로 가정하고 한다.
     FDynamicSpriteEmitterReplayDataBase* NewReplayData =
     static_cast< FDynamicSpriteEmitterReplayDataBase* >( &OutData );
 
-    //NewReplayData->RequiredModule = LODLevel->RequiredModule->CreateRendererResource();
-    NewReplayData->Material = NULL;	// 파생된 구현에서 설정해야 합니다.
+    NewReplayData->RequiredModule = RequiredModule;
+    NewReplayData->Material = RequiredModule->SpriteTexture;	// 파생된 구현에서 설정해야 합니다.
     
-    NewReplayData->MaxDrawCount =
-        (LODLevel->RequiredModule->bUseMaxDrawCount == true) ? LODLevel->RequiredModule->MaxDrawCount : -1;
+    NewReplayData->MaxDrawCount =ActiveParticles;
     
     NewReplayData->PivotOffset =   (PivotOffset);
-    NewReplayData->bUseLocalSpace = LODLevel->RequiredModule->bUseLocalSpace;
+    NewReplayData->bUseLocalSpace = false;
+
+    OutData.ComponentLocalToWorld = Component->GetWorldMatrix();
+    OutData.ParticleEmitterRenderData = GetRenderData();
 
     return true;
 }
@@ -431,3 +456,4 @@ UMaterial* FParticleEmitterInstance::GetCurrentMaterial()
 {
     return RequiredModule->SpriteTexture;
 }
+

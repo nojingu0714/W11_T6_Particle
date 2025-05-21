@@ -11,6 +11,7 @@
 #include "RenderPass/FogRenderPass.h"
 #include "RenderPass/ShadowRenderPass.h"
 
+class FParticleMeshRenderPass;
 class FParticleRenderPass;
 class FSkeletalMeshRenderPass;
 class FLetterBoxRenderPass;
@@ -118,6 +119,7 @@ private:
     std::shared_ptr<FLetterBoxRenderPass> LetterBoxRenderPass;
     std::shared_ptr<FBlurRenderPass> BlurRenderPass;
     std::shared_ptr<FParticleRenderPass> ParticleRenderPass;
+    std::shared_ptr<FParticleMeshRenderPass> ParticleMeshRenderPass;
     std::shared_ptr<FFinalRenderPass> FinalRenderPass;
 
     ERasterizerState CurrentRasterizerState = ERasterizerState::SolidBack;

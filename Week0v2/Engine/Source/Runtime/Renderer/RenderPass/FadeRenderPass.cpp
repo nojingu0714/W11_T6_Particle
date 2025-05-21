@@ -67,6 +67,7 @@ void FFadeRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 
     if (bRender)
     {
+        UpdateScreenConstant(InViewportClient);
         UpdateFadeConstant();
         FGraphicsDevice& Graphics = GEngineLoop.GraphicDevice;
         Graphics.DeviceContext->Draw(6, 0);

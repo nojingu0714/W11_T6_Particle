@@ -851,7 +851,7 @@ ID3D11InputLayout* FGraphicsDevice::ExtractInputLayout(ID3DBlob* InShaderBlob, I
             continue;
 
         // 시스템 값 시맨틱인지 확인
-        if (paramDesc.SystemValueType != D3D_NAME_UNDEFINED && paramDesc.SystemValueType != D3D_NAME_INSTANCE_ID) // D3D_NAME_INSTANCE_ID는 예외적으로 처리해야 할 수도 있음 (만약 인스턴스 ID를 직접 버퍼로 제공한다면)
+        if (paramDesc.SystemValueType != D3D_NAME_UNDEFINED) // D3D_NAME_INSTANCE_ID는 예외적으로 처리해야 할 수도 있음 (만약 인스턴스 ID를 직접 버퍼로 제공한다면)
             // 하지만 보통 SV_InstanceID도 시스템 생성 값이므로 제외 대상.
             // SV_VertexID, SV_PrimitiveID 등은 확실히 제외.
         {
@@ -867,18 +867,43 @@ ID3D11InputLayout* FGraphicsDevice::ExtractInputLayout(ID3DBlob* InShaderBlob, I
         D3D11_INPUT_ELEMENT_DESC elementDesc = {};
         elementDesc.SemanticName = paramDesc.SemanticName;
         elementDesc.SemanticIndex = paramDesc.SemanticIndex;
-        elementDesc.InputSlot = 0;
-        if (i == 0)
+        
+        bool isFirstElementInSlot = true;
+        if (!layoutDescs.empty())
         {
-            elementDesc.AlignedByteOffset = 0;
+            if (layoutDescs.back().InputSlot == elementDesc.InputSlot) {
+                isFirstElementInSlot = false;
+            }
         }
-        else
-        {
+        
+        if (isFirstElementInSlot) {
+            elementDesc.AlignedByteOffset = 0;
+        } else {
             elementDesc.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
         }
 
         std::string semanticNameStr = paramDesc.SemanticName;
-        if (semanticNameStr.rfind("INSTANCED_", 0) == 0) // "INSTANCED_"로 시작하는지 확인
+
+        // 슬롯 번호 파싱 (예: "SLOT0_", "SLOT1_")
+        if (semanticNameStr.rfind("SLOT0_", 0) == 0)
+        {
+            elementDesc.InputSlot = 0;
+            // "SLOT0_" 다음부터 실제 시맨틱 이름 (선택적: 만약 셰이더에서 SLOT0_POSITION0 대신 POSITION0을 쓰려면)
+            //elementDesc.SemanticName = paramDesc.SemanticName + strlen("SLOT0_"); // 주의: 포인터 연산
+        }
+        else if (semanticNameStr.rfind("SLOT1_", 0) == 0)
+        {
+            elementDesc.InputSlot = 1;
+            //elementDesc.SemanticName = paramDesc.SemanticName + strlen("SLOT1_");
+        }
+        else
+        {
+            // 기본 슬롯 또는 오류 처리
+            elementDesc.InputSlot = 0; // 기본값
+            // UE_LOG(LogLevel::Warning, "Semantic name %s does not specify a slot, defaulting to 0.", semanticNameStr.c_str());
+        }
+        
+        if (semanticNameStr.find("_INSTANCED_") != std::string::npos or semanticNameStr.find("INSTANCED_") != std::string::npos) // "INSTANCED_"로 시작하는지 확인
         {
             elementDesc.InputSlotClass = D3D11_INPUT_PER_INSTANCE_DATA;
             elementDesc.InstanceDataStepRate = 1; // 일반적으로 인스턴스당 1 스텝
@@ -946,6 +971,11 @@ ID3D11InputLayout* FGraphicsDevice::ExtractInputLayout(ID3DBlob* InShaderBlob, I
             elementDesc.Format = DXGI_FORMAT_UNKNOWN;
         }
         layoutDescs.push_back(elementDesc);
+    }
+
+    if (layoutDescs.empty())
+    {
+        return nullptr; // 입력 레이아웃이 없으면 nullptr 반환
     }
 
     // 입력 레이아웃 생성

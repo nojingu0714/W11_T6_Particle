@@ -519,6 +519,11 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleMeshRenderPass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -598,8 +603,8 @@
     <FxCompile Include="Shaders\FinalVertexShader.hlsl" />
     <FxCompile Include="Shaders\SkeletalUberLitPixelShader.hlsl" />
     <FxCompile Include="Shaders\SkeletalUberLitVertexShader.hlsl" />
-    <FxCompile Include="Shaders\SpriteParticleVertexShader.hlsl" />
-    <FxCompile Include="Shaders\SpriteParticlePixelShader.hlsl" />
+    <FxCompile Include="Shaders\ParticleSpritePixelShader.hlsl" />
+    <FxCompile Include="Shaders\ParticleSpriteVertexShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Week0v2.natvis" />
@@ -784,8 +789,15 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\ParticleSpriteEmitterInstance.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleRenderPass.cpp" />
-    <ClCompile Include="Shaders\ParticleSpritePixelShader.hlsl" />
-    <ClCompile Include="Shaders\ParticleSpriteVertexShader.hlsl" />
+    <ClCompile Include="Engine\Source\Editor\UnrealEd\EditorPanel.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Color\ParticleModuleColor.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Location\ParticleModuleLocation.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSize.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Size\ParticleModuleSizeBase.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Particles\Velocity\ParticleModuleVelocity.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\RenderPass\ParticleMeshRenderPass.cpp" />
+    <ClCompile Include="Shaders\ParticleMeshPixelShader.hlsl" />
+    <ClCompile Include="Shaders\ParticleMeshVertexShader.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\ShaderHeaders\GConstantBuffers.hlsli" />
