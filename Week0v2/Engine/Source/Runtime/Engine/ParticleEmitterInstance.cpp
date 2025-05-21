@@ -33,8 +33,12 @@ void FParticleEmitterInstance::Init()
 
     // 2) ParticleSize, ParticleStride 계산 (FBaseParticle만 저장할 경우)
     const int32 BaseSize        = sizeof(FBaseParticle);
-    const int32 RequiredPayload = SpriteTemplate->ReqInstanceBytes;
-
+    int32 RequiredPayload = 0;//SpriteTemplate->ReqInstanceBytes;
+    for (UParticleModule* M : CurrentLODLevel->Modules)
+    {
+        ModulePayloadOffsetMap[M] = BaseSize + RequiredPayload;
+        RequiredPayload += M->ReqInstanceBytes;
+    }
     // 2) 전체 파티클당 사이즈 (페이로드 포함)
     ParticleSize       = BaseSize + RequiredPayload;
     // 16바이트 정렬 (SSE-friendly)
@@ -238,6 +242,7 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
             : (MaxActiveParticles - 1);  // 꽉 찼을 때 마지막 슬롯 재사용
         // 파티클 데이터 블록에서 해당 슬롯의 위치 계산
         uint8* SlotPtr = ParticleData + NewIndex * ParticleStride;
+        memset(SlotPtr, 0, ParticleStride);
         // FBaseParticle 구조체 포인터 얻기
         FBaseParticle* Particle = reinterpret_cast<FBaseParticle*>(SlotPtr);
         // 활성 인덱스 배열에도 기록

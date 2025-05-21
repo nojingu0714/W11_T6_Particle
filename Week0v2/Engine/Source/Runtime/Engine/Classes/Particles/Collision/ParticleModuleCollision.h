@@ -3,6 +3,11 @@
 #include "ParticleModuleCollisionBase.h"
 #include "Engine/Source/Runtime/Core/Math/Distribution.h"
 
+struct FCollsionParticleInfo
+{
+    int32 Collisions = 0;
+};
+
 class UParticleModuleCollision : public UParticleModuleCollisionBase
 {
     DECLARE_CLASS(UParticleModuleCollision, UParticleModuleCollisionBase)
@@ -37,7 +42,7 @@ public:
     // 충돌시 반사 여부
     bool bBounce;
 
-    // 충돌에 대한 응답 
+    // 마지막 충돌에 대한 응답
     EParticleCollisionComplete Response;
 
 
@@ -46,10 +51,6 @@ public:
     /** 마찰 감쇠 (0=무감쇠, 1=완전정지) */
     float FrictionFactor = 0.1f;
     void InitializeDefaults();
-    bool RaycastGround(const FVector& Start,
-                   const FVector& End,
-                   FVector& OutImpactPoint,
-                   FVector& OutNormal);
     bool SphereIntersectsAABB(
     const FVector& Center,
     float Radius,

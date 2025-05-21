@@ -70,6 +70,7 @@ public:    // 8비트 중 마지막 1비트만을 활용하여 bool 변수처럼
     /** If true, the module supports RandomSeed setting */
     uint8 bSupportsRandomSeed : 1;
 
+    uint32 ReqInstanceBytes = 0;
     // TODO: 아래 함수는 프로퍼티가 변경되었을 때 호출되는 요소 UI 구현할 때 구현 필요
     //virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
@@ -85,6 +86,10 @@ public:    // 8비트 중 마지막 1비트만을 활용하여 bool 변수처럼
     virtual uint32	PrepPerInstanceBlock(FParticleEmitterInstance* Owner, void* InstData);
     virtual void SetToSensibleDefaults(UParticleEmitter* Owner);
     virtual EModuleType	GetModuleType() const { return EPMT_General; }
+
+
+    virtual uint32	RequiredBytes();
+
 };
 
 /*

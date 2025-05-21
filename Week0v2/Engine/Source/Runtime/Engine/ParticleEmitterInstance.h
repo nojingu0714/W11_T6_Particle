@@ -74,7 +74,9 @@ struct FParticleEmitterInstance
     // FBox ParticleBoundingBox;
     /** Flag indicating if the render data is dirty.					*/
     int32 IsRenderDataDirty;
-    
+
+    //Module별 Payload를 관리할 Map
+    TMap<UParticleModule*, uint32> ModulePayloadOffsetMap;
     
     // 0 ~ 1 사이의 Emitter 진행 정도를 알려주는 값, Duration이 Emitter 한 바퀴 기간
     float EmitterTime = 0.0f;

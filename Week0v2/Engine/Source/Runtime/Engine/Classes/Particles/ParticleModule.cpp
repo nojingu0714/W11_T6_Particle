@@ -65,3 +65,8 @@ void UParticleModule::SetToSensibleDefaults(UParticleEmitter* Owner)
 {
     // The default implementation does nothing...
 }
+
+uint32 UParticleModule::RequiredBytes()
+{
+    return ReqInstanceBytes;
+}

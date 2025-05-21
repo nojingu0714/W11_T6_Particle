@@ -178,7 +178,7 @@ struct FBaseParticle // 파티클 하나의 완전한 상태를 저장하는 POD
     float OneOverMaxLifetime; // Reciprocal of lifetime
     float Placeholder0;
     float Placeholder1;
-
+    
     FBaseParticle()
     : OldLocation(FVector::ZeroVector)
     , Location(FVector::ZeroVector)

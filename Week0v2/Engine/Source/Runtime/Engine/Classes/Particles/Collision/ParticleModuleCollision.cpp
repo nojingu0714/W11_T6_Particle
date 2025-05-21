@@ -10,8 +10,10 @@
 #include "UObject/Casts.h"
 #include "UObject/UObjectIterator.h"
 
+
 UParticleModuleCollision::UParticleModuleCollision()
 {
+    ReqInstanceBytes = sizeof(FCollsionParticleInfo);
     bUpdateModule = true;
 }
 
@@ -23,15 +25,11 @@ void UParticleModuleCollision::Spawn(FParticleEmitterInstance* Owner, int32 Offs
 void UParticleModuleCollision::Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime)
 {
     BEGIN_UPDATE_LOOP
-        // BEGIN_UPDATE_LOOP 매크로 덕분에
-        //   i, CurrentIndex, Particle, ActiveParticles 등 변수가 모두 준비되어 있습니다.
 
-        // 1) OldLoc → NewLoc
+    FCollsionParticleInfo* CollisionParticleBase = reinterpret_cast<FCollsionParticleInfo*>(const_cast<uint8*>(ParticleBase) + Owner->ModulePayloadOffsetMap[this]);
+        
     FVector OldLoc = Particle.OldLocation;
     FVector NewLoc = Particle.OldLocation + Particle.Velocity * DeltaTime;
-
-    // 2) 씬에 맞춰 단순 Plane 충돌 검사 (예시)
-    FVector HitPoint, HitNormal;
 
     for (UStaticMeshComponent* StaticComp : TObjectRange<UStaticMeshComponent>())
     {
@@ -59,42 +57,21 @@ void UParticleModuleCollision::Update(FParticleEmitterInstance* Owner, int32 Off
 
              // (f) 속도 반사 & 감쇠
              FVector Ref = Particle.Velocity - Normal * 2.f * (Particle.Velocity.Dot(Normal));
-             Particle.BaseVelocity = Ref;
-
+            Particle.BaseVelocity = Ref * BounceFactor + Particle.Velocity * (1.f - FrictionFactor);
+            CollisionParticleBase->Collisions++;
+            if (CollisionParticleBase->Collisions >= 2)
+            {
+                UE_LOG(LogLevel::Error,"Collision need to be Killed");
+            }
              break; // 여러 AABB 중 하나만 충돌 처리
          }
         
     }
-    
-    // if (RaycastGround(OldLoc, NewLoc, HitPoint, HitNormal))
-    // {
-    //     Particle.Location = Particle.OldLocation;
-    //     // 속도 반사 & 감쇠
-    //     FVector Ref = Particle.Velocity - HitNormal * 2.f * (Particle.Velocity.Dot(HitNormal));
-    //     Particle.BaseVelocity = Ref;//* BounceFactor + Particle.Velocity * (1.f - FrictionFactor);
-    //     // Particle.BaseVelocity = Particle.Velocity;
-    //     // Particle.BaseVelocity.Z =2.0f;
-    // }
     END_UPDATE_LOOP
 }
 
 void UParticleModuleCollision::InitializeDefaults()
 {
-}
-
-bool UParticleModuleCollision::RaycastGround(const FVector& Start, const FVector& End, FVector& OutImpactPoint, FVector& OutNormal)
-{
-    // Plane: z=0, normal = (0,0,1)
-    // Ray: P(t) = Start + t*(End-Start), t in [0,1]
-    float dzStart = Start.Z;
-    float dzEnd   = End.Z;
-    if ((dzStart > 0 && dzEnd > 0) || (dzStart < 0 && dzEnd < 0))
-        return false;  // 둘 다 같은 쪽에 있으면 충돌 없다
-
-    float t = dzStart / (dzStart - dzEnd);
-    OutImpactPoint = Start + (End - Start) * t;
-    OutNormal       = FVector(0,0,1);
-    return true;
 }
 
 bool UParticleModuleCollision::SphereIntersectsAABB(const FVector& Center, float Radius, const FVector& BoxMin, const FVector& BoxMax)
