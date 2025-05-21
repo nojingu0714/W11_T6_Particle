@@ -142,6 +142,7 @@ void FLineBatchRenderPass::Execute(const std::shared_ptr<FViewportClient> InView
     }
 
     renderResourceManager->UpdateConstantBuffer(TEXT("FMatrixBuffer"), &MVPConstant);
+    UpdateScreenConstant(InViewportClient);
 
     const FGridParametersData GridParameters = PrimitveBatch.GetGridParameters();
     renderResourceManager->UpdateConstantBuffer(TEXT("FGridParametersData"), &GridParameters);

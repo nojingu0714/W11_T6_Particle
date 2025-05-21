@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "GameFramework/Actor.h"
 #include "Particles/ParticleSystemComponent.h"
 
@@ -10,5 +10,6 @@ public:
     ~AParticleActor();
 
     void Tick(float DeltaTime) override;
+    void SetDefaultParticleSystem();
     UParticleSystemComponent* ParticleSystemComponent;
 };
