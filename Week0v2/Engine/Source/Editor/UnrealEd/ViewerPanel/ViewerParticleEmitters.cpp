@@ -11,6 +11,8 @@
 #include <Particles/Velocity/ParticleModuleVelocity.h>
 #include <Particles/Snow/ParticleModuleSnow.h>
 #include "ParticleEmitterInstance.h"
+#include "Particles/Spawn/ParticleModuleSpawn.h"
+#include "Particles/ParticleModuleRequired.h"
 
 void ViewerParticleEmitters::SetParticleSystemComponent(UParticleSystemComponent* InParticleSystemComponent)
 {
@@ -58,6 +60,9 @@ void ViewerParticleEmitters::Render()
                 {
                     UParticleEmitter* Emitter = Emitters[E];
                     // Header for this emitter
+                    ImGui::BeginGroup();
+
+
                     ImGui::Text("Emitter %d", E);
                     ImGui::Separator();
                     // List modules in LOD0 in their defined order
@@ -88,15 +93,28 @@ void ViewerParticleEmitters::Render()
                         // 모듈 유형 선택 팝업
                         if (ImGui::BeginPopup(*FString::Printf(TEXT("ModuleTypesPopup##%d"), E)))
                         {
-                            // 기본 모듈 유형들
+                           
+                            if (ImGui::MenuItem("UParticleModuleRequired"))
+                            {
+                                UParticleModuleRequired* Required = FObjectFactory::ConstructObject<UParticleModuleRequired>(nullptr);
+                                LOD->AddModule(Required);
+                                LOD->RequiredModule = Required;
+                            }
+
+                            if (ImGui::MenuItem("UParticleModuleSpawn"))
+                            {
+                                UParticleModuleSpawn* Spawn = FObjectFactory::ConstructObject<UParticleModuleSpawn>(nullptr);
+                                Spawn->InitializeDefaults();
+                                LOD->AddModule(Spawn);
+                            }
+
                             if (ImGui::MenuItem("UParticleModuleLifetime"))
                             {
-                                // 새 모듈 생성 및 추가
-                                UParticleModuleLifetime* NewModule = FObjectFactory::ConstructObject<UParticleModuleLifetime>(
-                                   nullptr);
-                                LOD->Modules.Add(NewModule);
-                                SelectedModule = NewModule;
+                                UParticleModuleLifetime* Lifetime = FObjectFactory::ConstructObject<UParticleModuleLifetime>(nullptr);
+                                Lifetime->InitializeDefaults();
+                                LOD->AddModule(Lifetime);
                             }
+
 
                             if (ImGui::MenuItem("UParticleModuleSize"))
                             {
@@ -143,6 +161,10 @@ void ViewerParticleEmitters::Render()
                             ImGui::EndPopup();
                         }
                     }
+
+                    // ✅ 그룹 종료
+                    ImGui::EndGroup();
+
                     ImGui::NextColumn();
                 }
                 ImGui::Columns(1);
