@@ -43,7 +43,6 @@ void FParticleEmitterInstance::Init()
     ParticleSize       = BaseSize + RequiredPayload;
     // 16바이트 정렬 (SSE-friendly)
     ParticleSize       = (ParticleSize + 15) & ~15;
-
     
     // 3) 최대 파티클 수 설정
     MaxActiveParticles = 2048;
@@ -334,7 +333,6 @@ void FParticleEmitterInstance::KillParticle(int32 Index)
     int32 LastArrayIndex = ActiveParticles - 1;
     uint16 LastSlotIndex = ParticleIndices[LastArrayIndex];
     uint16 CurrSlotIndex = ParticleIndices[Index];
-
     // 1) 데이터 블록에서 마지막 슬롯 데이터를
     //    삭제할 슬롯 위치(CurrSlotIndex)로 통째로 복사
     if (CurrSlotIndex != LastSlotIndex)
@@ -343,16 +341,11 @@ void FParticleEmitterInstance::KillParticle(int32 Index)
         uint8* Dst = ParticleData + CurrSlotIndex * ParticleStride;
         memcpy(Dst, Src, ParticleStride);
     }
-
-    // 2) 인덱스 배열 갱신: 마지막 슬롯 인덱스를 덮어 씀
-    // ParticleIndices[Index] = LastSlotIndex;
-    // ParticleIndices[LastArrayIndex] = CurrSlotIndex;
     // 3) 남은 “마지막” 슬롯은 0으로 초기화
     {
         uint8* DeadPtr = ParticleData + LastSlotIndex * ParticleStride;
         memset(DeadPtr, 0, ParticleStride);
     }
-
     // 4) 활성 개수 감소
     --ActiveParticles;
 }

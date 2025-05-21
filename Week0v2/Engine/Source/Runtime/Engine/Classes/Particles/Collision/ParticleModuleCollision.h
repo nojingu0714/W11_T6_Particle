@@ -34,7 +34,7 @@ public:
      *	The maximum number of collisions a particle can have. 
      *  Value is obtained using the EmitterTime at particle spawn. 
      */
-     FSimpleFloatDistribution MaxCollisions;
+     FSimpleFloatDistribution MaxCollisions= 3;
 
     // 파티클 크기
     float CollisionRadius= 1.0f;
