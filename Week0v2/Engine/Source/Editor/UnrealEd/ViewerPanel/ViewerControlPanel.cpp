@@ -32,6 +32,7 @@ void ViewerControlPanel::Render()
         if (ImGui::Button("\ue9d6",IconSize))
         {
             UE_LOG(LogLevel::Warning, "Save Particle");
+            ParticleSystemComponent->InitParticles();
         }
         ImGui::SameLine();
         if (ImGui::Button("\ue950",IconSize))

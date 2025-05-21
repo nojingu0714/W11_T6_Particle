@@ -1,11 +1,15 @@
 #include "ParticleRenderPass.h"
 
 #include "Define.h"
+#include "EditorEngine.h"
 #include "LaunchEngineLoop.h"
 #include "ParticleEmitterInstance.h"
 #include "ParticleHelper.h"
+#include "ShowFlags.h"
 #include "D3D11RHI/CBStructDefine.h"
+#include "Engine/FEditorStateManager.h"
 #include "Engine/World.h"
+#include "LevelEditor/SLevelEditor.h"
 #include "Particles/ParticleModuleRequired.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Renderer/Renderer.h"
@@ -79,9 +83,17 @@ void FParticleRenderPass::Prepare(std::shared_ptr<FViewportClient> InViewportCli
 
 void FParticleRenderPass::Execute(std::shared_ptr<FViewportClient> InViewportClient)
 {
+    const UEditorEngine* EditorEngine = Cast<UEditorEngine>(GEngine);
+    if (EditorEngine == nullptr)
+    {
+        return;
+    }
+    const auto ActiveViewport = EditorEngine->GetLevelEditor()->GetActiveViewportClient();
 
-        
-
+    if (!(ActiveViewport->ShowFlag & EEngineShowFlags::SF_Particles))
+    {
+        return;
+    }
     for (const UParticleSystemComponent* ParticleSystemComponent : ParticleSystemComponents)
     {
             FMatrix View = FMatrix::Identity;

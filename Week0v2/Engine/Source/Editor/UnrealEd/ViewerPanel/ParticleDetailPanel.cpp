@@ -13,6 +13,7 @@
 #include "Engine/Classes/Components/Material/Material.h"
 #include <Particles/Snow/ParticleModuleSnow.h>
 
+#include "Components/Mesh/StaticMesh.h"
 
 
 void ParticleDetailPanel::Render(UParticleModule* SelectedModule)
@@ -29,52 +30,7 @@ void ParticleDetailPanel::Render(UParticleModule* SelectedModule)
     {
         if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(SelectedModule))
         {
-            // 1) 먼저 모든 머티리얼을 수집
-            TArray<UMaterial*> MaterialList;
-            TArray<FString> MaterialNames;
-            bool bInitialized = false;
-            if (!bInitialized)
-            {
-                for (UMaterial* Mat : TObjectRange<UMaterial>())
-                {
-                    MaterialList.Add(Mat);
-                    // GetName() 반환값을 UTF-8 문자열로 변환
-                    MaterialNames.Add(Mat->GetMaterialInfo().MTLName);
-                }
-                bInitialized = true;
-            }
-
-            // 2) 선택 인덱스
-            static int32 CurrentIndex = 0;
-            CurrentIndex = FMath::Clamp(CurrentIndex, 0, MaterialList.Num() - 1);
-
-            // 3) ImGui UI
-            ImGui::Text("Particle Module Required");
-            if (ImGui::BeginCombo("Select Material", GetData(MaterialNames[CurrentIndex])))
-            {
-                for (int32 i = 0; i < MaterialList.Num(); ++i)
-                {
-                    bool bIsSelected = (CurrentIndex == i);
-                    if (ImGui::Selectable(GetData(MaterialNames[i]), bIsSelected))
-                    {
-                        CurrentIndex = i;
-                    }
-                    if (bIsSelected)
-                        ImGui::SetItemDefaultFocus();
-                }
-                ImGui::EndCombo();
-            }
-
-            // 4) 선택된 머티리얼을 할당
-            UMaterial* SelectedMat = MaterialList.IsValidIndex(CurrentIndex) ? MaterialList[CurrentIndex] : nullptr;
-            if (SelectedMat)
-            {
-                // UParticleModuleRequired::SpriteTexture 는 UTexture* 타입이므로,
-                // 머티리얼을 텍스처로 사용하려면 머티리얼 인스턴스의 텍스처 파라미터를 꺼내거나
-                // 필요한 UTexture2D* 를 직접 나열해야 합니다.
-                // 예시로, 만약 머티리얼 이름 그대로 텍스처 에셋이 있다면:
-                Required->SpriteTexture = SelectedMat;
-            }
+            EditParticleModuleRequired(Required);
         }
         else if (UParticleModuleSpawn* Spawn = Cast<UParticleModuleSpawn>(SelectedModule))
         {
@@ -366,6 +322,162 @@ void ParticleDetailPanel::RenderFSimpleVectorDistribution(FSimpleVectorDistribut
         return;
         break;
     }
+    }
+}
+
+void ParticleDetailPanel::EditParticleModuleRequired(UParticleModuleRequired* Required)
+{
+    if (!Required)
+    {
+        return;
+    }
+
+    ImGui::Text("Particle Module Required");
+    ImGui::Separator();
+
+    // --- 머티리얼 선택 UI (스프라이트용) ---
+    ImGui::Text("Sprite Material:");
+
+    // 1) 모든 UMaterial 수집 (매번 호출 시 다시 수집하거나, 캐싱 전략 사용 가능)
+    //    여기서는 간단히 매번 수집합니다. 성능이 중요하다면 최적화 필요.
+    static TArray<UMaterial*> SpriteMaterialList; // static으로 하여 이전 선택 유지 시도
+    static TArray<FString> SpriteMaterialNames;
+    static bool bSpriteMaterialsInitialized = false; // 초기화 플래그
+
+    // UI가 처음 그려지거나, 특정 조건에서 머티리얼 목록을 다시 로드할 수 있도록 함
+    // (예: 에디터에서 새 머티리얼이 추가되었을 때)
+    // 여기서는 간단히 bSpriteMaterialsInitialized 플래그 사용
+    if (ImGui::Button("Refresh Material List") || !bSpriteMaterialsInitialized)
+    {
+        SpriteMaterialList.Empty();
+        SpriteMaterialNames.Empty();
+        for (UMaterial* Mat : TObjectRange<UMaterial>()) // 실제 프로젝트에서는 애셋 레지스트리 사용 권장
+        {
+            if (Mat) // 유효한 머티리얼만 추가
+            {
+                SpriteMaterialList.Add(Mat);
+                SpriteMaterialNames.Add(Mat->GetMaterialInfo().MTLName); // 또는 Mat->GetName()
+            }
+        }
+        bSpriteMaterialsInitialized = true;
+    }
+
+    // 2) 현재 선택된 머티리얼 인덱스 찾기 (Required->SpriteMaterial 기준으로)
+    //    UParticleModuleRequired에 UMaterial* SpriteMaterial 멤버가 있다고 가정합니다.
+    //    (원래 코드에서는 Required->SpriteTexture 였으나, 머티리얼을 직접 다루는 것이 더 일반적)
+    int32 CurrentSpriteMaterialIndex = -1;
+    if (Required->SpriteTexture != nullptr && SpriteMaterialList.Num() > 0)
+    {
+        for (int32 i = 0; i < SpriteMaterialList.Num(); ++i)
+        {
+            if (SpriteMaterialList[i] == Required->SpriteTexture)
+            {
+                CurrentSpriteMaterialIndex = i;
+                break;
+            }
+        }
+    }
+
+    // 3) ImGui 콤보 박스 UI
+    const char* previewSpriteMaterialName = (CurrentSpriteMaterialIndex != -1) ? GetData(SpriteMaterialNames[CurrentSpriteMaterialIndex]) : "None";
+    if (ImGui::BeginCombo("##SpriteMaterialCombo", previewSpriteMaterialName)) // ID에 ##를 붙여 라벨 숨김
+    {
+        // "None" 옵션 추가
+        bool bIsNoneSelected = (Required->SpriteTexture == nullptr);
+        if (ImGui::Selectable("None", bIsNoneSelected))
+        {
+            Required->SpriteTexture = nullptr;
+            Required->MeshData = nullptr; // 스프라이트 머티리얼을 "None"으로 하면 메시도 해제 
+            CurrentSpriteMaterialIndex = -1;
+        }
+        if (bIsNoneSelected) ImGui::SetItemDefaultFocus();
+
+        for (int32 i = 0; i < SpriteMaterialList.Num(); ++i)
+        {
+            bool bIsSelected = (CurrentSpriteMaterialIndex == i);
+            if (ImGui::Selectable(GetData(SpriteMaterialNames[i]), bIsSelected))
+            {
+                CurrentSpriteMaterialIndex = i;
+                Required->SpriteTexture = SpriteMaterialList[i];
+                // 스프라이트 머티리얼을 선택하면, 메시는 사용하지 않도록 설정
+                Required->MeshData = nullptr;
+                Required->ParticleEmitterType = EParticleEmitterType::Sprite; // 스프라이트 파티클로 설정
+            }
+            if (bIsSelected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+
+    // --- 스태틱 메시 선택 UI (메시 파티클용) ---
+    ImGui::Text("Static Mesh:");
+
+    // 1) 모든 UStaticMesh 수집
+    static TArray<UStaticMesh*> StaticMeshList;
+    static TArray<FString> StaticMeshNames;
+    static bool bStaticMeshesInitialized = false;
+
+    if (ImGui::Button("Refresh Mesh List") || !bStaticMeshesInitialized)
+    {
+        StaticMeshList.Empty();
+        StaticMeshNames.Empty();
+        for (UStaticMesh* MeshAsset : TObjectRange<UStaticMesh>()) // 실제 프로젝트에서는 애셋 레지스트리 사용 권장
+        {
+            if (MeshAsset) // 유효한 메시만 추가
+            {
+                StaticMeshList.Add(MeshAsset);
+                StaticMeshNames.Add(MeshAsset->GetRenderData()->DisplayName); // UStaticMesh에 GetName()이 있다고 가정
+            }
+        }
+        bStaticMeshesInitialized = true;
+    }
+
+    // 2) 현재 선택된 스태틱 메시 인덱스 찾기 (Required->Mesh 기준으로)
+    int32 CurrentStaticMeshIndex = -1;
+    if (Required->MeshData != nullptr && StaticMeshList.Num() > 0)
+    {
+        for (int32 i = 0; i < StaticMeshList.Num(); ++i)
+        {
+            if (StaticMeshList[i] == Required->MeshData)
+            {
+                CurrentStaticMeshIndex = i;
+                break;
+            }
+        }
+    }
+
+    // 3) ImGui 콤보 박스 UI
+    const char* previewStaticMeshName = (CurrentStaticMeshIndex != -1) ? GetData(StaticMeshNames[CurrentStaticMeshIndex]) : "None";
+    if (ImGui::BeginCombo("##StaticMeshCombo", previewStaticMeshName))
+    {
+        // "None" 옵션 추가
+        bool bIsNoneSelected = (Required->MeshData == nullptr);
+        if (ImGui::Selectable("None", bIsNoneSelected))
+        {
+            Required->MeshData = nullptr;
+            // 메시를 "None"으로 하면 스프라이트 머티리얼 선택에 영향을 주지 않음 (또는 특정 규칙 적용 가능)
+            CurrentStaticMeshIndex = -1;
+        }
+        if (bIsNoneSelected) ImGui::SetItemDefaultFocus();
+
+        for (int32 i = 0; i < StaticMeshList.Num(); ++i)
+        {
+            bool bIsSelected = (CurrentStaticMeshIndex == i);
+            if (ImGui::Selectable(GetData(StaticMeshNames[i]), bIsSelected))
+            {
+                CurrentStaticMeshIndex = i;
+                Required->MeshData = StaticMeshList[i];
+                // 스태틱 메시를 선택하면, 스프라이트 머티리얼은 사용하지 않도록 설정
+                Required->SpriteTexture = nullptr;
+                Required->ParticleEmitterType = EParticleEmitterType::Mesh; // 메시 파티클로 설정
+            }
+            if (bIsSelected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
     }
 }
 
