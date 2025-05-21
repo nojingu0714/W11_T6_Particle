@@ -9,6 +9,7 @@
 #include "Velocity/ParticleModuleVelocity.h"
 #include "Color/ParticleModuleColor.h"
 #include "Size/ParticleModuleSize.h"
+#include "Snow/ParticleModuleSnow.h"
 
 UMyParticleSystem::UMyParticleSystem()
 {
@@ -25,7 +26,7 @@ UMyParticleSystem::UMyParticleSystem()
     UParticleModuleLifetime* Lifetime = FObjectFactory::ConstructObject<UParticleModuleLifetime>(this);
     Lifetime->InitializeDefaults();
     LODLevel->AddModule(Lifetime);
-    UParticleModuleSizeScaleBySpeed* SizeScaleBySpeed = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
+   /* UParticleModuleSizeScaleBySpeed* SizeScaleBySpeed = FObjectFactory::ConstructObject<UParticleModuleSizeScaleBySpeed>(this);
     LODLevel->AddModule(SizeScaleBySpeed);
     UParticleModuleSize* Size = FObjectFactory::ConstructObject<UParticleModuleSize>(this);
     Size->InitializeDefaults();
@@ -38,7 +39,10 @@ UMyParticleSystem::UMyParticleSystem()
     LODLevel->AddModule(Velocity);
     UParticleModuleColor* Color = FObjectFactory::ConstructObject<UParticleModuleColor>(this);
     Color->InitializeDefaults();
-    LODLevel->AddModule(Color);
+    LODLevel->AddModule(Color);*/
+
+    UParticleModuleSnow* Snow = FObjectFactory::ConstructObject<UParticleModuleSnow>(this);
+    LODLevel->AddModule(Snow);
 }
 
 UMyParticleSystem::~UMyParticleSystem()

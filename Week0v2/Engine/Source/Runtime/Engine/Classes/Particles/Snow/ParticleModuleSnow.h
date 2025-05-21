@@ -8,6 +8,7 @@ public:
     UParticleModuleSnow();
     ~UParticleModuleSnow() = default;
 
+    void Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase) override;
 
     virtual void Update(FParticleEmitterInstance* Owner, int32 Offset, float DeltaTime);
 };
