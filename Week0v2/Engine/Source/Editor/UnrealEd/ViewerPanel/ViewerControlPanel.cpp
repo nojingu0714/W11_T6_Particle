@@ -4,6 +4,8 @@
 #include "LevelEditor/SLevelEditor.h"
 #include "tinyfiledialogs/tinyfiledialogs.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Engine/Source/Runtime/CoreUObject/UObject/UObjectIterator.h"
+#include "Particles/ParticleSystem.h"
 
 
 class FDrawer;
@@ -33,6 +35,15 @@ void ViewerControlPanel::Render()
         {
             UE_LOG(LogLevel::Warning, "Save Particle");
             ParticleSystemComponent->InitParticles();
+
+            for (auto PSG : TObjectRange<UParticleSystemComponent>()) 
+            {
+                if (PSG->Template == ParticleSystemComponent->Template)
+                {
+                    PSG->InitParticles();
+                }
+            }
+
         }
         ImGui::SameLine();
         if (ImGui::Button("\ue950",IconSize))

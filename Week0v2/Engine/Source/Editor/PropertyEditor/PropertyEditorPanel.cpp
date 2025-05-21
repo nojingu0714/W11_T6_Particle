@@ -806,149 +806,149 @@ void PropertyEditorPanel::Render()
         // TODO : Particle Comp
         UParticleSystemComponent* ParticleComp = Cast<UParticleSystemComponent>(PickedComponent);
         DrawParticlePreviewButton(ParticleComp);
-        for (auto Emitter : ParticleComp->Template->Emitters)
-        {
-            if (!Emitter->LODLevels[0])
-                continue;
-            for (auto Module : Emitter->LODLevels[0]->Modules)
-            {
-                if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(Module))
-                {
-                    // 1) 먼저 모든 머티리얼을 수집
-                    TArray<UMaterial*> MaterialList;
-                    TArray<FString> MaterialNames;
-                    bool bInitialized = false;
-                    if (!bInitialized)
-                    {
-                        for (UMaterial* Mat : TObjectRange<UMaterial>())
-                        {
-                            MaterialList.Add(Mat);
-                            // GetName() 반환값을 UTF-8 문자열로 변환
-                            MaterialNames.Add(Mat->GetMaterialInfo().MTLName);
-                        }
-                        bInitialized = true;
-                    }
+        //for (auto Emitter : ParticleComp->Template->Emitters)
+        //{
+        //    if (!Emitter->LODLevels[0])
+        //        continue;
+        //    for (auto Module : Emitter->LODLevels[0]->Modules)
+        //    {
+        //        if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(Module))
+        //        {
+        //            // 1) 먼저 모든 머티리얼을 수집
+        //            TArray<UMaterial*> MaterialList;
+        //            TArray<FString> MaterialNames;
+        //            bool bInitialized = false;
+        //            if (!bInitialized)
+        //            {
+        //                for (UMaterial* Mat : TObjectRange<UMaterial>())
+        //                {
+        //                    MaterialList.Add(Mat);
+        //                    // GetName() 반환값을 UTF-8 문자열로 변환
+        //                    MaterialNames.Add(Mat->GetMaterialInfo().MTLName);
+        //                }
+        //                bInitialized = true;
+        //            }
 
-                    // 2) 선택 인덱스
-                    static int32 CurrentIndex = 0;
-                    CurrentIndex = FMath::Clamp(CurrentIndex, 0, MaterialList.Num() - 1);
+        //            // 2) 선택 인덱스
+        //            static int32 CurrentIndex = 0;
+        //            CurrentIndex = FMath::Clamp(CurrentIndex, 0, MaterialList.Num() - 1);
 
-                    // 3) ImGui UI
-                    ImGui::Text("Particle Module Required");
-                    if (ImGui::BeginCombo("Select Material", GetData(MaterialNames[CurrentIndex])))
-                    {
-                        for (int32 i = 0; i < MaterialList.Num(); ++i)
-                        {
-                            bool bIsSelected = (CurrentIndex == i);
-                            if (ImGui::Selectable(GetData(MaterialNames[i]), bIsSelected))
-                            {
-                                CurrentIndex = i;
-                            }
-                            if (bIsSelected)
-                                ImGui::SetItemDefaultFocus();
-                        }
-                        ImGui::EndCombo();
-                    }
+        //            // 3) ImGui UI
+        //            ImGui::Text("Particle Module Required");
+        //            if (ImGui::BeginCombo("Select Material", GetData(MaterialNames[CurrentIndex])))
+        //            {
+        //                for (int32 i = 0; i < MaterialList.Num(); ++i)
+        //                {
+        //                    bool bIsSelected = (CurrentIndex == i);
+        //                    if (ImGui::Selectable(GetData(MaterialNames[i]), bIsSelected))
+        //                    {
+        //                        CurrentIndex = i;
+        //                    }
+        //                    if (bIsSelected)
+        //                        ImGui::SetItemDefaultFocus();
+        //                }
+        //                ImGui::EndCombo();
+        //            }
 
-                    // 4) 선택된 머티리얼을 할당
-                    UMaterial* SelectedMat = MaterialList.IsValidIndex(CurrentIndex) ? MaterialList[CurrentIndex] : nullptr;
-                    if (SelectedMat)
-                    {
-                        // UParticleModuleRequired::SpriteTexture 는 UTexture* 타입이므로,
-                        // 머티리얼을 텍스처로 사용하려면 머티리얼 인스턴스의 텍스처 파라미터를 꺼내거나
-                        // 필요한 UTexture2D* 를 직접 나열해야 합니다.
-                        // 예시로, 만약 머티리얼 이름 그대로 텍스처 에셋이 있다면:
-                        Required->SpriteTexture = SelectedMat;
-                    }
-                }
-                else if (UParticleModuleSpawn* Spawn =  Cast<UParticleModuleSpawn>(Module))
-                {
-                    ImGui::Text("Particle Module Spawn");
-                    RenderFSimpleFloatDistribution(Spawn->Rate, 0.0f, "Spawn Rate");
-                    ImGui::Separator();
-                }
-                else if (UParticleModuleSize* Size = Cast<UParticleModuleSize>(Module))
-                {
-                    ImGui::Text("Particle Module Size");
-                    RenderFSimpleVectorDistribution(Size->StartSize, 0.0f, "StartSize");
-                    ImGui::Separator();
-                }
-                else if (UParticleModuleSizeScaleBySpeed* ScaleBySpeed = Cast<UParticleModuleSizeScaleBySpeed>(Module))
-                {
-                    ImGui::Text("Particle Module ScaleBySpeed");
-                    ImGui::Text("SpeedScale");
-                    ImGui::PushItemWidth(50.0f);
-                    ImGui::InputFloat("X##SpeedScale", &ScaleBySpeed->SpeedScale.X);
-                    ImGui::SameLine();
-                    ImGui::InputFloat("Y##SpeedScale", &ScaleBySpeed->SpeedScale.Y);
-                    ImGui::Text("MaxScale");
-                    ImGui::InputFloat("X##MaxScale", &ScaleBySpeed->MaxScale.X);
-                    ImGui::SameLine();
-                    ImGui::InputFloat("Y##MaxScale", &ScaleBySpeed->MaxScale.Y);
-                    ImGui::PopItemWidth();
-                    ImGui::Separator();
-                }
-                else if (Cast<UParticleModuleSizeBase>(Module))
-                {
-                    ImGui::Text("Particle Module Size");
-                    ImGui::Separator();
-                }
-                else if (UParticleModuleLifetime* Lifetime = Cast<UParticleModuleLifetime>(Module))
-                {
-                    ImGui::Text("Particle Module Lifetime");
-                    RenderFSimpleFloatDistribution(Lifetime->Lifetime, 0.0f, "Lifetime");
-                    ImGui::Separator();
-                }
-                else if (UParticleModuleLocation* Location = Cast<UParticleModuleLocation>(Module)) 
-                {
-                    ImGui::Text("Particle Module Location");
-                    RenderFSimpleVectorDistribution(Location->StartLocation, 0.0f, "Location");
-                    ImGui::Separator();
-                }
-                else if (UParticleModuleVelocity* Velocity = Cast<UParticleModuleVelocity>(Module)) 
-                {
-                    ImGui::Text("Particle Module Velocity");
-                    RenderFSimpleVectorDistribution(Velocity->StartVelocity, 0.0f, "StartVelocity");
-                    RenderFSimpleVectorDistribution(Velocity->StartVelocityRadial, 0.0f, "StartVelocityRadial");
-                    ImGui::Separator();
-                }
-                else if (UParticleModuleColor* Color = Cast<UParticleModuleColor>(Module)) 
-                {
-                    ImGui::Text("Particle Module Color");
-                    RenderFSimpleVectorDistribution(Color->ColorScaleOverLife, 0.0f, "ColorOverLife");
-                    RenderFSimpleFloatDistribution(Color->AlphaScaleOverLife, 0.0f, "FloatOverLife");
-                    ImGui::Separator();
-                }
-                else if (UParticleModuleCollision* Collision = Cast<UParticleModuleCollision>(Module)) 
-                {
-                    ImGui::Text("Particle Module Color");
-                    ImGui::InputFloat("Bounce Factor", &Collision->BounceFactor);
-                    ImGui::InputFloat("Friction Factor", &Collision->FrictionFactor);
-                    ImGui::InputFloat("Collision Radius", &Collision->CollisionRadius);
-                    RenderFSimpleFloatDistribution(Collision->MaxCollisions, 0.0f, "MaxCollisions");
-                    const char* EPCC_Names[] = {
-                        "Kill",
-                        "Freeze",
-                        "Halt Collisions",
-                        "Freeze Translation",
-                        "Freeze Rotation",
-                        "Freeze Movement"
-                    };
+        //            // 4) 선택된 머티리얼을 할당
+        //            UMaterial* SelectedMat = MaterialList.IsValidIndex(CurrentIndex) ? MaterialList[CurrentIndex] : nullptr;
+        //            if (SelectedMat)
+        //            {
+        //                // UParticleModuleRequired::SpriteTexture 는 UTexture* 타입이므로,
+        //                // 머티리얼을 텍스처로 사용하려면 머티리얼 인스턴스의 텍스처 파라미터를 꺼내거나
+        //                // 필요한 UTexture2D* 를 직접 나열해야 합니다.
+        //                // 예시로, 만약 머티리얼 이름 그대로 텍스처 에셋이 있다면:
+        //                Required->SpriteTexture = SelectedMat;
+        //            }
+        //        }
+        //        else if (UParticleModuleSpawn* Spawn =  Cast<UParticleModuleSpawn>(Module))
+        //        {
+        //            ImGui::Text("Particle Module Spawn");
+        //            RenderFSimpleFloatDistribution(Spawn->Rate, 0.0f, "Spawn Rate");
+        //            ImGui::Separator();
+        //        }
+        //        else if (UParticleModuleSize* Size = Cast<UParticleModuleSize>(Module))
+        //        {
+        //            ImGui::Text("Particle Module Size");
+        //            RenderFSimpleVectorDistribution(Size->StartSize, 0.0f, "StartSize");
+        //            ImGui::Separator();
+        //        }
+        //        else if (UParticleModuleSizeScaleBySpeed* ScaleBySpeed = Cast<UParticleModuleSizeScaleBySpeed>(Module))
+        //        {
+        //            ImGui::Text("Particle Module ScaleBySpeed");
+        //            ImGui::Text("SpeedScale");
+        //            ImGui::PushItemWidth(50.0f);
+        //            ImGui::InputFloat("X##SpeedScale", &ScaleBySpeed->SpeedScale.X);
+        //            ImGui::SameLine();
+        //            ImGui::InputFloat("Y##SpeedScale", &ScaleBySpeed->SpeedScale.Y);
+        //            ImGui::Text("MaxScale");
+        //            ImGui::InputFloat("X##MaxScale", &ScaleBySpeed->MaxScale.X);
+        //            ImGui::SameLine();
+        //            ImGui::InputFloat("Y##MaxScale", &ScaleBySpeed->MaxScale.Y);
+        //            ImGui::PopItemWidth();
+        //            ImGui::Separator();
+        //        }
+        //        else if (Cast<UParticleModuleSizeBase>(Module))
+        //        {
+        //            ImGui::Text("Particle Module Size");
+        //            ImGui::Separator();
+        //        }
+        //        else if (UParticleModuleLifetime* Lifetime = Cast<UParticleModuleLifetime>(Module))
+        //        {
+        //            ImGui::Text("Particle Module Lifetime");
+        //            RenderFSimpleFloatDistribution(Lifetime->Lifetime, 0.0f, "Lifetime");
+        //            ImGui::Separator();
+        //        }
+        //        else if (UParticleModuleLocation* Location = Cast<UParticleModuleLocation>(Module)) 
+        //        {
+        //            ImGui::Text("Particle Module Location");
+        //            RenderFSimpleVectorDistribution(Location->StartLocation, 0.0f, "Location");
+        //            ImGui::Separator();
+        //        }
+        //        else if (UParticleModuleVelocity* Velocity = Cast<UParticleModuleVelocity>(Module)) 
+        //        {
+        //            ImGui::Text("Particle Module Velocity");
+        //            RenderFSimpleVectorDistribution(Velocity->StartVelocity, 0.0f, "StartVelocity");
+        //            RenderFSimpleVectorDistribution(Velocity->StartVelocityRadial, 0.0f, "StartVelocityRadial");
+        //            ImGui::Separator();
+        //        }
+        //        else if (UParticleModuleColor* Color = Cast<UParticleModuleColor>(Module)) 
+        //        {
+        //            ImGui::Text("Particle Module Color");
+        //            RenderFSimpleVectorDistribution(Color->ColorScaleOverLife, 0.0f, "ColorOverLife");
+        //            RenderFSimpleFloatDistribution(Color->AlphaScaleOverLife, 0.0f, "FloatOverLife");
+        //            ImGui::Separator();
+        //        }
+        //        else if (UParticleModuleCollision* Collision = Cast<UParticleModuleCollision>(Module)) 
+        //        {
+        //            ImGui::Text("Particle Module Color");
+        //            ImGui::InputFloat("Bounce Factor", &Collision->BounceFactor);
+        //            ImGui::InputFloat("Friction Factor", &Collision->FrictionFactor);
+        //            ImGui::InputFloat("Collision Radius", &Collision->CollisionRadius);
+        //            RenderFSimpleFloatDistribution(Collision->MaxCollisions, 0.0f, "MaxCollisions");
+        //            const char* EPCC_Names[] = {
+        //                "Kill",
+        //                "Freeze",
+        //                "Halt Collisions",
+        //                "Freeze Translation",
+        //                "Freeze Rotation",
+        //                "Freeze Movement"
+        //            };
 
-                    // Combo를 이용한 선택 UI
-                    int currentItem = static_cast<int>(Collision->Response);
-                    if (ImGui::Combo("Collision Response", &currentItem, EPCC_Names, EPCC_MAX))
-                    {
-                        // 사용자가 선택을 변경했을 경우 처리
-                        Collision->Response = static_cast<EParticleCollisionComplete>(currentItem);
-                    }
-                    ImGui::Separator();
-                }
-                
+        //            // Combo를 이용한 선택 UI
+        //            int currentItem = static_cast<int>(Collision->Response);
+        //            if (ImGui::Combo("Collision Response", &currentItem, EPCC_Names, EPCC_MAX))
+        //            {
+        //                // 사용자가 선택을 변경했을 경우 처리
+        //                Collision->Response = static_cast<EParticleCollisionComplete>(currentItem);
+        //            }
+        //            ImGui::Separator();
+        //        }
+        //        
 
-                ImGui::Spacing();
-            }
-        }   
+        //        ImGui::Spacing();
+        //    }
+        //}   
     }
     
     RenderShapeProperty(PickedActor);
@@ -2153,6 +2153,8 @@ void PropertyEditorPanel::DrawParticlePreviewButton(UParticleSystemComponent* Pa
         ParticleActor->SetDefaultParticleSystem();
 
         EditorEngine->GetParticlePreviewUI()->SetParticleSystemComponent(ParticleActor->ParticleSystemComponent);
+        ParticleActor->ParticleSystemComponent->Template = ParticleSystemComponent->Template;
+        ParticleActor->ParticleSystemComponent->InitParticles();
     }
 }
 
